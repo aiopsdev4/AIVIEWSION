@@ -101,7 +101,7 @@
     "objectMaskLabel": "מיסוך אובייקט {{number}} ({{label}})",
     "zones": {
       "label": "אזורים.",
-      "documentTitle": "עריכת אזור - Frigate",
+      "documentTitle": "עריכת אזור - AIviewsion",
       "desc": {
         "title": "אזורים מאפשרים לך להגדיר אזור ספציפי בפריים, כך שתוכל לקבוע האם אובייקט נמצא בתוך אזור מסוים או לא.",
         "documentation": "תיעוד"
@@ -158,7 +158,7 @@
       "point_two": "נקודות {{count}}",
       "point_other": "נקודות {{count}}",
       "label": "מיסוך תנועה.",
-      "documentTitle": "עריכת מיסוך תנועה - Frigate",
+      "documentTitle": "עריכת מיסוך תנועה - AIviewsion",
       "desc": {
         "documentation": "תיעוד",
         "title": "מיסוך תנועה משמש כדי למנוע זיהוי של תנועה לא רצויה. מיסוך יתר יקשה על מעקב אחר אובייקטים."
@@ -187,7 +187,7 @@
       "point_two": "נקודות {{count}}",
       "point_other": "נקודות {{count}}",
       "label": "מיסוך אובייקט",
-      "documentTitle": "עריכת מיסוך אובייקט - Frigate",
+      "documentTitle": "עריכת מיסוך אובייקט - AIviewsion",
       "desc": {
         "title": "מיסוך סינון אובייקטים משמש לסינון תוצאות חיוביות שגויות עבור סוג אובייקט נתון בהתבסס על מיקום.",
         "documentation": "תיעוד"

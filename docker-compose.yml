@@ -1,8 +1,6 @@
 services:
   devcontainer:
     container_name: frigate-devcontainer
-    # Check host system's actual render/video/plugdev group IDs with 'getent group render', 'getent group video', and 'getent group plugdev'
-    # Must add these exact IDs in container's group_add section or OpenVINO GPU acceleration will fail
     group_add:
       - "109" # render
       - "110" # render
@@ -12,31 +10,35 @@ services:
     build:
       context: .
       dockerfile: docker/main/Dockerfile
-      # Use target devcontainer-trt for TensorRT dev
-      target: devcontainer
-    ## Uncomment this block for nvidia gpu support
-    # deploy:
-    #       resources:
-    #           reservations:
-    #               devices:
-    #                   - driver: nvidia
-    #                     count: 1
-    #                     capabilities: [gpu]
+      target: frigate
+    ports:
+      - "5001:5000" # Access your custom Frigate at http://localhost:5001
+      - "8554:8554" # RTSP Feeds
+      - "8555:8555" # WebRTC
     environment:
       YOLO_MODELS: ""
-    # devices:
-      # - /dev/bus/usb:/dev/bus/usb # Uncomment for Google Coral USB
-      # - /dev/dri:/dev/dri # for intel hwaccel, needs to be updated for your hardware
     volumes:
-      - .:/workspace/frigate:cached
+      # 1. YOUR REAL DATA (Kept in local_data so Git ignores it)
+      - ./local_data/config.yml:/config/config.yml
+      - ./local_data/frigate.db:/config/frigate.db
+      - ./local_data/storage:/media/frigate
+      
+      # 2. THE CUSTOM CODE (This injects your changes into the container)
+      - ./frigate:/opt/frigate/frigate:cached
+      - ./migrations:/opt/frigate/migrations:cached
       - ./web/dist:/opt/frigate/web:cached
       - /etc/localtime:/etc/localtime:ro
-      - ./config:/config
-      - ./debug:/media/frigate
-     # - /dev/bus/usb:/dev/bus/usb # Uncomment for Google Coral USB
+      
+      # CRITICAL: I removed the duplicate ./config and ./debug lines 
+      # which were pointing to the same place as your local_data.
+    
+    # devices:
+      # - /dev/bus/usb:/dev/bus/usb 
+      # - /dev/dri:/dev/dri 
+
   mqtt:
     container_name: mqtt
     image: eclipse-mosquitto:2.0
-    command: mosquitto -c /mosquitto-no-auth.conf # enable no-auth mode
+    command: mosquitto -c /mosquitto-no-auth.conf
     ports:
       - "1883:1883"

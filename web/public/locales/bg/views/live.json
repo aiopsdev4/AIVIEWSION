@@ -64,6 +64,6 @@
   "cameraSettings": {
     "cameraEnabled": "Камерата е включена"
   },
-  "documentTitle": "Наживо - Frigate",
+  "documentTitle": "Наживо - AIviewsion",
   "documentTitle.withCamera": "{{camera}} - На живо - Фригейт"
 }

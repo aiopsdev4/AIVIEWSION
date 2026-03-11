@@ -281,12 +281,12 @@
     "more": "صفحه‌های بیشتر"
   },
   "accessDenied": {
-    "documentTitle": "دسترسی ممنوع - Frigate",
+    "documentTitle": "دسترسی ممنوع - AIviewsion",
     "title": "دسترسی ممنوع",
     "desc": "شما اجازهٔ مشاهدهٔ این صفحه را ندارید."
   },
   "notFound": {
-    "documentTitle": "یافت نشد - Frigate",
+    "documentTitle": "یافت نشد - AIviewsion",
     "title": "۴۰۴",
     "desc": "صفحه پیدا نشد"
   },

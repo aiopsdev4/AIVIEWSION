@@ -233,7 +233,7 @@
       "point_few": "{{count}} taškai",
       "point_other": "{{count}} taškų",
       "label": "Zonos",
-      "documentTitle": "Redaguoti Zonas - Frigate",
+      "documentTitle": "Redaguoti Zonas - AIviewsion",
       "desc": {
         "title": "Zonos leidžia apibrėžti specifinį kadro plotą tam, kad galėtumėte įvardinti ar objektas yra tam tikrame plote.",
         "documentation": "Dokumentacija"
@@ -297,7 +297,7 @@
         "title": "Judesio maskuoti dengia {{polygonArea}}% kameros ploto. Didelės judesio maskuotės nerekomenduojamos."
       },
       "label": "Judesio Maskuotė",
-      "documentTitle": "Redaguoti Judesio Maskuotę - Frigate",
+      "documentTitle": "Redaguoti Judesio Maskuotę - AIviewsion",
       "add": "Nauja Judesio Maskuotė",
       "edit": "Redaguoti Judesio Maskuotę",
       "clickDrawPolygon": "Spragtelti kad piešti poligoną ant atvaizdo.",
@@ -313,7 +313,7 @@
       "point_few": "{{count}} taškai",
       "point_other": "{{count}} taškų",
       "label": "Objekto Maskuotė",
-      "documentTitle": "Redaguoti Objekto Maskuotę - Frigate",
+      "documentTitle": "Redaguoti Objekto Maskuotę - AIviewsion",
       "desc": {
         "title": "Objektų filtravimo maskuotės naudojamos išfiltruoti klaidingus teigiamus rezultatus pagal vietą parinktam objekto tipui.",
         "documentation": "Dokumentacija"

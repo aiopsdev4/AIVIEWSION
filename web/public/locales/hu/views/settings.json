@@ -363,7 +363,7 @@
       },
       "edit": "Zóne Módosítása",
       "label": "Zónák",
-      "documentTitle": "Zóna Módosítása - Frigate",
+      "documentTitle": "Zóna Módosítása - AIviewsion",
       "name": {
         "title": "Név",
         "tips": "A névnek legalább 2 karakterből kell állnia és nem a kamera neve vagy egy másik zónáé.",
@@ -417,7 +417,7 @@
         "documentation": "Dokumentáció",
         "title": "Az objektumszűrő maszkokat arra használják, hogy hely alapján kiszűrjék a téves egyezéseket adott objektumtípus esetén."
       },
-      "documentTitle": "Tárgymaszk módosítása - Frigate",
+      "documentTitle": "Tárgymaszk módosítása - AIviewsion",
       "objects": {
         "title": "Tárgyak",
         "allObjectTypes": "Minden tárgytípus",
@@ -499,7 +499,7 @@
         "title": "A mozgásmaszk a kamera képkockájának {{polygonArea}}%-át fedi le. Nagy mozgásmaszkok használata nem ajánlott.",
         "tips": "A mozgásmaszkok nem akadályozzák meg az objektumok észlelését. Ehelyett ajánlott kötelező zónát használni."
       },
-      "documentTitle": "Mozgási Maszk Módosítása - Frigate",
+      "documentTitle": "Mozgási Maszk Módosítása - AIviewsion",
       "add": "Új Mozgási Maszk",
       "point_one": "{{count}} pont",
       "point_other": "{{count}} pont",

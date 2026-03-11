@@ -276,12 +276,12 @@
   },
   "accessDenied": {
     "desc": "У вас нет разрешения на просмотр этой страницы.",
-    "documentTitle": "Доступ запрещён - Frigate",
+    "documentTitle": "Доступ запрещён - AIviewsion",
     "title": "Доступ запрещён"
   },
   "notFound": {
     "desc": "Страница не найдена",
-    "documentTitle": "Не найдена - Frigate",
+    "documentTitle": "Не найдена - AIviewsion",
     "title": "404"
   },
   "toast": {

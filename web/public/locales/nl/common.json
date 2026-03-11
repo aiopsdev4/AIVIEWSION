@@ -284,14 +284,14 @@
     }
   },
   "accessDenied": {
-    "documentTitle": "Toegang geweigerd - Frigate",
+    "documentTitle": "Toegang geweigerd - AIviewsion",
     "desc": "Je hebt geen toestemming om deze pagina te bekijken.",
     "title": "Toegang geweigerd"
   },
   "notFound": {
     "desc": "Pagina niet gevonden",
     "title": "404",
-    "documentTitle": "Niet gevonden - Frigate"
+    "documentTitle": "Niet gevonden - AIviewsion"
   },
   "selectItem": "Selecteer {{item}}",
   "readTheDocumentation": "Lees de documentatie",

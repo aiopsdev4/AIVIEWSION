@@ -97,8 +97,8 @@
   },
   "notifications": "Meldingen",
   "audio": "Geluid",
-  "documentTitle": "Live - Frigate",
-  "documentTitle.withCamera": "{{camera}} - Live - Frigate",
+  "documentTitle": "AIviewsion",
+  "documentTitle.withCamera": "{{camera}} - AIviewsion",
   "autotracking": {
     "enable": "Automatisch volgen inschakelen",
     "disable": "Automatisch volgen uitschakelen"

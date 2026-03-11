@@ -278,12 +278,12 @@
         }
       },
       "edit": "Editar Máscara de Movimento",
-      "documentTitle": "Editar Máscara de Movimento - Frigate",
+      "documentTitle": "Editar Máscara de Movimento - AIviewsion",
       "add": "Nova Máscara de Movimento"
     },
     "zones": {
       "label": "Zonas",
-      "documentTitle": "Editar Zona - Frigate",
+      "documentTitle": "Editar Zona - AIviewsion",
       "desc": {
         "documentation": "Documentação",
         "title": "As zonas permitem definir uma área específica do quadro para que você possa determinar se um objeto está ou não dentro de uma área particular."
@@ -413,7 +413,7 @@
       },
       "add": "Adicionar filtro para objecto",
       "edit": "Editar filtro de objecto",
-      "documentTitle": "Editar filtro de movimento - Frigate",
+      "documentTitle": "Editar filtro de movimento - AIviewsion",
       "toast": {
         "success": {
           "noName": "A máscara de objeto foi salva. Reinicie o Frigate para aplicar as alterações.",

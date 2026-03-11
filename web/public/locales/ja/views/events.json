@@ -23,9 +23,9 @@
     "aria": "イベントを選択",
     "noFoundForTimePeriod": "この期間のイベントは見つかりません。"
   },
-  "documentTitle": "レビュー - Frigate",
+  "documentTitle": "レビュー - AIviewsion",
   "recordings": {
-    "documentTitle": "録画 - Frigate"
+    "documentTitle": "録画 - AIviewsion"
   },
   "calendarFilter": {
     "last24Hours": "直近24時間"

@@ -251,7 +251,7 @@
         "desc": "Estableix el temps mínim, en segons, que l'objecte ha d'estar dins la zona perquè s'activi. <em>Per defecte: 0</em>"
       },
       "allObjects": "Tots els objectes",
-      "documentTitle": "Edita zona - Frigate",
+      "documentTitle": "Edita zona - AIviewsion",
       "speedThreshold": {
         "title": "Llindar de velocitat ({{unit}})",
         "toast": {
@@ -294,7 +294,7 @@
       "label": "Màscara de moviment",
       "add": "Nova màscara de moviment",
       "edit": "Edita la màscara de moviment",
-      "documentTitle": "Editar la màscara de moviment - Frigate",
+      "documentTitle": "Editar la màscara de moviment - AIviewsion",
       "clickDrawPolygon": "Fes click per a dibuixar un polígon a la imatge.",
       "toast": {
         "success": {
@@ -310,7 +310,7 @@
       }
     },
     "objectMasks": {
-      "documentTitle": "Editar la màscara d'objecte - Frigate",
+      "documentTitle": "Editar la màscara d'objecte - AIviewsion",
       "label": "Màscares d'objecte",
       "edit": "Editar la màscara d'objecte",
       "point_one": "{{count}} punt",

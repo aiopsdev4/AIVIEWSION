@@ -41,9 +41,9 @@
     "trackedPoint": "Praćena točka",
     "clickToSeek": "Kliknite za pomicanje na ovo vrijeme"
   },
-  "documentTitle": "Pregled - Frigate",
+  "documentTitle": "Pregled - AIviewsion",
   "recordings": {
-    "documentTitle": "Snimke - Frigate"
+    "documentTitle": "Snimke - AIviewsion"
   },
   "calendarFilter": {
     "last24Hours": "Zadnja 24 sata"

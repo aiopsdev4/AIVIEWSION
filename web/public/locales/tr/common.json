@@ -237,7 +237,7 @@
     "other": "Diğer"
   },
   "notFound": {
-    "documentTitle": "Bulunamadı - Frigate",
+    "documentTitle": "Bulunamadı - AIviewsion",
     "desc": "Sayfa bulunamadı",
     "title": "404"
   },
@@ -274,7 +274,7 @@
   "accessDenied": {
     "title": "Erişim Reddedildi",
     "desc": "Bu sayfayı görüntüleme yetkiniz yok.",
-    "documentTitle": "Erişim Reddedildi - Frigate"
+    "documentTitle": "Erişim Reddedildi - AIviewsion"
   },
   "toast": {
     "copyUrlToClipboard": "URL panoya kopyalandı.",

@@ -244,7 +244,7 @@
         "title": "Đối tượng",
         "desc": "Loại đối tượng áp dụng cho mặt nạ đối tượng này."
       },
-      "documentTitle": "Chỉnh sửa Mặt nạ đối tượng - Frigate",
+      "documentTitle": "Chỉnh sửa Mặt nạ đối tượng - AIviewsion",
       "desc": {
         "title": "Mặt nạ lọc đối tượng được sử dụng để lọc ra các kết quả dương tính giả cho một loại đối tượng nhất định dựa trên vị trí.",
         "documentation": "Tài liệu"
@@ -305,14 +305,14 @@
       },
       "edit": "Chỉnh sửa Vùng",
       "label": "Vùng",
-      "documentTitle": "Chỉnh sửa Vùng - Frigate",
+      "documentTitle": "Chỉnh sửa Vùng - AIviewsion",
       "inertia": {
         "title": "Quán tính",
         "desc": "Chỉ định số khung hình mà một đối tượng phải ở trong một vùng trước khi được coi là ở trong vùng. <em>Mặc định: 3</em>"
       }
     },
     "motionMasks": {
-      "documentTitle": "Chỉnh sửa Mặt nạ chuyển động - Frigate",
+      "documentTitle": "Chỉnh sửa Mặt nạ chuyển động - AIviewsion",
       "desc": {
         "documentation": "Tài liệu",
         "title": "Mặt nạ chuyển động được sử dụng để ngăn các loại chuyển động không mong muốn kích hoạt phát hiện. Việc che quá nhiều sẽ khiến việc theo dõi đối tượng trở nên khó khăn hơn."

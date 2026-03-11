@@ -296,7 +296,7 @@
     },
     "zones": {
       "label": "Alanlar",
-      "documentTitle": "Alanı Düzenle - Frigate",
+      "documentTitle": "Alanı Düzenle - AIviewsion",
       "desc": {
         "documentation": "Dökümantasyon",
         "title": "Alanlar, görüntüde belirli bir alanını tanımlamanıza olanak tanır. Böylece bir nesnenin belirli bir alanda olup olmadığını tespit edebilirsiniz."
@@ -373,7 +373,7 @@
       },
       "label": "Hareket Maskesi",
       "edit": "Hareket Maskesini Düzenle",
-      "documentTitle": "Hareket Maskesini Düzenle - Frigate"
+      "documentTitle": "Hareket Maskesini Düzenle - AIviewsion"
     },
     "objectMasks": {
       "desc": {
@@ -396,7 +396,7 @@
           "title": "{{polygonName}} kaydedildi."
         }
       },
-      "documentTitle": "Nesne Maskesini Düzenle - Frigate",
+      "documentTitle": "Nesne Maskesini Düzenle - AIviewsion",
       "label": "Nesne Maskeleri",
       "clickDrawPolygon": "Görüntü üzerinde bir çokgen çizmek için tıklayın."
     },

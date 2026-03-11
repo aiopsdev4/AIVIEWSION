@@ -289,12 +289,12 @@
     "more": "Više stranica"
   },
   "accessDenied": {
-    "documentTitle": "Pristup Odbijen - Frigate",
+    "documentTitle": "Pristup Odbijen - AIviewsion",
     "title": "Pristup Odbijen",
     "desc": "Nemaš dopuštenje za pregled ove stranice."
   },
   "notFound": {
-    "documentTitle": "Nije Nađeno - Frigate",
+    "documentTitle": "Nije Nađeno - AIviewsion",
     "title": "404",
     "desc": "Stranica nije pronađena"
   },

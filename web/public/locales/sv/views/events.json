@@ -15,7 +15,7 @@
       "description": "Granskningsobjekt kan bara skapas för en kamera när inspelningar är aktiverat för den kameran."
     }
   },
-  "documentTitle": "Granska - Frigate",
+  "documentTitle": "Granska - AIviewsion",
   "timeline": "Tidslinje",
   "events": {
     "noFoundForTimePeriod": "Inga hädelser hittade för denna tidsperiod.",
@@ -23,7 +23,7 @@
     "label": "Händelse"
   },
   "recordings": {
-    "documentTitle": "Inspelningar - Frigate"
+    "documentTitle": "Inspelningar - AIviewsion"
   },
   "newReviewItems": {
     "label": "Visa nya objekt att granska",

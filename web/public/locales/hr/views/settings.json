@@ -42,7 +42,7 @@
       "point_few": "{{count}} točke",
       "point_other": "{{count}} točaka",
       "label": "Zone",
-      "documentTitle": "Zona uređivanja - Frigate",
+      "documentTitle": "Zona uređivanja - AIviewsion",
       "desc": {
         "title": "Zone vam omogućuju definiranje određenog područja kadra kako biste mogli odrediti nalazi li se objekt unutar određenog područja ili ne.",
         "documentation": "Dokumentacija"
@@ -95,7 +95,7 @@
       "point_few": "{{count}} točke",
       "point_other": "{{count}} točaka",
       "label": "Maska za pokret",
-      "documentTitle": "Uredi Masku Kretnje - Frigate",
+      "documentTitle": "Uredi Masku Kretnje - AIviewsion",
       "desc": {
         "title": "Maske za pokret koriste se kako bi se spriječilo da neželjeni pokreti pokrenu detekciju. Pretjerano maskiranje otežat će praćenje objekata.",
         "documentation": "Dokumentacija"
@@ -122,7 +122,7 @@
       "point_few": "{{count}} točke",
       "point_other": "{{count}} točaka",
       "label": "Maske Objekta",
-      "documentTitle": "Uredi masku objekta - Frigate",
+      "documentTitle": "Uredi masku objekta - AIviewsion",
       "desc": {
         "title": "Maske filtra objekta koriste se za filtriranje lažno pozitivnih rezultata za određenu vrstu objekta na temelju lokacije.",
         "documentation": "Dokumentacija"

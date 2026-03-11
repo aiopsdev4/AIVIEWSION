@@ -20,7 +20,7 @@
   },
   "markTheseItemsAsReviewed": "Segna questi elementi come visti",
   "markAsReviewed": "Segna come visto",
-  "documentTitle": "Rivedi - Frigate",
+  "documentTitle": "Rivedi - AIviewsion",
   "allCameras": "Tutte le camere",
   "timeline": "Cronologia",
   "timeline.aria": "Seleziona la cronologia",
@@ -30,7 +30,7 @@
     "noFoundForTimePeriod": "Nessun evento trovato per questo intervallo."
   },
   "recordings": {
-    "documentTitle": "Registrazioni - Frigate"
+    "documentTitle": "Registrazioni - AIviewsion"
   },
   "calendarFilter": {
     "last24Hours": "Ultime 24 ore"

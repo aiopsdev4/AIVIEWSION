@@ -295,11 +295,11 @@
   },
   "accessDenied": {
     "desc": "No teniu permís per veure aquesta pàgina.",
-    "documentTitle": "Accés Denegat - Frigate",
+    "documentTitle": "Accés Denegat - AIviewsion",
     "title": "Accés Denegat"
   },
   "notFound": {
-    "documentTitle": "No s'ha trobat - Frigate",
+    "documentTitle": "No s'ha trobat - AIviewsion",
     "title": "404",
     "desc": "Pàgina no trobada"
   },

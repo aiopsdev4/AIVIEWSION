@@ -281,12 +281,12 @@
     "label": "Пагінація"
   },
   "accessDenied": {
-    "documentTitle": "Доступ заборонений - Frigate",
+    "documentTitle": "Доступ заборонений - AIviewsion",
     "title": "Доступ заборонений",
     "desc": "У вас немає дозволу на перегляд цієї сторінки."
   },
   "notFound": {
-    "documentTitle": "Не знайдено - Frigate",
+    "documentTitle": "Не знайдено - AIviewsion",
     "desc": "Сторінка не знайдена",
     "title": "404"
   },

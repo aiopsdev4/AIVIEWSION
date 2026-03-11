@@ -320,7 +320,7 @@
         "inputPlaceHolder": "Introduce un nombre…",
         "tips": "El nombre debe tener al menos 2 caracteres, al menos 1 letra y no debe coincidir con el nombre de una cámara ni de otra zona."
       },
-      "documentTitle": "Editar Zona - Frigate",
+      "documentTitle": "Editar Zona - AIviewsion",
       "clickDrawPolygon": "Haz clic para dibujar un polígono en la imagen.",
       "speedEstimation": {
         "desc": "Habilitar la estimación de velocidad para objetos en esta zona. La zona debe tener exactamente 4 puntos.",
@@ -384,14 +384,14 @@
           "title": "{{polygonName}} ha sido guardado."
         }
       },
-      "documentTitle": "Editar Máscara de Movimiento - Frigate",
+      "documentTitle": "Editar Máscara de Movimiento - AIviewsion",
       "point_one": "{{count}} punto",
       "point_many": "{{count}} puntos",
       "point_other": "{{count}} puntos"
     },
     "objectMasks": {
       "label": "Máscaras de Objetos",
-      "documentTitle": "Editar Máscara de Objetos - Frigate",
+      "documentTitle": "Editar Máscara de Objetos - AIviewsion",
       "desc": {
         "documentation": "Documentación",
         "title": "Las máscaras de filtro de objetos se utilizan para descartar falsos positivos de un tipo de objeto específico según su ubicación."

@@ -199,14 +199,14 @@
     "label": "lapozás"
   },
   "accessDenied": {
-    "documentTitle": "Belépés Megtagadva - Frigate",
+    "documentTitle": "Belépés Megtagadva - AIviewsion",
     "title": "Belépés Megtagadva",
     "desc": "Nincs jogolultsága ehhez az oldalhoz."
   },
   "notFound": {
     "title": "404",
     "desc": "Oldal nem található",
-    "documentTitle": "Nem található - Frigate"
+    "documentTitle": "Nem található - AIviewsion"
   },
   "toast": {
     "copyUrlToClipboard": "URL kimásolva a vágólapra.",

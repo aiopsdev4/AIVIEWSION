@@ -296,12 +296,12 @@
     "more": "Järgnevad lehed"
   },
   "accessDenied": {
-    "documentTitle": "Ligipääs on keelatud - Frigate",
+    "documentTitle": "Ligipääs on keelatud - AIviewsion",
     "title": "Ligipääs on keelatud",
     "desc": "Sul pole õigusi selle lehe vaatamiseks."
   },
   "notFound": {
-    "documentTitle": "Lehte ei leidu - Frigate",
+    "documentTitle": "Lehte ei leidu - AIviewsion",
     "title": "404",
     "desc": "Veebilehte ei leidu"
   },

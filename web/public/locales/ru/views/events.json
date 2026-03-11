@@ -23,9 +23,9 @@
     "aria": "Выбор событий",
     "noFoundForTimePeriod": "Для этого периода времени не найдено ни одного события."
   },
-  "documentTitle": "Обзор событий - Frigate",
+  "documentTitle": "Обзор событий - AIviewsion",
   "recordings": {
-    "documentTitle": "Записи - Frigate"
+    "documentTitle": "Записи - AIviewsion"
   },
   "calendarFilter": {
     "last24Hours": "Последние 24 часа"

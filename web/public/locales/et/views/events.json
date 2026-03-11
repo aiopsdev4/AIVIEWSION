@@ -51,9 +51,9 @@
     "label": "Vaata uusi ülevaatamiseks mõeldud kirjeid",
     "button": "Uued ülevaatamiseks mõeldud kirjed"
   },
-  "documentTitle": "Ülevaatamine - Frigate",
+  "documentTitle": "Ülevaatamine - AIviewsion",
   "recordings": {
-    "documentTitle": "Salvestised - Frigate"
+    "documentTitle": "Salvestised - AIviewsion"
   },
   "calendarFilter": {
     "last24Hours": "Viimased 24 tundi"
