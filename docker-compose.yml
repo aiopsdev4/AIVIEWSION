@@ -22,6 +22,8 @@ services:
       - ./local_data/config.yml:/config/config.yml
       - ./local_data/frigate.db:/config/frigate.db
       - ./local_data/storage:/media/frigate
+      - ./local_data/yolov8n.onnx:/config/yolov8n.onnx
+      - ./local_data/labels.txt:/config/labels.txt
       
       # 2. THE CUSTOM CODE (This injects your changes into the container)
       - ./frigate:/opt/frigate/frigate:cached
@@ -32,10 +34,8 @@ services:
       # CRITICAL: I removed the duplicate ./config and ./debug lines 
       # which were pointing to the same place as your local_data.
     
-    # devices:
-      # - /dev/bus/usb:/dev/bus/usb 
-      # - /dev/dri:/dev/dri 
-
+    devices:
+      - /dev/dri:/dev/dri
   mqtt:
     container_name: mqtt
     image: eclipse-mosquitto:2.0

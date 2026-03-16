@@ -44,7 +44,7 @@ type ThemeProviderState = {
 const initialState: ThemeProviderState = {
   theme: "system",
   systemTheme: undefined,
-  colorScheme: "theme-default",
+  colorScheme: "theme-blue",
   setTheme: () => null,
   setColorScheme: () => null,
 };
@@ -54,7 +54,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  defaultColorScheme = "theme-default",
+  defaultColorScheme = "theme-blue",
   storageKey = "frigate-ui-theme",
   ...props
 }: ThemeProviderProps) {
@@ -72,7 +72,7 @@ export function ThemeProvider({
   const [colorScheme, setColorScheme] = useState<ColorScheme>(() => {
     try {
       const storedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
-      return storedData.colorScheme === "default"
+      return storedData.colorScheme === "default" || storedData.colorScheme === "theme-default"
         ? defaultColorScheme
         : storedData.colorScheme || defaultColorScheme;
     } catch (error) {
