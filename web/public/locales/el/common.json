@@ -162,12 +162,12 @@
     "more": "Περισσότερες σελίδες"
   },
   "accessDenied": {
-    "documentTitle": "Πρόσβαση απορρίφθηκε - AIviewsion",
+    "documentTitle": "Πρόσβαση απορρίφθηκε - AIViewsion",
     "title": "Πρόσβαση απορρίφθηκε",
     "desc": "Δεν έχετε άδεια να δείτε αυτή τη σελίδα."
   },
   "notFound": {
-    "documentTitle": "Δεν βρέθηκε - AIviewsion",
+    "documentTitle": "Δεν βρέθηκε - AIViewsion",
     "title": "404",
     "desc": "Η σελίδα δεν βρέθηκε"
   },

@@ -296,7 +296,7 @@
     },
     "zones": {
       "label": "Alanlar",
-      "documentTitle": "Alanı Düzenle - AIviewsion",
+      "documentTitle": "Alanı Düzenle - AIViewsion",
       "desc": {
         "documentation": "Dökümantasyon",
         "title": "Alanlar, görüntüde belirli bir alanını tanımlamanıza olanak tanır. Böylece bir nesnenin belirli bir alanda olup olmadığını tespit edebilirsiniz."
@@ -373,7 +373,7 @@
       },
       "label": "Hareket Maskesi",
       "edit": "Hareket Maskesini Düzenle",
-      "documentTitle": "Hareket Maskesini Düzenle - AIviewsion"
+      "documentTitle": "Hareket Maskesini Düzenle - AIViewsion"
     },
     "objectMasks": {
       "desc": {
@@ -396,7 +396,7 @@
           "title": "{{polygonName}} kaydedildi."
         }
       },
-      "documentTitle": "Nesne Maskesini Düzenle - AIviewsion",
+      "documentTitle": "Nesne Maskesini Düzenle - AIViewsion",
       "label": "Nesne Maskeleri",
       "clickDrawPolygon": "Görüntü üzerinde bir çokgen çizmek için tıklayın."
     },

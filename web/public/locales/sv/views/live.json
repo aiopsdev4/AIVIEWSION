@@ -1,6 +1,6 @@
 {
-  "documentTitle": "AIviewsion",
-  "documentTitle.withCamera": "{{camera}} - AIviewsion",
+  "documentTitle": "AIViewsion",
+  "documentTitle.withCamera": "{{camera}} - AIViewsion",
   "twoWayTalk": {
     "enable": "Aktivera tvåvägssamtal",
     "disable": "Avaktivera tvåvägssamtal"

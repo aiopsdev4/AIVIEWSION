@@ -21,10 +21,10 @@
     "aria": "選擇事件",
     "noFoundForTimePeriod": "此時間段內沒有找到事件。"
   },
-  "documentTitle": "審核 - AIviewsion",
+  "documentTitle": "審核 - AIViewsion",
   "allCameras": "所有鏡頭",
   "recordings": {
-    "documentTitle": "錄影 - AIviewsion"
+    "documentTitle": "錄影 - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "過去 24 小時"

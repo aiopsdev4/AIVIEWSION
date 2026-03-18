@@ -21,9 +21,9 @@
     "aria": "Sélectionner les événements",
     "noFoundForTimePeriod": "Aucun événement n'a été trouvé pour cette plage de temps."
   },
-  "documentTitle": "Activités - AIviewsion",
+  "documentTitle": "Activités - AIViewsion",
   "recordings": {
-    "documentTitle": "Enregistrements - AIviewsion"
+    "documentTitle": "Enregistrements - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Dernières 24 heures"

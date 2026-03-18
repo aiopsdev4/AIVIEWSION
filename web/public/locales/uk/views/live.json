@@ -105,7 +105,7 @@
       "label": "Редагувати групу камер"
     }
   },
-  "documentTitle": "Пряма трансляція - AIviewsion",
+  "documentTitle": "Пряма трансляція - AIViewsion",
   "documentTitle.withCamera": "{{camera}} - Пряма трансляція - Frigate",
   "lowBandwidthMode": "Економічний режим",
   "twoWayTalk": {

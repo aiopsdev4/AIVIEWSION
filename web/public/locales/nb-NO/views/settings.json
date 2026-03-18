@@ -302,7 +302,7 @@
     },
     "zones": {
       "label": "Soner",
-      "documentTitle": "Rediger sone - AIviewsion",
+      "documentTitle": "Rediger sone - AIViewsion",
       "edit": "Rediger sone",
       "point_one": "{{count}} punkt",
       "point_other": "{{count}} punkter",
@@ -360,7 +360,7 @@
         "title": "Bevegelsesmasker brukes til å hindre uønsket type bevegelse fra å utløse deteksjon. For mye maskering kan gjøre det vanskeligere å spore objekter."
       },
       "add": "Ny bevegelsesmaske",
-      "documentTitle": "Rediger bevegelsesmaske - AIviewsion",
+      "documentTitle": "Rediger bevegelsesmaske - AIViewsion",
       "edit": "Rediger bevegelsesmaske",
       "context": {
         "title": "Bevegelsesmasker brukes til å hindre uønsket type bevegelse fra å utløse deteksjon (eksempel: tregrener, kameratidsstempler). Bevegelsesmasker bør brukes <em>svært sparsomt</em>. For mye maskering vil gjøre det vanskeligere å spore objekter.",
@@ -386,7 +386,7 @@
       "point_one": "{{count}} punkt",
       "point_other": "{{count}} punkter",
       "label": "Objektmasker",
-      "documentTitle": "Rediger objektmaske - AIviewsion",
+      "documentTitle": "Rediger objektmaske - AIViewsion",
       "desc": {
         "title": "Objektfiltermasker brukes for å filtrere ut falske positiver for en gitt objekttype basert på plassering.",
         "documentation": "Dokumentasjon"

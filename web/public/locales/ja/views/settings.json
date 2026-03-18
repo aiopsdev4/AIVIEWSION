@@ -298,7 +298,7 @@
     },
     "zones": {
       "label": "ゾーン",
-      "documentTitle": "ゾーンを編集 - AIviewsion",
+      "documentTitle": "ゾーンを編集 - AIViewsion",
       "desc": {
         "title": "ゾーンを使うと、フレーム内の特定領域を定義し、オブジェクトがその領域内にいるかどうかを判断できます。",
         "documentation": "ドキュメント"
@@ -349,7 +349,7 @@
     },
     "motionMasks": {
       "label": "モーションマスク",
-      "documentTitle": "モーションマスクを編集 - AIviewsion",
+      "documentTitle": "モーションマスクを編集 - AIViewsion",
       "desc": {
         "title": "モーションマスクは、望ましくない種類の動きで検出がトリガーされるのを防ぎます。過度なマスクはオブジェクト追跡を困難にします。",
         "documentation": "ドキュメント"
@@ -374,7 +374,7 @@
     },
     "objectMasks": {
       "label": "オブジェクトマスク",
-      "documentTitle": "オブジェクトマスクを編集 - AIviewsion",
+      "documentTitle": "オブジェクトマスクを編集 - AIViewsion",
       "desc": {
         "title": "オブジェクトフィルタマスクは、位置に基づいて特定のオブジェクトタイプの誤検出を除外するために使用します。",
         "documentation": "ドキュメント"

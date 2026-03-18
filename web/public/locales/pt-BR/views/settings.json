@@ -299,7 +299,7 @@
     },
     "zones": {
       "label": "Zonas",
-      "documentTitle": "Editar Zona - AIviewsion",
+      "documentTitle": "Editar Zona - AIViewsion",
       "desc": {
         "title": "Zonas permitem que você defina uma área específica do quadro para que você possa determinar se um objeto está ou não em uma área em particular.",
         "documentation": "Documentação"
@@ -364,7 +364,7 @@
         }
       },
       "label": "Máscaras de Objeto",
-      "documentTitle": "Editar Máscara de Objeto - AIviewsion",
+      "documentTitle": "Editar Máscara de Objeto - AIViewsion",
       "desc": {
         "title": "Máscaras de filtro de objetos são usadas para filtrar falsos positivos para um determinado tipo de objeto baseado na localização.",
         "documentation": "Documentação"
@@ -379,7 +379,7 @@
     },
     "motionMasks": {
       "label": "Máscara de Movimento",
-      "documentTitle": "Editar Máscara de Movimento - AIviewsion",
+      "documentTitle": "Editar Máscara de Movimento - AIViewsion",
       "desc": {
         "title": "Máscaras de movimento são usadas para prevenir tipos de movimento de ativarem uma detecção. Excesso de mascaramento tornará mais difícil que objetos sejam rastreados.",
         "documentation": "Documentação"

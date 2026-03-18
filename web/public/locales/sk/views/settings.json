@@ -291,7 +291,7 @@
     },
     "zones": {
       "label": "Zóny",
-      "documentTitle": "Upraviť Zónu - AIviewsion",
+      "documentTitle": "Upraviť Zónu - AIViewsion",
       "desc": {
         "title": "Zóny umožňujú definovať konkrétnu oblasť v zábere, vďaka čomu je možné určiť, či sa objekt nachádza v danej oblasti alebo nie.",
         "documentation": "Dokumentácia"
@@ -344,7 +344,7 @@
     },
     "motionMasks": {
       "label": "Maska Detekcia pohybu",
-      "documentTitle": "Editovať Masku Detekcia pohybu - AIviewsion",
+      "documentTitle": "Editovať Masku Detekcia pohybu - AIViewsion",
       "desc": {
         "title": "Masky detekcie pohybu slúžia na zabránenie nežiaducim typom pohybu v spustení detekcie. Príliš rozsiahle maskovanie však môže sťažiť sledovanie objektov.",
         "documentation": "Dokumentácia"
@@ -371,7 +371,7 @@
     },
     "objectMasks": {
       "label": "Masky Objektu",
-      "documentTitle": "Upraviť Masku Objektu - AIviewsion",
+      "documentTitle": "Upraviť Masku Objektu - AIViewsion",
       "desc": {
         "title": "Masky filtrovania objektov slúžia na odfiltrovanie falošných detekcií daného typu objektu na základe jeho umiestnenia.",
         "documentation": "Dokumentácia"

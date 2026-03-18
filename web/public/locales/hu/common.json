@@ -199,14 +199,14 @@
     "label": "lapozás"
   },
   "accessDenied": {
-    "documentTitle": "Belépés Megtagadva - AIviewsion",
+    "documentTitle": "Belépés Megtagadva - AIViewsion",
     "title": "Belépés Megtagadva",
     "desc": "Nincs jogolultsága ehhez az oldalhoz."
   },
   "notFound": {
     "title": "404",
     "desc": "Oldal nem található",
-    "documentTitle": "Nem található - AIviewsion"
+    "documentTitle": "Nem található - AIViewsion"
   },
   "toast": {
     "copyUrlToClipboard": "URL kimásolva a vágólapra.",

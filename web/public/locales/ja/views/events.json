@@ -23,9 +23,9 @@
     "aria": "イベントを選択",
     "noFoundForTimePeriod": "この期間のイベントは見つかりません。"
   },
-  "documentTitle": "レビュー - AIviewsion",
+  "documentTitle": "レビュー - AIViewsion",
   "recordings": {
-    "documentTitle": "録画 - AIviewsion"
+    "documentTitle": "録画 - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "直近24時間"

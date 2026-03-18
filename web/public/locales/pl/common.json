@@ -283,12 +283,12 @@
   "accessDenied": {
     "title": "Dostęp Zabroniony",
     "desc": "Nie masz uprawnień do wyświetlenia tej strony.",
-    "documentTitle": "Dostęp Zabroniony - AIviewsion"
+    "documentTitle": "Dostęp Zabroniony - AIViewsion"
   },
   "notFound": {
     "title": "404",
     "desc": "Strona nie znaleziona",
-    "documentTitle": "Nie Znaleziono - AIviewsion"
+    "documentTitle": "Nie Znaleziono - AIViewsion"
   },
   "selectItem": "Wybierz {{item}}",
   "toast": {

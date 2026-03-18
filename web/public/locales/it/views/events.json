@@ -20,7 +20,7 @@
   },
   "markTheseItemsAsReviewed": "Segna questi elementi come visti",
   "markAsReviewed": "Segna come visto",
-  "documentTitle": "Rivedi - AIviewsion",
+  "documentTitle": "Rivedi - AIViewsion",
   "allCameras": "Tutte le camere",
   "timeline": "Cronologia",
   "timeline.aria": "Seleziona la cronologia",
@@ -30,7 +30,7 @@
     "noFoundForTimePeriod": "Nessun evento trovato per questo intervallo."
   },
   "recordings": {
-    "documentTitle": "Registrazioni - AIviewsion"
+    "documentTitle": "Registrazioni - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Ultime 24 ore"

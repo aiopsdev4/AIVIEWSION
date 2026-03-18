@@ -62,7 +62,7 @@
     "invalidName": "Nome inválido. Nomes podem conter letras, números, espacos, apóstrofos, sublinhado e hífens.",
     "nameCannotContainHash": "Nome não pode conter #."
   },
-  "documentTitle": "Biblioteca de rostos - AIviewsion",
+  "documentTitle": "Biblioteca de rostos - AIViewsion",
   "uploadFaceImage": {
     "title": "Carregar imagem facial",
     "desc": "Envie uma imagem para escanear por faces e incluir em {{pageToggle}}"

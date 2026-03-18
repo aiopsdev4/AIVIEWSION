@@ -293,12 +293,12 @@
     "more": "Mais páginas"
   },
   "accessDenied": {
-    "documentTitle": "Acesso Negado - AIviewsion",
+    "documentTitle": "Acesso Negado - AIViewsion",
     "title": "Acesso Negado",
     "desc": "Você não possui permissão para visualizar essa página."
   },
   "notFound": {
-    "documentTitle": "Não Encontrado - AIviewsion",
+    "documentTitle": "Não Encontrado - AIViewsion",
     "title": "404",
     "desc": "Página não encontrada"
   },

@@ -25,9 +25,9 @@
     "aria": "Выбрати події",
     "noFoundForTimePeriod": "За цей період подій не знайдено."
   },
-  "documentTitle": "Перегляд подiя - AIviewsion",
+  "documentTitle": "Перегляд подiя - AIViewsion",
   "recordings": {
-    "documentTitle": "Записи - AIviewsion"
+    "documentTitle": "Записи - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Останні 24 години"

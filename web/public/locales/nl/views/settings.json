@@ -322,7 +322,7 @@
       }
     },
     "zones": {
-      "documentTitle": "Bewerkingszone - AIviewsion",
+      "documentTitle": "Bewerkingszone - AIViewsion",
       "desc": {
         "title": "Zones stellen je in staat om een specifiek gedeelte van het beeld te definiëren, zodat je kunt bepalen of een object zich binnen dat gebied bevindt of niet.",
         "documentation": "Documentatie"
@@ -376,7 +376,7 @@
     },
     "motionMasks": {
       "label": "Bewegingsmasker",
-      "documentTitle": "Bewerken Bewegingsmasker - AIviewsion",
+      "documentTitle": "Bewerken Bewegingsmasker - AIViewsion",
       "desc": {
         "documentation": "Documentatie",
         "title": "Bewegingsmaskers worden gebruikt om te voorkomen dat ongewenste vormen van beweging een detectie activeren. Te veel maskeren maakt het moeilijker om objecten te volgen."
@@ -404,7 +404,7 @@
     },
     "objectMasks": {
       "label": "Objectmaskers",
-      "documentTitle": "Objectmasker bewerken - AIviewsion",
+      "documentTitle": "Objectmasker bewerken - AIViewsion",
       "desc": {
         "title": "Objectfiltermaskers worden gebruikt om valse positieven uit te filteren voor een bepaald objecttype op basis van locatie.",
         "documentation": "Documentatie"

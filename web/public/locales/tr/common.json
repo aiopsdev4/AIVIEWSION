@@ -237,7 +237,7 @@
     "other": "Diğer"
   },
   "notFound": {
-    "documentTitle": "Bulunamadı - AIviewsion",
+    "documentTitle": "Bulunamadı - AIViewsion",
     "desc": "Sayfa bulunamadı",
     "title": "404"
   },
@@ -274,7 +274,7 @@
   "accessDenied": {
     "title": "Erişim Reddedildi",
     "desc": "Bu sayfayı görüntüleme yetkiniz yok.",
-    "documentTitle": "Erişim Reddedildi - AIviewsion"
+    "documentTitle": "Erişim Reddedildi - AIViewsion"
   },
   "toast": {
     "copyUrlToClipboard": "URL panoya kopyalandı.",

@@ -18,12 +18,12 @@
     "aria": "Valitse tapahtumat",
     "noFoundForTimePeriod": "Tapahtumia ei löydetty tältä ajanjaksolta."
   },
-  "documentTitle": "Tarkastelu - AIviewsion",
+  "documentTitle": "Tarkastelu - AIViewsion",
   "detected": "havaittu",
   "selected_one": "{{count}} valittu",
   "selected_other": "{{count}} valittu",
   "recordings": {
-    "documentTitle": "Tallenteet - AIviewsion"
+    "documentTitle": "Tallenteet - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Viimeiset 24 tuntia"

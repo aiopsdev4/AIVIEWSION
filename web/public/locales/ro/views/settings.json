@@ -334,7 +334,7 @@
         "title": "Prag viteză ({{unit}})",
         "desc": "Specifică viteza minimă pentru ca obiectele să fie luate în considerare în această zonă."
       },
-      "documentTitle": "Editare Zonă - AIviewsion",
+      "documentTitle": "Editare Zonă - AIViewsion",
       "clickDrawPolygon": "Click pentru a desena un poligon pe imagine.",
       "toast": {
         "success": "Zona ({{zoneName}}) a fost salvată."
@@ -356,7 +356,7 @@
       "point_other": "{{count}} de puncte",
       "clickDrawPolygon": "Click pentru a desena un poligon pe imagine.",
       "label": "Mască de mișcare",
-      "documentTitle": "Editare mască de mișcare - AIviewsion",
+      "documentTitle": "Editare mască de mișcare - AIViewsion",
       "desc": {
         "documentation": "Documentație",
         "title": "Măștile de mișcare sunt folosite pentru a preveni declanșarea detecției de către tipuri de mișcare nedorite. Mascarea excesivă va îngreuna urmărirea obiectelor."
@@ -389,7 +389,7 @@
       "point_one": "{{count}} punct",
       "point_few": "{{count}} puncte",
       "point_other": "{{count}} de puncte",
-      "documentTitle": "Editare mască de obiect - AIviewsion",
+      "documentTitle": "Editare mască de obiect - AIViewsion",
       "add": "Adaugă mască de obiect",
       "edit": "Editează masca de obiect",
       "desc": {

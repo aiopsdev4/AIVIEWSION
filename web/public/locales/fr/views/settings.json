@@ -448,7 +448,7 @@
       }
     },
     "zones": {
-      "documentTitle": "Modifier la zone - AIviewsion",
+      "documentTitle": "Modifier la zone - AIViewsion",
       "desc": {
         "title": "Les zones vous permettent de définir une zone spécifique de l'image afin de déterminer si un objet s'y trouve.",
         "documentation": "Documentation"
@@ -503,7 +503,7 @@
     },
     "motionMasks": {
       "label": "Masque de mouvement",
-      "documentTitle": "Modifier le masque de mouvement - AIviewsion",
+      "documentTitle": "Modifier le masque de mouvement - AIViewsion",
       "context": {
         "documentation": "Lire la documentation",
         "title": "Les masques de mouvement servent à empêcher les mouvements indésirables de déclencher la détection (par exemple : branches d'arbres, horodatage des caméras). Ils doivent être utilisés <em>avec parcimonie</em>, car un surmasquage complique le suivi des objets."
@@ -553,7 +553,7 @@
       "point_many": "{{count}} points",
       "point_other": "{{count}} points",
       "add": "Ajouter un masque d'objet",
-      "documentTitle": "Modifier le masque d'objet - AIviewsion",
+      "documentTitle": "Modifier le masque d'objet - AIViewsion",
       "context": "Les masques de filtrage d'objets sont utilisés pour filtrer les faux positifs pour un type d'objet donné en fonction de l'emplacement."
     },
     "filter": {

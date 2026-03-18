@@ -1,5 +1,5 @@
 {
-  "documentTitle": "Настройки на конфигурацията - AIviewsion",
+  "documentTitle": "Настройки на конфигурацията - AIViewsion",
   "configEditor": "Конфигуратор",
   "safeConfigEditor": "Конфигуратор (Safe Mode)",
   "safeModeDescription": "Frigate е в режим \"Safe Mode\" тъй като конфигурацията не минава проверките за валидност.",

@@ -238,7 +238,7 @@
     },
     "zones": {
       "label": "Vyöhykkeet",
-      "documentTitle": "Muokkaa vyöhykkeitä - AIviewsion",
+      "documentTitle": "Muokkaa vyöhykkeitä - AIViewsion",
       "edit": "Myokkaa vyöhykettä",
       "inertia": {
         "title": "Inertia",
@@ -302,7 +302,7 @@
         "documentation": "Lue dokumentaatio",
         "title": "Liikepeittoja käytetään estämään ei-toivottujen liiketyyppien (esimerkiksi puiden oksat, kameroiden aikaleimat) aiheuttamat tunnistukset. Liikepeittoja tulisi käyttää <em>hyvin säästeliäästi</em>, sillä liiallinen maskaus vaikeuttaa kohteiden seurantaa."
       },
-      "documentTitle": "Muokkaa liikepeittoa - AIviewsion",
+      "documentTitle": "Muokkaa liikepeittoa - AIViewsion",
       "desc": {
         "title": "Liikepeittoa käytetään estämään ei-toivottujen liiketyyppien aiheuttamat tunnistukset. Liiallinen peittäminen vaikeuttaa kohteiden seurantaa.",
         "documentation": "Dokumentaatio"
@@ -337,7 +337,7 @@
           "noName": "Kohdepeitto on tallennettu. Käynnistä Frigatti uudelleen muutosten käyttöönottamiseksi."
         }
       },
-      "documentTitle": "Muokkaa kohdepeittoa - AIviewsion",
+      "documentTitle": "Muokkaa kohdepeittoa - AIViewsion",
       "desc": {
         "title": "Objektisuodatinpeittoja käytetään suodattamaan pois väärät positiiviset tulokset tietylle kohdetyypille sijainnin perusteella.",
         "documentation": "Dokumentaatio"

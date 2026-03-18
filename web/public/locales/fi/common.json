@@ -57,7 +57,7 @@
     "label": "sivutus"
   },
   "accessDenied": {
-    "documentTitle": "Pääsy kielletty - AIviewsion",
+    "documentTitle": "Pääsy kielletty - AIViewsion",
     "title": "Pääsy kielletty",
     "desc": "Sinulla ei ole oikeuksia tarkastella tätä sivua."
   },
@@ -68,7 +68,7 @@
     "title": "Rooli"
   },
   "notFound": {
-    "documentTitle": "Ei löytynyt - AIviewsion",
+    "documentTitle": "Ei löytynyt - AIViewsion",
     "title": "404",
     "desc": "Sivua ei löytynyt"
   },

@@ -346,11 +346,11 @@
         "title": "區域可讓你定義畫面中的特定範圍，以判斷物件是否進入該範圍。",
         "documentation": "文件"
       },
-      "documentTitle": "編輯區域 - AIviewsion"
+      "documentTitle": "編輯區域 - AIViewsion"
     },
     "motionMasks": {
       "label": "移動遮罩",
-      "documentTitle": "編輯移動遮罩 - AIviewsion",
+      "documentTitle": "編輯移動遮罩 - AIViewsion",
       "desc": {
         "title": "移動遮罩可防止不需要的移動觸發偵測。遮罩過多會令物件追蹤變得困難。",
         "documentation": "文件"
@@ -396,7 +396,7 @@
           "noName": "物件遮罩已儲存。"
         }
       },
-      "documentTitle": "編輯物件遮罩 - AIviewsion",
+      "documentTitle": "編輯物件遮罩 - AIViewsion",
       "edit": "編輯物件遮罩"
     },
     "filter": {

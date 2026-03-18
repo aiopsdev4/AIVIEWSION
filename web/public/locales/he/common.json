@@ -281,10 +281,10 @@
   "accessDenied": {
     "title": "הגישה נדחתה",
     "desc": "אין לך הרשאה לצפות בדף הזה.",
-    "documentTitle": "גישה נדחתה - AIviewsion"
+    "documentTitle": "גישה נדחתה - AIViewsion"
   },
   "notFound": {
-    "documentTitle": "לא נמצא - AIviewsion",
+    "documentTitle": "לא נמצא - AIViewsion",
     "title": "404",
     "desc": "דף לא נמצא"
   },

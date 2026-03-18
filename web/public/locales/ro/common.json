@@ -297,10 +297,10 @@
   "accessDenied": {
     "title": "Acces refuzat",
     "desc": "Nu ai permisiunea să vizualizezi această pagină.",
-    "documentTitle": "Acces refuzat - AIviewsion"
+    "documentTitle": "Acces refuzat - AIViewsion"
   },
   "notFound": {
-    "documentTitle": "Nu a fost găsit - AIviewsion",
+    "documentTitle": "Nu a fost găsit - AIViewsion",
     "title": "404",
     "desc": "Pagină negăsită"
   },

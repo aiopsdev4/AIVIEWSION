@@ -23,9 +23,9 @@
     "aria": "Выбор событий",
     "noFoundForTimePeriod": "Для этого периода времени не найдено ни одного события."
   },
-  "documentTitle": "Обзор событий - AIviewsion",
+  "documentTitle": "Обзор событий - AIViewsion",
   "recordings": {
-    "documentTitle": "Записи - AIviewsion"
+    "documentTitle": "Записи - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Последние 24 часа"

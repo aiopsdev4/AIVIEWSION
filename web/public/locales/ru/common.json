@@ -276,12 +276,12 @@
   },
   "accessDenied": {
     "desc": "У вас нет разрешения на просмотр этой страницы.",
-    "documentTitle": "Доступ запрещён - AIviewsion",
+    "documentTitle": "Доступ запрещён - AIViewsion",
     "title": "Доступ запрещён"
   },
   "notFound": {
     "desc": "Страница не найдена",
-    "documentTitle": "Не найдена - AIviewsion",
+    "documentTitle": "Не найдена - AIViewsion",
     "title": "404"
   },
   "toast": {

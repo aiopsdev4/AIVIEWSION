@@ -18,7 +18,7 @@
     "label": "Olaylar"
   },
   "recordings": {
-    "documentTitle": "Kayıtlar - AIviewsion"
+    "documentTitle": "Kayıtlar - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Son 24 Saat"
@@ -28,7 +28,7 @@
     "button": "Yeni İncelenecek Öğeler Var",
     "label": "Yeni inceleme öğelerini göster"
   },
-  "documentTitle": "İncele - AIviewsion",
+  "documentTitle": "İncele - AIViewsion",
   "motion": {
     "label": "Hareket",
     "only": "Yalnızca hareket"

@@ -296,12 +296,12 @@
     "more": "Järgnevad lehed"
   },
   "accessDenied": {
-    "documentTitle": "Ligipääs on keelatud - AIviewsion",
+    "documentTitle": "Ligipääs on keelatud - AIViewsion",
     "title": "Ligipääs on keelatud",
     "desc": "Sul pole õigusi selle lehe vaatamiseks."
   },
   "notFound": {
-    "documentTitle": "Lehte ei leidu - AIviewsion",
+    "documentTitle": "Lehte ei leidu - AIViewsion",
     "title": "404",
     "desc": "Veebilehte ei leidu"
   },

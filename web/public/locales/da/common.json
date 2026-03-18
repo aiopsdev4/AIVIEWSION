@@ -274,12 +274,12 @@
     "more": "Flere sider"
   },
   "accessDenied": {
-    "documentTitle": "Adgang nægtet - AIviewsion",
+    "documentTitle": "Adgang nægtet - AIViewsion",
     "title": "Adgang nægtet",
     "desc": "Du har ikke rettigheder til at se denne side."
   },
   "notFound": {
-    "documentTitle": "Ikke fundet - AIviewsion",
+    "documentTitle": "Ikke fundet - AIViewsion",
     "title": "404",
     "desc": "Siden blev ikke fundet"
   },

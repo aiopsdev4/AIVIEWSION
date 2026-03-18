@@ -283,12 +283,12 @@
     "more": "Viac strán"
   },
   "accessDenied": {
-    "documentTitle": "Prístup odmietnutý - AIviewsion",
+    "documentTitle": "Prístup odmietnutý - AIViewsion",
     "title": "Prístup odmietnutý",
     "desc": "Nemáte oprávnenie zobraziť túto stránku."
   },
   "notFound": {
-    "documentTitle": "Nenájdené - AIviewsion",
+    "documentTitle": "Nenájdené - AIViewsion",
     "title": "404",
     "desc": "Stránka nenájdená"
   },

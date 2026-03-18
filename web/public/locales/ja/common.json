@@ -268,12 +268,12 @@
     "more": "さらにページ"
   },
   "accessDenied": {
-    "documentTitle": "アクセス拒否 - AIviewsion",
+    "documentTitle": "アクセス拒否 - AIViewsion",
     "title": "アクセス拒否",
     "desc": "このページを表示する権限がありません。"
   },
   "notFound": {
-    "documentTitle": "ページが見つかりません - AIviewsion",
+    "documentTitle": "ページが見つかりません - AIViewsion",
     "title": "404",
     "desc": "ページが見つかりません"
   },

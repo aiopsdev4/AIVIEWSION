@@ -28,9 +28,9 @@
       "description": "Peržiūros gali būti kuriamos tik tada kai kamerai yra aktyvuoti įrašymai."
     }
   },
-  "documentTitle": "Peržiūros - AIviewsion",
+  "documentTitle": "Peržiūros - AIViewsion",
   "recordings": {
-    "documentTitle": "Įrašai - AIviewsion"
+    "documentTitle": "Įrašai - AIViewsion"
   },
   "markAsReviewed": "Pažymėti kaip peržiūrėtą",
   "markTheseItemsAsReviewed": "Pažymėti šiuos įrašus kaip peržiūrėtus",

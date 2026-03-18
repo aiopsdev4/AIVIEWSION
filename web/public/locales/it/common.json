@@ -293,12 +293,12 @@
   },
   "accessDenied": {
     "desc": "Non hai i permessi per visualizzare questa pagina.",
-    "documentTitle": "Accesso vietato - AIviewsion",
+    "documentTitle": "Accesso vietato - AIViewsion",
     "title": "Accesso vietato"
   },
   "notFound": {
     "desc": "Pagina non trovata",
-    "documentTitle": "Non trovato - AIviewsion",
+    "documentTitle": "Non trovato - AIViewsion",
     "title": "404"
   },
   "toast": {

@@ -295,11 +295,11 @@
   },
   "accessDenied": {
     "desc": "No teniu permís per veure aquesta pàgina.",
-    "documentTitle": "Accés Denegat - AIviewsion",
+    "documentTitle": "Accés Denegat - AIViewsion",
     "title": "Accés Denegat"
   },
   "notFound": {
-    "documentTitle": "No s'ha trobat - AIviewsion",
+    "documentTitle": "No s'ha trobat - AIViewsion",
     "title": "404",
     "desc": "Pàgina no trobada"
   },

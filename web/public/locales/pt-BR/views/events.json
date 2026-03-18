@@ -23,7 +23,7 @@
     "noFoundForTimePeriod": "Nenhum evento encontrado neste período."
   },
   "recordings": {
-    "documentTitle": "Gravações - AIviewsion"
+    "documentTitle": "Gravações - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Últimas 24 horas"
@@ -34,7 +34,7 @@
     "label": "Ver novos itens para revisão"
   },
   "selected_one": "{{count}} selecionado(s)",
-  "documentTitle": "Revisar - AIviewsion",
+  "documentTitle": "Revisar - AIViewsion",
   "markAsReviewed": "Marcar como Revisado",
   "selected_other": "{{count}} selecionado(s)",
   "camera": "Câmera",

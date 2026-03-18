@@ -1,6 +1,6 @@
 {
-  "documentTitle": "AIviewsion",
-  "documentTitle.withCamera": "{{camera}} - AIviewsion",
+  "documentTitle": "AIViewsion",
+  "documentTitle.withCamera": "{{camera}} - AIViewsion",
   "twoWayTalk": {
     "enable": "Aktivér tovejskommunikation",
     "disable": "Deaktiver tovejskommunikation"

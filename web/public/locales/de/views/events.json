@@ -21,9 +21,9 @@
     "noFoundForTimePeriod": "Keine Ereignisse für diesen Zeitraum gefunden.",
     "aria": "Wähle Ereignisse aus"
   },
-  "documentTitle": "Überprüfung - AIviewsion",
+  "documentTitle": "Überprüfung - AIViewsion",
   "recordings": {
-    "documentTitle": "Aufnahmen - AIviewsion"
+    "documentTitle": "Aufnahmen - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Letzte 24 Stunden"

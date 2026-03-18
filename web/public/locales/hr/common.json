@@ -289,12 +289,12 @@
     "more": "Više stranica"
   },
   "accessDenied": {
-    "documentTitle": "Pristup Odbijen - AIviewsion",
+    "documentTitle": "Pristup Odbijen - AIViewsion",
     "title": "Pristup Odbijen",
     "desc": "Nemaš dopuštenje za pregled ove stranice."
   },
   "notFound": {
-    "documentTitle": "Nije Nađeno - AIviewsion",
+    "documentTitle": "Nije Nađeno - AIViewsion",
     "title": "404",
     "desc": "Stranica nije pronađena"
   },

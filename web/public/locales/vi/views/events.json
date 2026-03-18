@@ -9,7 +9,7 @@
   "allCameras": "Tất cả Camera",
   "detected": "Đã phát hiện",
   "recordings": {
-    "documentTitle": "Bản ghi - AIviewsion"
+    "documentTitle": "Bản ghi - AIViewsion"
   },
   "events": {
     "aria": "Chọn sự kiện",
@@ -25,7 +25,7 @@
     "motion": "Không tìm thấy dữ liệu chuyển động"
   },
   "timeline": "Dòng thời gian",
-  "documentTitle": "Xem lại - AIviewsion",
+  "documentTitle": "Xem lại - AIViewsion",
   "calendarFilter": {
     "last24Hours": "24 giờ qua"
   },

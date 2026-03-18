@@ -22,7 +22,7 @@
     "aria": "Seleccionar eventos",
     "noFoundForTimePeriod": "No se encontraron eventos para este período de tiempo."
   },
-  "documentTitle": "Revisión - AIviewsion",
+  "documentTitle": "Revisión - AIViewsion",
   "markAsReviewed": "Marcar como revisado",
   "newReviewItems": {
     "label": "Ver nuevos elementos de revisión",
@@ -30,7 +30,7 @@
   },
   "camera": "Cámara",
   "recordings": {
-    "documentTitle": "Grabaciones - AIviewsion"
+    "documentTitle": "Grabaciones - AIViewsion"
   },
   "calendarFilter": {
     "last24Hours": "Últimas 24 horas"

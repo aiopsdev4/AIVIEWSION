@@ -272,7 +272,7 @@
   },
   "accessDenied": {
     "title": "拒絕存取",
-    "documentTitle": "拒絕存取 - AIviewsion",
+    "documentTitle": "拒絕存取 - AIViewsion",
     "desc": "你無權查看此頁面。"
   },
   "selectItem": "選擇 {{item}}",
@@ -287,7 +287,7 @@
     "copyUrlToClipboard": "已複製 URL 到剪貼簿。"
   },
   "notFound": {
-    "documentTitle": "找不到頁面 - AIviewsion",
+    "documentTitle": "找不到頁面 - AIViewsion",
     "desc": "找不到頁面",
     "title": "404"
   },

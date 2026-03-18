@@ -1,5 +1,5 @@
 {
-  "documentTitle": "Beoordelen - AIviewsion",
+  "documentTitle": "Beoordelen - AIViewsion",
   "camera": "Camera",
   "newReviewItems": {
     "button": "Nieuwe items om te beoordelen",
@@ -7,7 +7,7 @@
   },
   "timeline.aria": "Selecteer tijdlijn",
   "recordings": {
-    "documentTitle": "Opnamen - AIviewsion"
+    "documentTitle": "Opnamen - AIViewsion"
   },
   "timeline": "Tijdlijn",
   "empty": {

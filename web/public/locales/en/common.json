@@ -296,12 +296,12 @@
     "more": "More pages"
   },
   "accessDenied": {
-    "documentTitle": "Access Denied - AIviewsion",
+    "documentTitle": "Access Denied - AIViewsion",
     "title": "Access Denied",
     "desc": "You don't have permission to view this page."
   },
   "notFound": {
-    "documentTitle": "Not Found - AIviewsion",
+    "documentTitle": "Not Found - AIViewsion",
     "title": "404",
     "desc": "Page not found"
   },

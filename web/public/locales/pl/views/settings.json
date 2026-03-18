@@ -293,7 +293,7 @@
     },
     "zones": {
       "label": "Strefy",
-      "documentTitle": "Edytuj Strefę - AIviewsion",
+      "documentTitle": "Edytuj Strefę - AIViewsion",
       "desc": {
         "title": "Strefy pozwalają na zdefiniowanie konkretnych obszarów kadru, dzięki czemu można sprawdzić, czy obiekt znajduje się w danym obszarze.",
         "documentation": "Dokumentacja"
@@ -354,7 +354,7 @@
       "point_few": "{{count}} punkty",
       "point_many": "{{count}} punktów",
       "clickDrawPolygon": "Kliknij aby narysować wielokąt na obrazie.",
-      "documentTitle": "Edytuj maskę ruchu - AIviewsion",
+      "documentTitle": "Edytuj maskę ruchu - AIViewsion",
       "add": "Nowa Maska Ruchu",
       "polygonAreaTooLarge": {
         "tips": "Maski ruchu nie zapobiegają wykrywaniu obiektów. Powinieneś użyć wymaganej strefy zamiast tego.",
@@ -390,7 +390,7 @@
       "point_few": "{{count}} punkty",
       "point_many": "{{count}} punktów",
       "label": "Maski Obiektów",
-      "documentTitle": "Edytuj Maskę Obiektu - AIviewsion",
+      "documentTitle": "Edytuj Maskę Obiektu - AIViewsion",
       "desc": {
         "title": "Maski filtrujące obiekty są używane do filtrowania fałszywych detekcji dla danego typu obiektu na podstawie lokalizacji.",
         "documentation": "Dokumentacja"

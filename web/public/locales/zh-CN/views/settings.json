@@ -302,7 +302,7 @@
     },
     "zones": {
       "label": "区域",
-      "documentTitle": "编辑区域 - AIviewsion",
+      "documentTitle": "编辑区域 - AIViewsion",
       "desc": {
         "title": "该功能允许你定义特定区域，以便你可以确定特定目标或物体是否在该区域内。",
         "documentation": "文档"
@@ -354,7 +354,7 @@
     },
     "motionMasks": {
       "label": "画面变动遮罩",
-      "documentTitle": "编辑画面变动遮罩 - AIviewsion",
+      "documentTitle": "编辑画面变动遮罩 - AIViewsion",
       "desc": {
         "title": "画面变动遮罩用于防止触发不必要的画面变动检测。过度的设置遮罩将使目标更加难以被追踪。",
         "documentation": "文档"
@@ -381,7 +381,7 @@
     },
     "objectMasks": {
       "label": "目标遮罩",
-      "documentTitle": "编辑目标遮罩 - AIviewsion",
+      "documentTitle": "编辑目标遮罩 - AIViewsion",
       "desc": {
         "title": "目标过滤器用于防止特定位置出现对某个目标/物体的误报。",
         "documentation": "文档"

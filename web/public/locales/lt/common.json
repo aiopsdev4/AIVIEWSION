@@ -280,12 +280,12 @@
     "more": "Daugiau puslapių"
   },
   "accessDenied": {
-    "documentTitle": "Priegai Nesuteikta - AIviewsion",
+    "documentTitle": "Priegai Nesuteikta - AIViewsion",
     "title": "Prieiga Nesuteikta",
     "desc": "Jūs neturite leidimo žiūrėti šį puslapį."
   },
   "notFound": {
-    "documentTitle": "Nerasta - AIviewsion",
+    "documentTitle": "Nerasta - AIViewsion",
     "title": "404",
     "desc": "Puslapis nerastas"
   },

@@ -289,12 +289,12 @@
     "more": "Vairāk lapas"
   },
   "accessDenied": {
-    "documentTitle": "Piekļuve liegta - AIviewsion",
+    "documentTitle": "Piekļuve liegta - AIViewsion",
     "title": "Piekļuve liegta",
     "desc": "Jums nav atļaujas skatīt šo lapu."
   },
   "notFound": {
-    "documentTitle": "Nav atrasts - AIviewsion",
+    "documentTitle": "Nav atrasts - AIViewsion",
     "title": "404",
     "desc": "Lapa nav atrasta"
   },
