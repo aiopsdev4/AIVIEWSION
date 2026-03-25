@@ -7,6 +7,7 @@ services:
       - "44"  # video
       - "46"  # plugdev
     shm_size: "1gb"
+    restart: always
     build:
       context: .
       dockerfile: docker/main/Dockerfile
@@ -28,7 +29,6 @@ services:
       # 2. THE CUSTOM CODE (This injects your changes into the container)
       - ./frigate:/opt/frigate/frigate:cached
       - ./migrations:/opt/frigate/migrations:cached
-      - ./web/dist:/opt/frigate/web:cached
       - /etc/localtime:/etc/localtime:ro
       
       # CRITICAL: I removed the duplicate ./config and ./debug lines 

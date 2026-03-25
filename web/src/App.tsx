@@ -30,6 +30,7 @@ const Chat = lazy(() => import("@/pages/Chat"));
 const Logs = lazy(() => import("@/pages/Logs"));
 const AccessDenied = lazy(() => import("@/pages/AccessDenied"));
 const Replay = lazy(() => import("@/pages/Replay"));
+const AssetsDashboard = lazy(() => import("@/pages/AssetsDashboard"));
 
 function App() {
   const { data: config } = useSWR<FrigateConfig>("config", {
@@ -94,8 +95,10 @@ function DefaultAppView() {
               <Route path="/explore" element={<Explore />} />
               <Route path="/export" element={<Exports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/device-registry" element={<AssetsDashboard />} />
             </Route>
             <Route element={<ProtectedRoute requiredRoles={["admin"]} />}>
+
               <Route path="/system" element={<System />} />
               <Route path="/config" element={<ConfigEditor />} />
               <Route path="/logs" element={<Logs />} />
