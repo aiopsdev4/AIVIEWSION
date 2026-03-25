@@ -6,7 +6,7 @@ services:
       - "110" # render
       - "44"  # video
       - "46"  # plugdev
-    shm_size: "256mb"
+    shm_size: "1gb"
     build:
       context: .
       dockerfile: docker/main/Dockerfile
@@ -36,6 +36,8 @@ services:
     
     devices:
       - /dev/dri:/dev/dri
+    tmpfs:
+      - /tmp/cache
   mqtt:
     container_name: mqtt
     image: eclipse-mosquitto:2.0
