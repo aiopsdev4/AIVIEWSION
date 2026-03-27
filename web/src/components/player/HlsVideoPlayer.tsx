@@ -173,8 +173,12 @@ export default function HlsVideoPlayer({
       return;
     }
 
-    // Base HLS configuration
+    // Base HLS configuration based on C3 high-performance tuning
     const hlsConfig: Partial<HlsConfig> = {
+      enableWorker: true,
+      lowLatencyMode: true,
+      liveSyncDurationCount: 3,
+      maxLiveSyncPlaybackRate: 1.5,
       maxBufferLength: 10,
       maxBufferSize: 20 * 1000 * 1000,
       startPosition: currentSource.startPosition,
@@ -183,6 +187,17 @@ export default function HlsVideoPlayer({
     hlsRef.current = new Hls(hlsConfig);
     hlsRef.current.attachMedia(videoRef.current);
     hlsRef.current.loadSource(currentSource.playlist);
+    
+    // C3 Stall Recovery
+    hlsRef.current.on(Hls.Events.ERROR, (_event, data) => {
+      if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+        const liveSync = hlsRef.current?.liveSyncPosition;
+        if (liveSync && videoRef.current) {
+          videoRef.current.currentTime = liveSync;
+        }
+      }
+    });
+
     videoRef.current.playbackRate = currentPlaybackRate;
 
     return () => {

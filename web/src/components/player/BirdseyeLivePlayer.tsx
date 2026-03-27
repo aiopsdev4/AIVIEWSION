@@ -3,7 +3,9 @@ import { BirdseyeConfig } from "@/types/frigateConfig";
 import ActivityIndicator from "../indicators/activity-indicator";
 import JSMpegPlayer from "./JSMpegPlayer";
 import MSEPlayer from "./MsePlayer";
+import HlsVideoPlayer from "./HlsVideoPlayer";
 import { LivePlayerMode } from "@/types/live";
+import { baseUrl } from "@/api/baseUrl";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { ImageShadowOverlay } from "../overlay/ImageShadowOverlay";
@@ -27,6 +29,7 @@ export default function BirdseyeLivePlayer({
   playerRef,
   onClick,
 }: LivePlayerProps) {
+  const internalVideoRef = React.useRef<HTMLVideoElement | null>(null);
   let player;
   if (liveMode == "webrtc") {
     player = (
@@ -34,6 +37,19 @@ export default function BirdseyeLivePlayer({
         className={`size-full rounded-lg md:rounded-2xl`}
         camera="birdseye"
         pip={pip}
+      />
+    );
+  } else if (liveMode == "hls") {
+    player = (
+      <HlsVideoPlayer
+        videoRef={internalVideoRef}
+        visible={true}
+        currentSource={{ playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=birdseye` }}
+        camera="birdseye"
+        frigateControls={false}
+        hotKeys={false}
+        supportsFullscreen={false}
+        fullscreen={false}
       />
     );
   } else if (liveMode == "mse") {

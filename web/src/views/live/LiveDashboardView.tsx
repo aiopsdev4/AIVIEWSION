@@ -504,7 +504,7 @@ export default function LiveDashboardView({
                   >
                     <BirdseyeLivePlayer
                       birdseyeConfig={birdseyeConfig}
-                      liveMode={birdseyeConfig.restream ? "mse" : "jsmpeg"}
+                      liveMode={birdseyeConfig.restream ? "hls" : "jsmpeg"}
                       onClick={() => onSelectCamera("birdseye")}
                       containerRef={birdseyeContainerRef}
                     />

@@ -75,9 +75,9 @@ export default function useCameraLiveMode(
       newIsRestreamedStates[camera.name] = isRestreamed ?? false;
 
       if (!mseSupported) {
-        newPreferredLiveModes[camera.name] = isRestreamed ? "webrtc" : "jsmpeg";
+        newPreferredLiveModes[camera.name] = isRestreamed ? "hls" : "jsmpeg";
       } else {
-        newPreferredLiveModes[camera.name] = isRestreamed ? "mse" : "jsmpeg";
+        newPreferredLiveModes[camera.name] = isRestreamed ? "hls" : "jsmpeg";
       }
 
       // Check each stream for audio support
@@ -114,9 +114,9 @@ export default function useCameraLiveMode(
         const newModes = { ...prevModes };
 
         if (!mseSupported) {
-          newModes[cameraName] = isRestreamed ? "webrtc" : "jsmpeg";
+          newModes[cameraName] = isRestreamed ? "hls" : "jsmpeg";
         } else {
-          newModes[cameraName] = isRestreamed ? "mse" : "jsmpeg";
+          newModes[cameraName] = isRestreamed ? "hls" : "jsmpeg";
         }
 
         return newModes;

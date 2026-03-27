@@ -1,4 +1,4 @@
-export type LivePlayerMode = "webrtc" | "mse" | "jsmpeg" | "debug";
+export type LivePlayerMode = "webrtc" | "mse" | "jsmpeg" | "hls" | "debug";
 export type VideoResolutionType = {
   width: number;
   height: number;

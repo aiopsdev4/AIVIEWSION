@@ -1,4 +1,5 @@
 import WebRtcPlayer from "./WebRTCPlayer";
+import HlsVideoPlayer from "./HlsVideoPlayer";
 import { CameraConfig } from "@/types/frigateConfig";
 import AutoUpdatingCameraImage from "../camera/AutoUpdatingCameraImage";
 import ActivityIndicator from "../indicators/activity-indicator";
@@ -80,6 +81,7 @@ export default function LivePlayer({
   const { t } = useTranslation(["components/player"]);
 
   const internalContainerRef = useRef<HTMLDivElement | null>(null);
+  const internalVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const cameraName = useCameraFriendlyName(cameraConfig);
 
@@ -263,6 +265,24 @@ export default function LivePlayer({
         pip={pip}
         onError={onError}
       />
+    );
+  } else if (preferredLiveMode == "hls") {
+    player = (
+      <div className={`size-full ${liveReady ? "" : "hidden"}`}>
+        <HlsVideoPlayer
+          key={"hls_" + key}
+          videoRef={internalVideoRef}
+          visible={true}
+          currentSource={{ playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=${streamName}` }}
+          camera={streamName}
+          frigateControls={false}
+          hotKeys={false}
+          supportsFullscreen={false}
+          fullscreen={false}
+          onPlaying={playerIsPlaying}
+          onError={onError ? () => onError("stalled") : undefined}
+        />
+      </div>
     );
   } else if (preferredLiveMode == "mse") {
     if ("MediaSource" in window || "ManagedMediaSource" in window) {

@@ -36,8 +36,8 @@ export default function AssetsDashboard() {
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
   
-  const { data: config, mutate: mutateConfig } = useSWR<FrigateConfig>("config");
-  const { data: rawConfig, mutate: mutateRawConfig } = useSWR<string>("config/raw");
+  const { data: config } = useSWR<FrigateConfig>("config");
+  const { data: rawConfig } = useSWR<string>("config/raw");
 
   const [newAsset, setNewAsset] = useState({
     name: "",
@@ -93,10 +93,10 @@ export default function AssetsDashboard() {
       setProbing(false);
       setProbeSuccess(true);
       toast.success("Connection to stream verified successfully!");
-      // FFMPEG requires special characters like @ in passwords to be strictly URL encoded.
+      // Certain cameras running Digest Auth process literal string hashes. URL Encoding causes 401 Unauthorized.
       setNewAsset(prev => ({
         ...prev,
-        rtsp_url: `rtsp://${encodeURIComponent(prev.username)}:${encodeURIComponent(prev.password)}@${prev.ip_address}:554/stream1`
+        rtsp_url: `rtsp://${prev.username}:${prev.password}@${prev.ip_address}:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`
       }));
     }, 1500);
   };
@@ -146,13 +146,16 @@ export default function AssetsDashboard() {
         headers: { "Content-Type": "text/plain" },
       });
       
-      toast.success("Asset Registered & Service Restarting...");
+      toast.success("Asset saved! The video engine is now rebooting. Please wait 12 seconds...");
       
-      // Update local UI immediately so user sees their new hardware while background service reloads
-      mutateRawConfig(updatedYaml);
-      mutateConfig();
-      
+      // Prevent user from interacting while backend container is dead
       setIsAdding(false);
+      
+      // Auto-reload the page exactly when s6-overlay finishes spinning back up
+      setTimeout(() => {
+        window.location.reload();
+      }, 12000);
+      
       setNewAsset({
         name: "",
         device_type: "cctv",
@@ -234,18 +237,23 @@ export default function AssetsDashboard() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
+                      <Label htmlFor="device_username">Username</Label>
                       <Input 
-                        id="username" 
+                        id="device_username" 
+                        name="device_username"
+                        autoComplete="off"
                         value={newAsset.username}
                         onChange={(e) => setNewAsset({...newAsset, username: e.target.value})}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
+                      <Label htmlFor="device_password">Password</Label>
                       <Input 
-                        id="password" 
+                        id="device_password" 
+                        name="device_password"
                         type="password"
+                        autoComplete="new-password"
+                        data-lpignore="true"
                         value={newAsset.password}
                         onChange={(e) => setNewAsset({...newAsset, password: e.target.value})}
                       />
@@ -278,8 +286,12 @@ export default function AssetsDashboard() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rtsp">Detected RTSP Stream URL</Label>
-                    <Input id="rtsp" value={newAsset.rtsp_url} readOnly className="bg-muted" />
+                    <Label htmlFor="rtsp">Detected RTSP Stream URL (Editable)</Label>
+                    <Input 
+                      id="rtsp" 
+                      value={newAsset.rtsp_url} 
+                      onChange={(e) => setNewAsset({...newAsset, rtsp_url: e.target.value})} 
+                    />
                   </div>
                   <div className="flex justify-end pt-4 gap-3">
                     <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>

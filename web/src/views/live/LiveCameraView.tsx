@@ -307,14 +307,14 @@ export default function LiveCameraView({
     }
 
     if (!("MediaSource" in window || "ManagedMediaSource" in window)) {
-      return "webrtc";
+      return "hls";
     }
 
     if (!isRestreamed) {
       return "jsmpeg";
     }
 
-    return "mse";
+    return "hls";
   }, [lowBandwidth, mic, webRTC, isRestreamed]);
 
   useKeyboardListener(["m"], (key, modifiers) => {
