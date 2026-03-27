@@ -26,7 +26,7 @@ import ActivityIndicator from "@/components/indicators/activity-indicator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { MdAdd, MdSearch, MdDownload, MdRefresh } from "react-icons/md";
-import { Cctv, Wifi, Video } from "lucide-react";
+import { Cctv, Wifi, Video, Trash2 } from "lucide-react";
 import useSWR from "swr";
 import axios from "axios";
 import { FrigateConfig } from "@/types/frigateConfig";
@@ -50,6 +50,7 @@ export default function AssetsDashboard() {
   
   const [probing, setProbing] = useState(false);
   const [probeSuccess, setProbeSuccess] = useState<boolean | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Map real backend config cameras to table format
   const assets = useMemo(() => {
@@ -101,6 +102,48 @@ export default function AssetsDashboard() {
     }, 1500);
   };
 
+  const handleDelete = async (camId: string) => {
+    if (!rawConfig) {
+      toast.error("System configuration not loaded yet.");
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to permanently delete the device '${camId}'?`)) {
+      return;
+    }
+
+    setIsDeleting(camId);
+
+    const regex = new RegExp(`\\n\\s{2}${camId}:[\\s\\S]*?(?=\\n\\s{2}[a-zA-Z0-9_-]+:|\\n[a-zA-Z0-9_-]+:|$)`);
+    let updatedYaml = rawConfig.replace(regex, '');
+
+    try {
+      await axios.post(`config/save?save_option=restart`, updatedYaml, {
+        headers: { "Content-Type": "text/plain" },
+      });
+      
+      toast.success("Device deleted! The video engine is rebooting...");
+      
+      const pollServer = async () => {
+        try {
+          const res = await fetch(window.location.pathname + "?t=" + Date.now());
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            setTimeout(pollServer, 2000);
+          }
+        } catch (e) {
+          setTimeout(pollServer, 2000);
+        }
+      };
+
+      setTimeout(pollServer, 5000);
+    } catch (e) {
+      toast.error("Failed to delete device configuration.");
+      setIsDeleting(null);
+    }
+  };
+
   const handleSave = async () => {
     if (!newAsset.name || !newAsset.rtsp_url) {
       toast.error("Please ensure asset is named and stream is verified");
@@ -146,15 +189,26 @@ export default function AssetsDashboard() {
         headers: { "Content-Type": "text/plain" },
       });
       
-      toast.success("Asset saved! The video engine is now rebooting. Please wait 12 seconds...");
+      toast.success("Asset saved! The video engine is now rebooting, please wait...");
       
       // Prevent user from interacting while backend container is dead
       setIsAdding(false);
       
       // Auto-reload the page exactly when s6-overlay finishes spinning back up
-      setTimeout(() => {
-        window.location.reload();
-      }, 12000);
+      const pollServer = async () => {
+        try {
+          const res = await fetch(window.location.pathname + "?t=" + Date.now());
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            setTimeout(pollServer, 2000);
+          }
+        } catch (e) {
+          setTimeout(pollServer, 2000);
+        }
+      };
+
+      setTimeout(pollServer, 5000);
       
       setNewAsset({
         name: "",
@@ -381,7 +435,18 @@ export default function AssetsDashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="h-8 text-primary">Manage</Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 text-primary">Manage</Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/20"
+                          onClick={() => handleDelete(asset.id)}
+                          disabled={isDeleting === asset.id}
+                        >
+                          {isDeleting === asset.id ? <ActivityIndicator className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
