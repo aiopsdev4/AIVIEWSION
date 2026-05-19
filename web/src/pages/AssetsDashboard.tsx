@@ -2,62 +2,31 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ActivityIndicator from "@/components/indicators/activity-indicator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { MdAdd, MdSearch, MdDownload, MdRefresh } from "react-icons/md";
-import { Cctv, Wifi, Video, Trash2 } from "lucide-react";
+import { MdSearch, MdDownload, MdRefresh } from "react-icons/md";
 import useSWR from "swr";
-import axios from "axios";
+
 import { FrigateConfig } from "@/types/frigateConfig";
+import { removeCameraFromYaml, addCameraToYaml } from "@/helpers/configHelpers";
+import { saveAndRestartConfig } from "@/services/configService";
+
+import AssetTable, { Asset } from "@/components/assets/AssetTable";
+import AddDeviceDialog, { NewAsset } from "@/components/assets/AddDeviceDialog";
 
 export default function AssetsDashboard() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   
   const { data: config } = useSWR<FrigateConfig>("config");
   const { data: rawConfig } = useSWR<string>("config/raw");
 
-  const [newAsset, setNewAsset] = useState({
-    name: "",
-    device_type: "cctv",
-    ip_address: "",
-    username: "",
-    password: "",
-    rtsp_url: ""
-  });
-  
-  const [probing, setProbing] = useState(false);
-  const [probeSuccess, setProbeSuccess] = useState<boolean | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-
-  // Map real backend config cameras to table format
-  const assets = useMemo(() => {
+  const assets: Asset[] = useMemo(() => {
     if (!config?.cameras) return [];
     
     return Object.entries(config.cameras).map(([camName, camConfig]) => {
-      // Best guess IP address extraction from rtsp url if available
       let ip = "Unknown IP";
       const path = camConfig.ffmpeg?.inputs?.[0]?.path;
       if (path && path.includes("@")) {
@@ -84,22 +53,17 @@ export default function AssetsDashboard() {
     });
   }, [search, filter, assets]);
 
-  const handleProbe = () => {
-    if (!newAsset.ip_address || !newAsset.username || !newAsset.password) {
-      toast.error("Please fill IP, Username, and Password");
-      return;
+  const pollServer = async () => {
+    try {
+      const res = await fetch(window.location.pathname + "?t=" + Date.now());
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        setTimeout(pollServer, 2000);
+      }
+    } catch (e) {
+      setTimeout(pollServer, 2000);
     }
-    setProbing(true);
-    setTimeout(() => {
-      setProbing(false);
-      setProbeSuccess(true);
-      toast.success("Connection to stream verified successfully!");
-      // Certain cameras running Digest Auth process literal string hashes. URL Encoding causes 401 Unauthorized.
-      setNewAsset(prev => ({
-        ...prev,
-        rtsp_url: `rtsp://${prev.username}:${prev.password}@${prev.ip_address}:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`
-      }));
-    }, 1500);
   };
 
   const handleDelete = async (camId: string) => {
@@ -108,35 +72,13 @@ export default function AssetsDashboard() {
       return;
     }
     
-    if (!window.confirm(`Are you sure you want to permanently delete the device '${camId}'?`)) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to permanently delete the device '${camId}'?`)) return;
 
     setIsDeleting(camId);
-
-    const regex = new RegExp(`\\n\\s{2}${camId}:[\\s\\S]*?(?=\\n\\s{2}[a-zA-Z0-9_-]+:|\\n[a-zA-Z0-9_-]+:|$)`);
-    let updatedYaml = rawConfig.replace(regex, '');
-
     try {
-      await axios.post(`config/save?save_option=restart`, updatedYaml, {
-        headers: { "Content-Type": "text/plain" },
-      });
-      
+      const updatedYaml = removeCameraFromYaml(rawConfig, camId);
+      await saveAndRestartConfig(updatedYaml);
       toast.success("Device deleted! The video engine is rebooting...");
-      
-      const pollServer = async () => {
-        try {
-          const res = await fetch(window.location.pathname + "?t=" + Date.now());
-          if (res.ok) {
-            window.location.reload();
-          } else {
-            setTimeout(pollServer, 2000);
-          }
-        } catch (e) {
-          setTimeout(pollServer, 2000);
-        }
-      };
-
       setTimeout(pollServer, 5000);
     } catch (e) {
       toast.error("Failed to delete device configuration.");
@@ -144,11 +86,7 @@ export default function AssetsDashboard() {
     }
   };
 
-  const handleSave = async () => {
-    if (!newAsset.name || !newAsset.rtsp_url) {
-      toast.error("Please ensure asset is named and stream is verified");
-      return;
-    }
+  const handleSave = async (newAsset: NewAsset) => {
     if (!rawConfig) {
       toast.error("System configuration not loaded yet.");
       return;
@@ -156,71 +94,19 @@ export default function AssetsDashboard() {
 
     const camId = newAsset.name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
     
-    // Prevent duplicate camera keys from causing YAML parsing validation failures (400 Bad Request)
     if (Object.keys(config?.cameras || {}).includes(camId)) {
       toast.error(`Device ID '${camId}' is already registered! Use a unique name.`);
       return;
     }
 
-    const newCameraYaml = `\n  ${camId}:
-    ffmpeg:
-      inputs:
-      - path: ${newAsset.rtsp_url}
-        roles:
-        - record
-        - detect
-    detect:
-      enabled: true
-      width: 1280
-      height: 720
-      fps: 2\n`;
-
-    let updatedYaml = rawConfig;
-    if (updatedYaml.includes("cameras:\n")) {
-       updatedYaml = updatedYaml.replace("cameras:\n", `cameras:${newCameraYaml}`);
-    } else {
-       toast.error("Cannot find global cameras block in config.");
-       return;
-    }
-
     try {
-      // Save configuration and trigger native backend loop replacement properly
-      await axios.post(`config/save?save_option=restart`, updatedYaml, {
-        headers: { "Content-Type": "text/plain" },
-      });
-      
+      const updatedYaml = addCameraToYaml(rawConfig, camId, newAsset.rtsp_url);
+      await saveAndRestartConfig(updatedYaml);
       toast.success("Asset saved! The video engine is now rebooting, please wait...");
-      
-      // Prevent user from interacting while backend container is dead
       setIsAdding(false);
-      
-      // Auto-reload the page exactly when s6-overlay finishes spinning back up
-      const pollServer = async () => {
-        try {
-          const res = await fetch(window.location.pathname + "?t=" + Date.now());
-          if (res.ok) {
-            window.location.reload();
-          } else {
-            setTimeout(pollServer, 2000);
-          }
-        } catch (e) {
-          setTimeout(pollServer, 2000);
-        }
-      };
-
       setTimeout(pollServer, 5000);
-      
-      setNewAsset({
-        name: "",
-        device_type: "cctv",
-        ip_address: "",
-        username: "",
-        password: "",
-        rtsp_url: ""
-      });
-      setProbeSuccess(null);
-    } catch (e) {
-      toast.error("Failed to commit settings to main system configuration.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to commit settings to main system configuration.");
     }
   };
 
@@ -240,121 +126,11 @@ export default function AssetsDashboard() {
             <MdDownload className="h-4 w-4" />
             Export
           </Button>
-          <Dialog open={isAdding} onOpenChange={setIsAdding}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <MdAdd className="h-4 w-4" />
-                Add Device
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Register New Device</DialogTitle>
-                <DialogDescription>
-                  Enter the connection details to discover and register an asset.
-                </DialogDescription>
-              </DialogHeader>
-              <Tabs defaultValue="discovery" className="mt-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="discovery">Discovery</TabsTrigger>
-                  <TabsTrigger value="manual" disabled={!probeSuccess}>Registration</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="discovery" className="space-y-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label htmlFor="device_type">Device Type</Label>
-                      <Select 
-                        value={newAsset.device_type} 
-                        onValueChange={(val) => setNewAsset({...newAsset, device_type: val})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select device type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cctv">CCTV Camera</SelectItem>
-                          <SelectItem value="nvr">NVR System</SelectItem>
-                          <SelectItem value="ptz">PTZ Camera</SelectItem>
-                          <SelectItem value="bodycam">Body Camera</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2 col-span-2">
-                      <Label htmlFor="ip">IP Address / Host</Label>
-                      <Input 
-                        id="ip" 
-                        placeholder="192.168.1.x" 
-                        value={newAsset.ip_address}
-                        onChange={(e) => setNewAsset({...newAsset, ip_address: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="device_username">Username</Label>
-                      <Input 
-                        id="device_username" 
-                        name="device_username"
-                        autoComplete="off"
-                        value={newAsset.username}
-                        onChange={(e) => setNewAsset({...newAsset, username: e.target.value})}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="device_password">Password</Label>
-                      <Input 
-                        id="device_password" 
-                        name="device_password"
-                        type="password"
-                        autoComplete="new-password"
-                        data-lpignore="true"
-                        value={newAsset.password}
-                        onChange={(e) => setNewAsset({...newAsset, password: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  
-                  {probeSuccess && (
-                     <div className="bg-success/20 text-success p-3 rounded flex items-center gap-3">
-                       <Wifi className="w-5 h-5"/>
-                       <span className="text-sm font-medium">Successfully connected to device stream</span>
-                     </div>
-                  )}
-                  
-                  <div className="flex justify-end pt-4">
-                    <Button onClick={handleProbe} disabled={probing}>
-                      {probing ? <ActivityIndicator className="mr-2" /> : null}
-                      {probing ? "Probing Device..." : "Probe Connection"}
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="manual" className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Asset Name</Label>
-                    <Input 
-                      id="name" 
-                      placeholder="e.g. Front Gate Camera" 
-                      value={newAsset.name}
-                      onChange={(e) => setNewAsset({...newAsset, name: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="rtsp">Detected RTSP Stream URL (Editable)</Label>
-                    <Input 
-                      id="rtsp" 
-                      value={newAsset.rtsp_url} 
-                      onChange={(e) => setNewAsset({...newAsset, rtsp_url: e.target.value})} 
-                    />
-                  </div>
-                  <div className="flex justify-end pt-4 gap-3">
-                    <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
-                    <Button onClick={handleSave}>Save Registration</Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
+          <AddDeviceDialog 
+            isOpen={isAdding} 
+            setIsOpen={setIsAdding} 
+            onSave={handleSave} 
+          />
         </div>
       </div>
 
@@ -387,73 +163,11 @@ export default function AssetsDashboard() {
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead>Asset Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>IP Address</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAssets.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                    No devices found matching your criteria.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredAssets.map((asset) => (
-                  <TableRow key={asset.id} className="hover:bg-muted/30">
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          {asset.category === 'NVR' ? <Video className="h-4 w-4"/> : <Cctv className="h-4 w-4" />}
-                        </div>
-                        {asset.name}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-background">
-                        {asset.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">{asset.ip_address}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant="secondary" 
-                        className={
-                          asset.status === 'Active' || asset.status === 'Online' 
-                          ? "bg-success/20 text-success border-success/30 rounded-full" 
-                          : "bg-danger/20 text-danger border-danger/30 rounded-full"
-                        }
-                      >
-                        {asset.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" className="h-8 text-primary">Manage</Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/20"
-                          onClick={() => handleDelete(asset.id)}
-                          disabled={isDeleting === asset.id}
-                        >
-                          {isDeleting === asset.id ? <ActivityIndicator className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+        <AssetTable 
+          assets={filteredAssets} 
+          isDeleting={isDeleting} 
+          onDelete={handleDelete} 
+        />
       </Card>
     </div>
   );

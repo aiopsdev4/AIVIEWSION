@@ -10,7 +10,7 @@ from urllib.parse import unquote
 
 from fastapi import APIRouter, Depends, Request
 from fastapi import Path as PathParam
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from peewee import fn, operator
 
 from frigate.api.auth import (
@@ -29,6 +29,7 @@ from frigate.api.defs.tags import Tags
 from frigate.const import RECORD_DIR
 from frigate.models import Event, Recordings
 from frigate.util.time import get_dst_transitions
+from frigate.api.services.recordings_service import RecordingsService
 
 logger = logging.getLogger(__name__)
 
@@ -456,3 +457,25 @@ async def delete_recordings(
         content={"success": True, "message": message},
         status_code=200,
     )
+
+@router.get(
+    "/{camera_name}/recordings/at",
+    dependencies=[Depends(require_camera_access)],
+    summary="Get recording file at timestamp",
+    description="Returns the physical MP4 recording file corresponding to a given UNIX timestamp."
+)
+async def get_recording_at_timestamp(
+    camera_name: str,
+    timestamp: float,
+    service: RecordingsService = Depends()
+):
+    """Serve the recording MP4 file that encapsulates the given timestamp."""
+    file_path = service.get_recording_file_at(camera_name, timestamp)
+    
+    if not file_path:
+        return JSONResponse(
+            content={"success": False, "message": "No recording found for the specified timestamp."},
+            status_code=404
+        )
+        
+    return FileResponse(file_path, media_type="video/mp4")
