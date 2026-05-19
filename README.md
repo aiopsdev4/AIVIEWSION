@@ -78,6 +78,30 @@ We use [Weblate](https://hosted.weblate.org/projects/frigate-nvr/) to support la
 <img src="https://hosted.weblate.org/widget/frigate-nvr/multi-auto.svg" alt="Translation status" />
 </a>
 
+## AI Agent Instructions
+
+If you are an AI agent or a developer looking to configure and run this project, follow these instructions:
+
+### Configuration
+- All local configurations, including cameras, detectors, and MQTT settings, should be made in `local_data/config.yml`. This file is mounted directly into the Docker container.
+- Other necessary files like the SQLite database (`frigate.db`), models (e.g., `yolov8n.onnx`), label maps (`labels.txt`), and media storage are also kept in the `local_data/` directory to persist between restarts.
+
+### Running the Project
+- The easiest way to run the project locally with your custom code and configurations is using Docker Compose:
+  ```bash
+  docker-compose up -d
+  ```
+- This will build and start the `devcontainer` and `mqtt` services.
+- Alternatively, you can use the `Makefile` to run locally:
+  ```bash
+  make run
+  ```
+  *(Note: `docker-compose.yml` maps port 5001 while `Makefile` maps port 5000)*
+
+### Accessing the Interface
+- Once running via Docker Compose, the Frigate web interface is accessible at `http://localhost:5001`.
+- RTSP feeds are available at port `8554` and WebRTC at `8555`.
+
 ---
 
 **Copyright © 2026 Frigate, Inc.**
