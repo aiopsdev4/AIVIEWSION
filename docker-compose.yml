@@ -13,9 +13,9 @@ services:
       dockerfile: docker/main/Dockerfile
       target: frigate
     ports:
-      - "5001:5000" # Access your custom Frigate at http://localhost:5001
-      - "8554:8554" # RTSP Feeds
-      - "8555:8555" # WebRTC
+      - "5000:5000" # Access your custom Frigate at http://localhost:5000
+      - "18554:8554" # RTSP Feeds
+      - "18555:8555" # WebRTC
     environment:
       YOLO_MODELS: ""
     volumes:
@@ -29,6 +29,7 @@ services:
       # 2. THE CUSTOM CODE (This injects your changes into the container)
       - ./frigate:/opt/frigate/frigate:cached
       - ./migrations:/opt/frigate/migrations:cached
+      - ./web/dist:/opt/frigate/web:cached
       - /etc/localtime:/etc/localtime:ro
       
       # CRITICAL: I removed the duplicate ./config and ./debug lines 
