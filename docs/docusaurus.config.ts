@@ -10,7 +10,7 @@ const config: Config = {
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "img/branding/favicon.ico",
+  favicon: "img/branding/logo.png",
   organizationName: "blakeblackshear",
   projectName: "frigate",
   themes: [
@@ -116,8 +116,8 @@ const config: Config = {
       title: "Frigate",
       logo: {
         alt: "Frigate",
-        src: "img/branding/logo.svg",
-        srcDark: "img/branding/logo-dark.svg",
+        src: "img/branding/logo.png",
+        srcDark: "img/branding/logo.png",
       },
       items: [
         {
