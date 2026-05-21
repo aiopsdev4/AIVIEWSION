@@ -10,7 +10,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: docker/main/Dockerfile
+      dockerfile: docker/tensorrt/Dockerfile.amd64
       target: frigate
     ports:
       - "5000:5000" # Access your custom Frigate at http://localhost:5000
