@@ -4,12 +4,14 @@ export type TimelineUtilsProps = {
   segmentDuration: number;
   timelineDuration?: number;
   timelineRef?: React.RefObject<HTMLElement | null>;
+  orientation?: "horizontal" | "vertical";
 };
 
 export function useTimelineUtils({
   segmentDuration,
   timelineDuration,
   timelineRef,
+  orientation = "vertical",
 }: TimelineUtilsProps) {
   const segmentHeight = 8;
 
@@ -34,22 +36,22 @@ export function useTimelineUtils({
   const getCumulativeScrollTop = useCallback((element: HTMLElement | null) => {
     let scrollTop = 0;
     while (element) {
-      scrollTop += element.scrollTop;
+      scrollTop += orientation === "horizontal" ? element.scrollLeft : element.scrollTop;
       element = element.parentElement;
     }
     return scrollTop;
-  }, []);
+  }, [orientation]);
 
   const getVisibleTimelineDuration = useCallback(() => {
     if (timelineRef?.current && timelineDuration) {
-      const { clientHeight: visibleTimelineHeight } = timelineRef.current;
+      const size = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
 
       const visibleTime =
-        (visibleTimelineHeight / segmentHeight) * segmentDuration;
+        (size / segmentHeight) * segmentDuration;
 
       return visibleTime;
     }
-  }, [segmentDuration, timelineDuration, timelineRef]);
+  }, [segmentDuration, timelineDuration, timelineRef, orientation]);
 
   return {
     alignEndDateToTimeline,

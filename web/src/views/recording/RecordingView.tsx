@@ -756,7 +756,11 @@ export function RecordingView({
           ref={mainLayoutRef}
           className={cn(
             "flex flex-1 overflow-hidden",
-            isDesktop ? "flex-row" : "flex-col gap-2 landscape:flex-row",
+            timelineType === "timeline"
+              ? "flex-col gap-2"
+              : isDesktop
+                ? "flex-row"
+                : "flex-col gap-2 landscape:flex-row",
           )}
         >
           <div
@@ -1062,21 +1066,19 @@ function Timeline({
     <div
       className={cn(
         "relative overflow-hidden",
-        isDesktop
-          ? cn(
-              timelineType == "timeline"
-                ? "w-[100px] flex-shrink-0"
-                : timelineType == "detail"
+        timelineType == "timeline"
+          ? "h-[100px] w-full px-4 flex-shrink-0"
+          : isDesktop
+            ? cn(
+                timelineType == "detail"
                   ? "min-w-[20rem] max-w-[30%] flex-shrink-0 flex-grow-0 basis-[30rem] md:min-w-[20rem] md:max-w-[25%] lg:min-w-[30rem] lg:max-w-[33%]"
                   : "w-80 flex-shrink-0",
-            )
-          : cn(
-              timelineType == "timeline"
-                ? "portrait:flex-grow landscape:w-[100px] landscape:flex-shrink-0"
-                : timelineType == "detail"
+              )
+            : cn(
+                timelineType == "detail"
                   ? "portrait:flex-grow landscape:w-[19rem] landscape:flex-shrink-0"
                   : "portrait:flex-grow landscape:w-[19rem] landscape:flex-shrink-0",
-            ),
+              ),
       )}
     >
       {isMobileOnly && timelineType == "timeline" && (
@@ -1085,7 +1087,7 @@ function Timeline({
         </GenAISummaryDialog>
       )}
 
-      {timelineType != "detail" && (
+      {timelineType == "detail" && (
         <>
           <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[30px] w-full bg-gradient-to-b from-secondary to-transparent"></div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[30px] w-full bg-gradient-to-t from-secondary to-transparent"></div>
@@ -1117,6 +1119,7 @@ function Timeline({
             onZoomChange={handleZoomChange}
             possibleZoomLevels={possibleZoomLevels}
             currentZoomLevel={currentZoomLevel}
+            orientation="horizontal"
           />
         ) : (
           <Skeleton className="size-full" />

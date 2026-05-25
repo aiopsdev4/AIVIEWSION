@@ -16,6 +16,7 @@ type MinimapSegmentProps = {
 type TickSegmentProps = {
   timestamp: Date;
   timestampSpread: number;
+  orientation?: "horizontal" | "vertical";
 };
 
 type TimestampSegmentProps = {
@@ -24,6 +25,7 @@ type TimestampSegmentProps = {
   timestamp: Date;
   timestampSpread: number;
   segmentKey: string;
+  orientation?: "horizontal" | "vertical";
 };
 
 export function MinimapBounds({
@@ -74,19 +76,31 @@ export function MinimapBounds({
   );
 }
 
-export function Tick({ timestamp, timestampSpread }: TickSegmentProps) {
+export function Tick({ timestamp, timestampSpread, orientation = "vertical" }: TickSegmentProps) {
   return (
     <div className="absolute">
-      <div className="flex h-[8px] w-[12px] content-end items-end">
+      <div className={orientation === "horizontal" ? "flex w-[8px] h-[12px] items-end" : "flex h-[8px] w-[12px] content-end items-end"}>
         <div
-          className={`pointer-events-none h-0.5 select-none ${
-            timestamp.getMinutes() % timestampSpread === 0 &&
-            timestamp.getSeconds() === 0
-              ? "w-[12px] bg-neutral_variant dark:bg-neutral"
-              : timestamp.getMinutes() % (timestampSpread == 15 ? 5 : 1) ===
-                    0 && timestamp.getSeconds() === 0
-                ? "w-[8px] bg-neutral" // Minor tick mark
-                : "w-[5px] bg-neutral-400 dark:bg-neutral_variant"
+          className={`pointer-events-none select-none ${
+            orientation === "horizontal"
+              ? `w-0.5 ${
+                  timestamp.getMinutes() % timestampSpread === 0 &&
+                  timestamp.getSeconds() === 0
+                    ? "h-[12px] bg-neutral_variant dark:bg-neutral"
+                    : timestamp.getMinutes() % (timestampSpread == 15 ? 5 : 1) ===
+                          0 && timestamp.getSeconds() === 0
+                      ? "h-[8px] bg-neutral" // Minor tick mark
+                      : "h-[5px] bg-neutral-400 dark:bg-neutral_variant"
+                }`
+              : `h-0.5 ${
+                  timestamp.getMinutes() % timestampSpread === 0 &&
+                  timestamp.getSeconds() === 0
+                    ? "w-[12px] bg-neutral_variant dark:bg-neutral"
+                    : timestamp.getMinutes() % (timestampSpread == 15 ? 5 : 1) ===
+                          0 && timestamp.getSeconds() === 0
+                      ? "w-[8px] bg-neutral" // Minor tick mark
+                      : "w-[5px] bg-neutral-400 dark:bg-neutral_variant"
+                }`
           }`}
         ></div>
       </div>
@@ -100,6 +114,7 @@ export function Timestamp({
   timestamp,
   timestampSpread,
   segmentKey,
+  orientation = "vertical",
 }: TimestampSegmentProps) {
   const { t } = useTranslation(["common"]);
   const { data: config } = useSWR<FrigateConfig>("config");
@@ -121,11 +136,11 @@ export function Timestamp({
   }, [timestamp, timestampSpread]);
 
   return (
-    <div className="absolute left-[15px] z-10 h-[8px]">
+    <div className={orientation === "horizontal" ? "absolute top-[15px] z-10 w-[8px]" : "absolute left-[15px] z-10 h-[8px]"}>
       {!isFirstSegmentInMinimap && !isLastSegmentInMinimap && shouldDisplay && (
         <div
           key={`${segmentKey}_timestamp`}
-          className="pointer-events-none select-none text-[8px] text-neutral_variant dark:text-neutral"
+          className="pointer-events-none select-none text-[8px] text-neutral_variant dark:text-neutral whitespace-nowrap -translate-x-1/2"
         >
           {formattedTimestamp}
         </div>

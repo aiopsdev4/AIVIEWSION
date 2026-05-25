@@ -52,6 +52,7 @@ export type MotionReviewTimelineProps = {
   onZoomChange?: (newZoomLevel: number) => void;
   possibleZoomLevels?: ZoomLevel[];
   currentZoomLevel?: number;
+  orientation?: "horizontal" | "vertical";
 };
 
 export function MotionReviewTimeline({
@@ -86,6 +87,7 @@ export function MotionReviewTimeline({
   onZoomChange,
   possibleZoomLevels,
   currentZoomLevel,
+  orientation = "vertical",
 }: MotionReviewTimelineProps) {
   const internalTimelineRef = useRef<HTMLDivElement>(null);
   const selectedTimelineRef = timelineRef || internalTimelineRef;
@@ -227,6 +229,7 @@ export function MotionReviewTimeline({
       onZoomChange={onZoomChange}
       possibleZoomLevels={possibleZoomLevels}
       currentZoomLevel={currentZoomLevel}
+      orientation={orientation}
     >
       <VirtualizedMotionSegments
         ref={virtualizedSegmentsRef}
@@ -246,6 +249,7 @@ export function MotionReviewTimeline({
         getMotionSegmentValue={getMotionSegmentValue}
         getRecordingAvailability={getRecordingAvailability}
         alwaysShowMotionLine={alwaysShowMotionLine}
+        orientation={orientation}
       />
     </ReviewTimeline>
   );

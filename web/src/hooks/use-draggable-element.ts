@@ -30,6 +30,7 @@ type DraggableElementProps = {
   dense: boolean;
   segments: number[];
   scrollToSegment: (segmentTime: number, ifNeeded?: boolean) => void;
+  orientation?: "horizontal" | "vertical";
 };
 
 function useDraggableElement({
@@ -55,6 +56,7 @@ function useDraggableElement({
   dense,
   segments,
   scrollToSegment,
+  orientation = "vertical",
 }: DraggableElementProps) {
   const { data: config } = useSWR<FrigateConfig>("config");
 
@@ -68,6 +70,7 @@ function useDraggableElement({
       segmentDuration: segmentDuration,
       timelineDuration: timelineDuration,
       timelineRef,
+      orientation,
     });
 
   // track user interaction and adjust scrolling behavior
@@ -79,39 +82,39 @@ function useDraggableElement({
   const draggingAtTopEdge = useMemo(() => {
     if (clientYPosition && timelineRef.current && scrollEdgeSize) {
       const timelineRect = timelineRef.current.getBoundingClientRect();
-      const timelineTopAbsolute = timelineRect.top;
+      const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
       return (
         clientYPosition - timelineTopAbsolute < scrollEdgeSize && isDragging
       );
     }
-  }, [clientYPosition, timelineRef, isDragging, scrollEdgeSize]);
+  }, [clientYPosition, timelineRef, isDragging, scrollEdgeSize, orientation]);
 
   const draggingAtBottomEdge = useMemo(() => {
     if (clientYPosition && timelineRef.current && scrollEdgeSize) {
       const timelineRect = timelineRef.current.getBoundingClientRect();
-      const timelineTopAbsolute = timelineRect.top;
-      const timelineHeightAbsolute = timelineRect.height;
+      const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
+      const timelineHeightAbsolute = orientation === "horizontal" ? timelineRect.width : timelineRect.height;
       return (
         timelineTopAbsolute + timelineHeightAbsolute - clientYPosition <
           scrollEdgeSize && isDragging
       );
     }
-  }, [clientYPosition, timelineRef, isDragging, scrollEdgeSize]);
+  }, [clientYPosition, timelineRef, isDragging, scrollEdgeSize, orientation]);
 
   const getClientYPosition = useCallback(
     (e: MouseEvent | TouchEvent) => {
-      let clientY;
+      let client;
       if ("TouchEvent" in window && e instanceof TouchEvent) {
-        clientY = e.touches[0].clientY;
+        client = orientation === "horizontal" ? e.touches[0].clientX : e.touches[0].clientY;
       } else if (e instanceof MouseEvent) {
-        clientY = e.clientY;
+        client = orientation === "horizontal" ? e.clientX : e.clientY;
       }
 
-      if (clientY) {
-        setClientYPosition(clientY);
+      if (client !== undefined) {
+        setClientYPosition(client);
       }
     },
-    [setClientYPosition],
+    [setClientYPosition, orientation],
   );
 
   const handleMouseDown = useCallback(
@@ -126,24 +129,25 @@ function useDraggableElement({
       e.stopPropagation();
       setIsDragging(true);
 
-      let clientY;
+      let client;
       if ("TouchEvent" in window && e.nativeEvent instanceof TouchEvent) {
-        clientY = e.nativeEvent.touches[0].clientY;
+        client = orientation === "horizontal" ? e.nativeEvent.touches[0].clientX : e.nativeEvent.touches[0].clientY;
       } else if (e.nativeEvent instanceof MouseEvent) {
-        clientY = e.nativeEvent.clientY;
+        client = orientation === "horizontal" ? e.nativeEvent.clientX : e.nativeEvent.clientY;
       }
-      if (clientY && draggableElementRef.current) {
+      if (client !== undefined && draggableElementRef.current) {
         const draggableElementRect =
           draggableElementRef.current.getBoundingClientRect();
         if (!isDragging) {
-          setInitialClickAdjustment(clientY - draggableElementRect.top);
+          const rectStart = orientation === "horizontal" ? draggableElementRect.left : draggableElementRect.top;
+          setInitialClickAdjustment(client - rectStart);
         }
-        setClientYPosition(clientY);
+        setClientYPosition(client);
       }
     },
     // we know that these deps are correct
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setIsDragging, draggableElementRef],
+    [setIsDragging, draggableElementRef, orientation],
   );
 
   const handleMouseUp = useCallback(
@@ -199,7 +203,13 @@ function useDraggableElement({
       const thumb = draggableElementRef.current;
       if (thumb) {
         requestAnimationFrame(() => {
-          thumb.style.top = `${newElementPosition}px`;
+          if (orientation === "horizontal") {
+            thumb.style.left = `${newElementPosition}px`;
+            thumb.style.top = "0px";
+          } else {
+            thumb.style.top = `${newElementPosition}px`;
+            thumb.style.left = "0px";
+          }
           if (setDraggableElementPosition) {
             setDraggableElementPosition(newElementPosition);
           }
@@ -226,6 +236,7 @@ function useDraggableElement({
       getFormattedTimestamp,
       userInteracting,
       scrollToSegment,
+      orientation,
     ],
   );
 
@@ -257,7 +268,7 @@ function useDraggableElement({
         segments.length > 0 &&
         fullTimelineHeight
       ) {
-        const { scrollTop: scrolled } = timelineRef.current;
+        const scrolled = orientation === "horizontal" ? timelineRef.current.scrollLeft : timelineRef.current.scrollTop;
 
         const parentScrollTop = getCumulativeScrollTop(timelineRef.current);
 
@@ -272,7 +283,7 @@ function useDraggableElement({
           : segmentHeight * 1.5;
 
         const timelineRect = timelineRef.current.getBoundingClientRect();
-        const timelineTopAbsolute = timelineRect.top;
+        const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
 
         const newElementPosition = Math.min(
           elementEarliest,
@@ -313,7 +324,11 @@ function useDraggableElement({
               (scrollEdgeSize - (clientYPosition - timelineTopAbsolute)) /
                 scrollEdgeSize,
             );
-            timelineRef.current.scrollTop -= segmentHeight * intensity;
+            if (orientation === "horizontal") {
+              timelineRef.current.scrollLeft -= segmentHeight * intensity;
+            } else {
+              timelineRef.current.scrollTop -= segmentHeight * intensity;
+            }
           }
 
           if (draggingAtBottomEdge) {
@@ -321,15 +336,19 @@ function useDraggableElement({
               0,
               (clientYPosition -
                 timelineTopAbsolute -
-                (timelineRef.current.getBoundingClientRect().height -
+                ((orientation === "horizontal" ? timelineRect.width : timelineRect.height) -
                   scrollEdgeSize)) /
                 scrollEdgeSize,
             );
             const newScrollTop = Math.min(
               fullTimelineHeight - segmentHeight,
-              timelineRef.current.scrollTop + segmentHeight * intensity,
+              orientation === "horizontal" ? timelineRef.current.scrollLeft + segmentHeight * intensity : timelineRef.current.scrollTop + segmentHeight * intensity,
             );
-            timelineRef.current.scrollTop = newScrollTop;
+            if (orientation === "horizontal") {
+              timelineRef.current.scrollLeft = newScrollTop;
+            } else {
+              timelineRef.current.scrollTop = newScrollTop;
+            }
           }
         }
 
@@ -383,6 +402,7 @@ function useDraggableElement({
     draggingAtBottomEdge,
     showDraggableElement,
     segments,
+    orientation,
   ]);
 
   useEffect(() => {
@@ -498,15 +518,16 @@ function useDraggableElement({
 
   useEffect(() => {
     if (timelineRef.current && segments && segmentsRef.current) {
-      setScrollEdgeSize(timelineRef.current.clientHeight * 0.03);
+      const size = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
+      setScrollEdgeSize(size * 0.03);
       setFullTimelineHeight(
         Math.min(
-          timelineRef.current.scrollHeight,
-          segmentsRef.current.scrollHeight,
+          orientation === "horizontal" ? timelineRef.current.scrollWidth : timelineRef.current.scrollHeight,
+          orientation === "horizontal" ? segmentsRef.current.scrollWidth : segmentsRef.current.scrollHeight,
         ),
       );
     }
-  }, [timelineRef, segmentsRef, segments]);
+  }, [timelineRef, segmentsRef, segments, orientation]);
 
   return { handleMouseDown, handleMouseUp, handleMouseMove };
 }

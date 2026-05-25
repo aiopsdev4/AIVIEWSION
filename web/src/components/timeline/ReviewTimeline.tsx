@@ -46,6 +46,7 @@ export type ReviewTimelineProps = {
   possibleZoomLevels?: ZoomLevel[];
   currentZoomLevel?: number;
   children: ReactNode;
+  orientation?: "horizontal" | "vertical";
 };
 
 export function ReviewTimeline({
@@ -75,6 +76,7 @@ export function ReviewTimeline({
   possibleZoomLevels,
   currentZoomLevel,
   children,
+  orientation = "vertical",
 }: ReviewTimelineProps) {
   const { t } = useTranslation("views/events");
   const [isDraggingHandlebar, setIsDraggingHandlebar] = useState(false);
@@ -111,6 +113,7 @@ export function ReviewTimeline({
       segmentDuration,
       timelineDuration,
       timelineRef,
+      orientation,
     });
 
   const paddedExportStartTime = useMemo(() => {
@@ -149,6 +152,7 @@ export function ReviewTimeline({
     dense,
     segments,
     scrollToSegment,
+    orientation,
   });
 
   const {
@@ -174,6 +178,7 @@ export function ReviewTimeline({
     dense,
     segments,
     scrollToSegment,
+    orientation,
   });
 
   const {
@@ -199,6 +204,7 @@ export function ReviewTimeline({
     dense,
     segments,
     scrollToSegment,
+    orientation,
   });
 
   const handleHandlebar = useCallback(
@@ -307,8 +313,17 @@ export function ReviewTimeline({
       exportStartPosition &&
       exportEndPosition
     ) {
-      exportSectionRef.current.style.top = `${exportEndPosition + segmentHeight}px`;
-      exportSectionRef.current.style.height = `${exportStartPosition - exportEndPosition + segmentHeight / 2}px`;
+      if (orientation === "horizontal") {
+        exportSectionRef.current.style.left = `${exportEndPosition + segmentHeight}px`;
+        exportSectionRef.current.style.width = `${exportStartPosition - exportEndPosition + segmentHeight / 2}px`;
+        exportSectionRef.current.style.top = "0px";
+        exportSectionRef.current.style.height = "100%";
+      } else {
+        exportSectionRef.current.style.top = `${exportEndPosition + segmentHeight}px`;
+        exportSectionRef.current.style.height = `${exportStartPosition - exportEndPosition + segmentHeight / 2}px`;
+        exportSectionRef.current.style.left = "0px";
+        exportSectionRef.current.style.width = "100%";
+      }
     }
   }, [
     showExportHandles,
@@ -316,6 +331,7 @@ export function ReviewTimeline({
     timelineRef,
     exportStartPosition,
     exportEndPosition,
+    orientation,
   ]);
 
   const documentRef = useRef<Document | null>(document);
@@ -374,7 +390,8 @@ export function ReviewTimeline({
       <div
         ref={timelineRef}
         className={cn(
-          "no-scrollbar relative h-full select-none overflow-y-auto bg-secondary transition-all duration-500 ease-in-out",
+          "no-scrollbar relative h-full select-none transition-all duration-500 ease-in-out",
+          orientation === "horizontal" ? "w-full overflow-x-auto overflow-y-hidden" : "overflow-y-auto bg-secondary",
           isZooming && zoomDirection === "in" && "animate-timeline-zoom-in",
           isZooming && zoomDirection === "out" && "animate-timeline-zoom-out",
           isDragging && (showHandlebar || showExportHandles)
@@ -382,28 +399,41 @@ export function ReviewTimeline({
             : "cursor-auto",
         )}
       >
-        <div ref={segmentsRef} className="relative flex flex-col">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[30px] w-full bg-gradient-to-b from-secondary to-transparent"></div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[30px] w-full bg-gradient-to-t from-secondary to-transparent"></div>
+        <div ref={segmentsRef} className={cn("relative", orientation === "horizontal" ? "flex flex-row h-full" : "flex flex-col h-full")}>
+          {orientation === "horizontal" ? (
+            <>
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[30px] h-full bg-gradient-to-r from-secondary to-transparent"></div>
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-[30px] h-full bg-gradient-to-l from-secondary to-transparent"></div>
+            </>
+          ) : (
+            <>
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[30px] w-full bg-gradient-to-b from-secondary to-transparent"></div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[30px] w-full bg-gradient-to-t from-secondary to-transparent"></div>
+            </>
+          )}
           {children}
         </div>
         {children && (
           <>
             {showHandlebar && (
               <div
-                className={`absolute left-0 top-0 ${isDraggingHandlebar && isIOS ? "" : "z-20"} w-full`}
+                className={`absolute left-0 top-0 ${isDraggingHandlebar && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
                 role="scrollbar"
                 ref={handlebarRef}
               >
                 <div
-                  className="flex touch-none select-none items-center justify-center"
+                  className={orientation === "horizontal"
+                    ? "flex touch-none select-none flex-col items-center justify-start h-full"
+                    : "flex touch-none select-none items-center justify-center"}
                   onMouseDown={handleHandlebar}
                   onTouchStart={handleHandlebar}
                 >
                   <div
-                    className={`relative w-full ${
+                    className={cn(
+                      "relative",
+                      orientation === "horizontal" ? "h-full w-[80px]" : "w-full",
                       isDraggingHandlebar ? "cursor-grabbing" : "cursor-grab"
-                    }`}
+                    )}
                   >
                     <div
                       className={`mx-auto rounded-full bg-destructive ${
@@ -420,7 +450,9 @@ export function ReviewTimeline({
                       ></div>
                     </div>
                     <div
-                      className={`absolute h-[4px] w-full bg-destructive ${isDraggingHandlebar && isMobile ? "top-1" : "top-1/2 -translate-y-1/2 transform"}`}
+                      className={orientation === "horizontal"
+                        ? `absolute w-[4px] h-full bg-destructive left-1/2 -translate-x-1/2 transform`
+                        : `absolute h-[4px] w-full bg-destructive ${isDraggingHandlebar && isMobile ? "top-1" : "top-1/2 -translate-y-1/2 transform"}`}
                     ></div>
                   </div>
                 </div>
@@ -435,22 +467,26 @@ export function ReviewTimeline({
             {showExportHandles && (
               <>
                 <div
-                  className={`export-end absolute left-0 top-0 ${isDraggingExportEnd && isIOS ? "" : "z-20"} w-full`}
+                  className={`export-end absolute left-0 top-0 ${isDraggingExportEnd && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
                   role="scrollbar"
                   ref={exportEndRef}
                 >
                   <div
-                    className="flex touch-none select-none items-center justify-center"
+                    className={orientation === "horizontal"
+                      ? "flex touch-none select-none flex-col items-center justify-start h-full"
+                      : "flex touch-none select-none items-center justify-center"}
                     onMouseDown={handleExportEnd}
                     onTouchStart={handleExportEnd}
                   >
                     <div
-                      className={`relative mt-[6.5px] w-full ${
+                      className={cn(
+                        "relative",
+                        orientation === "horizontal" ? "h-full mt-0 w-[80px]" : "mt-[6.5px] w-full",
                         isDraggingExportEnd ? "cursor-grabbing" : "cursor-grab"
-                      }`}
+                      )}
                     >
                       <div
-                        className={`mx-auto -mt-4 bg-selected ${
+                        className={`mx-auto bg-selected ${
                           dense
                             ? "w-12 md:w-20"
                             : segmentDuration < 60
@@ -464,35 +500,43 @@ export function ReviewTimeline({
                         ></div>
                       </div>
                       <div
-                        className={`absolute h-[4px] w-full bg-selected ${isDraggingExportEnd && isMobile ? "top-0" : "top-1/2 -translate-y-1/2 transform"}`}
+                        className={orientation === "horizontal"
+                          ? `absolute w-[4px] h-full bg-selected left-1/2 -translate-x-1/2 transform`
+                          : `absolute h-[4px] w-full bg-selected ${isDraggingExportEnd && isMobile ? "top-0" : "top-1/2 -translate-y-1/2 transform"}`}
                       ></div>
                     </div>
                   </div>
                 </div>
                 <div
                   ref={exportSectionRef}
-                  className="absolute w-full bg-selected/50"
+                  className={orientation === "horizontal" ? "absolute h-full bg-selected/50" : "absolute w-full bg-selected/50"}
                 ></div>
                 <div
-                  className={`export-start absolute left-0 top-0 ${isDraggingExportStart && isIOS ? "" : "z-20"} w-full`}
+                  className={`export-start absolute left-0 top-0 ${isDraggingExportStart && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
                   role="scrollbar"
                   ref={exportStartRef}
                 >
                   <div
-                    className="flex touch-none select-none items-center justify-center"
+                    className={orientation === "horizontal"
+                      ? "flex touch-none select-none flex-col items-center justify-start h-full"
+                      : "flex touch-none select-none items-center justify-center"}
                     onMouseDown={handleExportStart}
                     onTouchStart={handleExportStart}
                   >
                     <div
-                      className={`relative -mt-[6.5px] w-full ${
+                      className={cn(
+                        "relative",
+                        orientation === "horizontal" ? "h-full mt-0 w-[80px]" : "-mt-[6.5px] w-full",
                         isDragging ? "cursor-grabbing" : "cursor-grab"
-                      }`}
+                      )}
                     >
                       <div
-                        className={`absolute h-[4px] w-full bg-selected ${isDraggingExportStart && isMobile ? "top-[12px]" : "top-1/2 -translate-y-1/2 transform"}`}
+                        className={orientation === "horizontal"
+                          ? `absolute w-[4px] h-full bg-selected left-1/2 -translate-x-1/2 transform`
+                          : `absolute h-[4px] w-full bg-selected ${isDraggingExportStart && isMobile ? "top-[12px]" : "top-1/2 -translate-y-1/2 transform"}`}
                       ></div>
                       <div
-                        className={`mx-auto mt-4 bg-selected ${
+                        className={`mx-auto bg-selected ${
                           dense
                             ? "w-12 md:w-20"
                             : segmentDuration < 60
@@ -516,11 +560,14 @@ export function ReviewTimeline({
 
       {onZoomChange && currentZoomLevelIndex !== -1 && (
         <div
-          className={`absolute z-30 flex gap-2 ${
-            isMobile
-              ? "bottom-4 right-1 flex-col-reverse gap-3"
-              : "bottom-2 left-1/2 -translate-x-1/2"
-          }`}
+          className={cn(
+            "absolute z-30 flex gap-2",
+            orientation === "horizontal"
+              ? "bottom-2 right-2 flex-row"
+              : isMobile
+                ? "bottom-4 right-1 flex-col-reverse gap-3"
+                : "bottom-2 left-1/2 -translate-x-1/2"
+          )}
         >
           <Tooltip>
             <TooltipTrigger asChild>

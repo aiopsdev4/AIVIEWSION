@@ -60,7 +60,6 @@ import {
 import PreviewPlayer, {
   PreviewController,
 } from "@/components/player/PreviewPlayer";
-import SummaryTimeline from "@/components/timeline/SummaryTimeline";
 import { RecordingStartingPoint } from "@/types/record";
 import VideoControls from "@/components/player/VideoControls";
 import { TimeRange } from "@/types/timeline";
@@ -478,10 +477,7 @@ export default function EventView({
       )}
 
       <div
-        className={cn(
-          "h-full min-h-0 overflow-hidden",
-          motionPreviewsOpen ? "flex flex-col" : "flex",
-        )}
+        className="h-full min-h-0 overflow-hidden flex flex-col gap-2"
       >
         {severity != "significant_motion" && (
           <DetectionReview
@@ -912,48 +908,33 @@ function DetectionReview({
             )}
         </div>
       </div>
-      <div className="flex w-[65px] flex-row md:w-[110px]">
-        <div className="no-scrollbar relative w-[55px] md:w-[100px]">
-          {loading ? (
-            <Skeleton className="size-full" />
-          ) : (
-            <EventReviewTimeline
-              segmentDuration={zoomSettings.segmentDuration}
-              timestampSpread={zoomSettings.timestampSpread}
-              timelineStart={timeRange.before}
-              timelineEnd={timeRange.after}
-              showMinimap={showMinimap && !previewTime}
-              minimapStartTime={minimapBounds.start}
-              minimapEndTime={minimapBounds.end}
-              showHandlebar={previewTime != undefined}
-              handlebarTime={previewTime}
-              visibleTimestamps={visibleTimestamps}
-              events={reviewItems?.all ?? []}
-              severityType={severity}
-              contentRef={contentRef}
-              timelineRef={reviewTimelineRef}
-              dense={isMobile}
-              isZooming={isZooming}
-              zoomDirection={zoomDirection}
-              possibleZoomLevels={possibleZoomLevels}
-              currentZoomLevel={currentZoomLevel}
-            />
-          )}
-        </div>
-        <div className="w-[10px]">
-          {loading ? (
-            <Skeleton className="w-full" />
-          ) : (
-            <SummaryTimeline
-              reviewTimelineRef={reviewTimelineRef}
-              timelineStart={timeRange.before}
-              timelineEnd={timeRange.after}
-              segmentDuration={zoomSettings.segmentDuration}
-              events={reviewItems?.all ?? []}
-              severityType={severity}
-            />
-          )}
-        </div>
+      <div className="no-scrollbar w-full h-[100px] px-4 flex-shrink-0">
+        {loading ? (
+          <Skeleton className="size-full" />
+        ) : (
+          <EventReviewTimeline
+            segmentDuration={zoomSettings.segmentDuration}
+            timestampSpread={zoomSettings.timestampSpread}
+            timelineStart={timeRange.before}
+            timelineEnd={timeRange.after}
+            showMinimap={showMinimap && !previewTime}
+            minimapStartTime={minimapBounds.start}
+            minimapEndTime={minimapBounds.end}
+            showHandlebar={previewTime != undefined}
+            handlebarTime={previewTime}
+            visibleTimestamps={visibleTimestamps}
+            events={reviewItems?.all ?? []}
+            severityType={severity}
+            contentRef={contentRef}
+            timelineRef={reviewTimelineRef}
+            dense={isMobile}
+            isZooming={isZooming}
+            zoomDirection={zoomDirection}
+            possibleZoomLevels={possibleZoomLevels}
+            currentZoomLevel={currentZoomLevel}
+            orientation="horizontal"
+          />
+        )}
       </div>
     </>
   );
@@ -1648,7 +1629,7 @@ function MotionReview({
         </div>
       </div>
       {!selectedMotionPreviewCamera && (
-        <div className="no-scrollbar w-[55px] overflow-y-auto md:w-[100px]">
+        <div className="no-scrollbar w-full h-[100px] px-4 flex-shrink-0">
           {motionData ? (
             <MotionReviewTimeline
               segmentDuration={segmentDuration}
@@ -1673,6 +1654,7 @@ function MotionReview({
               isZooming={false}
               zoomDirection={null}
               alwaysShowMotionLine={true}
+              orientation="horizontal"
             />
           ) : (
             <Skeleton className="size-full" />

@@ -23,6 +23,7 @@ type VirtualizedEventSegmentsProps = {
   setHandlebarTime?: React.Dispatch<React.SetStateAction<number>>;
   dense: boolean;
   alignStartDateToTimeline: (timestamp: number) => number;
+  orientation?: "horizontal" | "vertical";
 };
 
 export interface VirtualizedEventSegmentsRef {
@@ -55,6 +56,7 @@ export const VirtualizedEventSegments = forwardRef<
       setHandlebarTime,
       dense,
       alignStartDateToTimeline,
+      orientation = "vertical",
     },
     ref,
   ) => {
@@ -63,19 +65,20 @@ export const VirtualizedEventSegments = forwardRef<
 
     const updateVisibleRange = useCallback(() => {
       if (timelineRef.current) {
-        const { scrollTop, clientHeight } = timelineRef.current;
+        const scroll = orientation === "horizontal" ? timelineRef.current.scrollLeft : timelineRef.current.scrollTop;
+        const client = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
         const start = Math.max(
           0,
-          Math.floor(scrollTop / SEGMENT_HEIGHT) - OVERSCAN_COUNT,
+          Math.floor(scroll / SEGMENT_HEIGHT) - OVERSCAN_COUNT,
         );
         const end = Math.min(
           segments.length,
-          Math.ceil((scrollTop + clientHeight) / SEGMENT_HEIGHT) +
+          Math.ceil((scroll + client) / SEGMENT_HEIGHT) +
             OVERSCAN_COUNT,
         );
         setVisibleRange({ start, end });
       }
-    }, [segments.length, timelineRef]);
+    }, [segments.length, timelineRef, orientation]);
 
     useEffect(() => {
       const container = timelineRef.current;
@@ -111,20 +114,27 @@ export const VirtualizedEventSegments = forwardRef<
           containerRef.current &&
           timelineRef.current
         ) {
-          const timelineHeight = timelineRef.current.clientHeight;
-          const targetScrollTop = segmentIndex * SEGMENT_HEIGHT;
-          const centeredScrollTop =
-            targetScrollTop - timelineHeight / 2 + SEGMENT_HEIGHT / 2;
+          const client = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
+          const targetScroll = segmentIndex * SEGMENT_HEIGHT;
+          const centeredScroll =
+            targetScroll - client / 2 + SEGMENT_HEIGHT / 2;
 
           const isVisible =
             segmentIndex > visibleRange.start + OVERSCAN_COUNT &&
             segmentIndex < visibleRange.end - OVERSCAN_COUNT;
 
           if (!ifNeeded || !isVisible) {
-            timelineRef.current.scrollTo({
-              top: Math.max(0, centeredScrollTop),
-              behavior: behavior,
-            });
+            if (orientation === "horizontal") {
+              timelineRef.current.scrollTo({
+                left: Math.max(0, centeredScroll),
+                behavior: behavior,
+              });
+            } else {
+              timelineRef.current.scrollTo({
+                top: Math.max(0, centeredScroll),
+                behavior: behavior,
+              });
+            }
           }
           updateVisibleRange();
         }
@@ -135,6 +145,7 @@ export const VirtualizedEventSegments = forwardRef<
         updateVisibleRange,
         timelineRef,
         visibleRange,
+        orientation,
       ],
     );
 
@@ -142,7 +153,7 @@ export const VirtualizedEventSegments = forwardRef<
       scrollToSegment,
     }));
 
-    const totalHeight = segments.length * SEGMENT_HEIGHT;
+    const totalSize = segments.length * SEGMENT_HEIGHT;
     const visibleSegments = segments.slice(
       visibleRange.start,
       visibleRange.end,
@@ -154,10 +165,15 @@ export const VirtualizedEventSegments = forwardRef<
         className="h-full w-full"
         style={{ position: "relative", willChange: "transform" }}
       >
-        <div style={{ height: `${totalHeight}px`, position: "relative" }}>
+        <div style={orientation === "horizontal" ? { width: `${totalSize}px`, height: "100%", position: "relative" } : { height: `${totalSize}px`, position: "relative" }}>
           {visibleRange.start > 0 && (
             <div
-              style={{
+              style={orientation === "horizontal" ? {
+                position: "absolute",
+                left: 0,
+                width: `${visibleRange.start * SEGMENT_HEIGHT}px`,
+                height: "100%",
+              } : {
                 position: "absolute",
                 top: 0,
                 height: `${visibleRange.start * SEGMENT_HEIGHT}px`,
@@ -171,7 +187,12 @@ export const VirtualizedEventSegments = forwardRef<
             return (
               <div
                 key={segmentId}
-                style={{
+                style={orientation === "horizontal" ? {
+                  position: "absolute",
+                  left: `${(visibleRange.start + index) * SEGMENT_HEIGHT}px`,
+                  width: `${SEGMENT_HEIGHT}px`,
+                  height: "100%",
+                } : {
                   position: "absolute",
                   top: `${(visibleRange.start + index) * SEGMENT_HEIGHT}px`,
                   height: `${SEGMENT_HEIGHT}px`,
@@ -191,16 +212,26 @@ export const VirtualizedEventSegments = forwardRef<
                   setHandlebarTime={setHandlebarTime}
                   scrollToSegment={scrollToSegment}
                   dense={dense}
+                  orientation={orientation}
                 />
               </div>
             );
           })}
           {visibleRange.end < segments.length && (
             <div
-              style={{
+              style={orientation === "horizontal" ? {
+                position: "absolute",
+                left: `${visibleRange.end * SEGMENT_HEIGHT}px`,
+                width: `${
+                  (segments.length - visibleRange.end) * SEGMENT_HEIGHT
+                }px`,
+                height: "100%",
+              } : {
                 position: "absolute",
                 top: `${visibleRange.end * SEGMENT_HEIGHT}px`,
-                height: `${(segments.length - visibleRange.end) * SEGMENT_HEIGHT}px`,
+                height: `${
+                  (segments.length - visibleRange.end) * SEGMENT_HEIGHT
+                }px`,
                 width: "100%",
               }}
               aria-hidden="true"

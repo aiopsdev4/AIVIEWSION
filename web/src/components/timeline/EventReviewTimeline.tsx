@@ -46,6 +46,7 @@ export type EventReviewTimelineProps = {
   onZoomChange?: (newZoomLevel: number) => void;
   possibleZoomLevels?: ZoomLevel[];
   currentZoomLevel?: number;
+  orientation?: "horizontal" | "vertical";
 };
 
 export function EventReviewTimeline({
@@ -76,6 +77,7 @@ export function EventReviewTimeline({
   onZoomChange,
   possibleZoomLevels,
   currentZoomLevel,
+  orientation = "vertical",
 }: EventReviewTimelineProps) {
   const internalTimelineRef = useRef<HTMLDivElement>(null);
   const selectedTimelineRef = timelineRef || internalTimelineRef;
@@ -167,6 +169,7 @@ export function EventReviewTimeline({
       onZoomChange={onZoomChange}
       possibleZoomLevels={possibleZoomLevels}
       currentZoomLevel={currentZoomLevel}
+      orientation={orientation}
     >
       <VirtualizedEventSegments
         ref={virtualizedSegmentsRef}
@@ -183,6 +186,7 @@ export function EventReviewTimeline({
         setHandlebarTime={setHandlebarTime}
         dense={dense}
         alignStartDateToTimeline={alignStartDateToTimeline}
+        orientation={orientation}
       />
     </ReviewTimeline>
   );
