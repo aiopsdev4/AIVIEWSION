@@ -91,9 +91,175 @@ def version():
     return VERSION
 
 
+def get_gpu_stats():
+    stats = []
+    total_gpu_memory_mb = 0
+    try:
+        import GPUtil
+        gpus = GPUtil.getGPUs()
+        for gpu in gpus:
+            item = {
+                "id": gpu.id,
+                "name": gpu.name,
+                "load": gpu.load * 100,
+                "memory_total": gpu.memoryTotal,
+                "memory_used": gpu.memoryUsed,
+                "memory_percent": (gpu.memoryUsed / gpu.memoryTotal) * 100 if gpu.memoryTotal > 0 else 0,
+                "temperature": gpu.temperature
+            }
+            stats.append(item)
+            total_gpu_memory_mb += gpu.memoryTotal
+        if stats:
+            return stats, total_gpu_memory_mb
+    except Exception:
+        pass
+
+    try:
+        import shutil
+        nvidia_smi = shutil.which("nvidia-smi")
+        if nvidia_smi:
+            import subprocess
+            cmd = [
+                nvidia_smi,
+                "--query-gpu=index,name,utilization.gpu,memory.total,memory.used,temperature.gpu",
+                "--format=csv,noheader,nounits",
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            if result.returncode == 0 and result.stdout.strip():
+                import csv
+                import io
+                reader = csv.reader(io.StringIO(result.stdout))
+                for row in reader:
+                    if len(row) < 6:
+                        continue
+                    try:
+                        gpu_id = int(row[0].strip())
+                        name = row[1].strip()
+                        load = float(row[2].strip() or 0)
+                        memory_total = float(row[3].strip() or 0)
+                        memory_used = float(row[4].strip() or 0)
+                        temperature = float(row[5].strip() or 0)
+                        stats.append({
+                            "id": gpu_id,
+                            "name": name,
+                            "load": load,
+                            "memory_total": memory_total,
+                            "memory_used": memory_used,
+                            "memory_percent": (memory_used / memory_total) * 100 if memory_total > 0 else 0,
+                            "temperature": temperature,
+                        })
+                        total_gpu_memory_mb += memory_total
+                    except Exception:
+                        continue
+    except Exception:
+        pass
+
+    return stats, total_gpu_memory_mb
+
+
 @router.get("/stats", dependencies=[Depends(allow_any_authenticated())])
 def stats(request: Request):
     return JSONResponse(content=request.app.stats_emitter.get_latest_stats())
+
+
+@router.get("/system/stats", dependencies=[Depends(allow_any_authenticated())])
+def system_stats(request: Request):
+    import psutil
+    import shutil
+    import subprocess
+    
+    # 1. CPU temp
+    cpu_temp = 48
+    try:
+        temps = psutil.sensors_temperatures()
+        if "coretemp" in temps and len(temps["coretemp"]) > 0:
+            cpu_temp = int(temps["coretemp"][0].current)
+    except Exception:
+        pass
+
+    # 2. GPU stats
+    gpu_stats, _ = get_gpu_stats()
+
+    # 3. CPU info
+    cpu_cores = 0
+    cpu_threads = 0
+    cpu_freq = 0
+    try:
+        cpu_cores = psutil.cpu_count(logical=False) or 0
+        cpu_threads = psutil.cpu_count(logical=True) or 0
+        freq = psutil.cpu_freq()
+        if freq and freq.current:
+            cpu_freq = float(freq.current)
+    except Exception:
+        pass
+
+    # 4. Memory
+    memory_info = {"total": 0, "available": 0, "used": 0, "percent": 0}
+    try:
+        mem = psutil.virtual_memory()
+        memory_info = {
+            "total": mem.total,
+            "available": mem.available,
+            "used": mem.used,
+            "percent": mem.percent
+        }
+    except Exception:
+        pass
+
+    # 5. Disk
+    disk_info = {"total": 0, "free": 0, "percent": 0}
+    try:
+        disk = psutil.disk_usage('/')
+        disk_info = {
+            "total": disk.total,
+            "free": disk.free,
+            "percent": disk.percent
+        }
+    except Exception:
+        pass
+
+    # 6. Network
+    network_info = {"bytes_sent": 0, "bytes_recv": 0}
+    try:
+        net_io = psutil.net_io_counters()
+        network_info = {
+            "bytes_sent": net_io.bytes_sent,
+            "bytes_recv": net_io.bytes_recv
+        }
+    except Exception:
+        pass
+
+    # 7. Processes
+    processes_info = []
+    try:
+        cpu_count = psutil.cpu_count(logical=True) or 1
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+            try:
+                pinfo = proc.info
+                if pinfo.get('cpu_percent') is not None:
+                    pinfo['cpu_percent'] = round(pinfo['cpu_percent'] / cpu_count, 1)
+                processes_info.append(pinfo)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        processes_info.sort(key=lambda x: x.get('cpu_percent') or 0, reverse=True)
+        processes_info = processes_info[:10]
+    except Exception:
+        pass
+
+    return JSONResponse(
+        content={
+            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "cpu_cores": cpu_cores,
+            "cpu_threads": cpu_threads,
+            "cpu_freq": cpu_freq,
+            "cpu_temp": cpu_temp,
+            "memory": memory_info,
+            "disk": disk_info,
+            "network": network_info,
+            "gpu": gpu_stats,
+            "processes": processes_info
+        }
+    )
 
 
 @router.get("/stats/history", dependencies=[Depends(allow_any_authenticated())])

@@ -1,5 +1,5 @@
 import Providers from "@/context/providers";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Wrapper from "@/components/Wrapper";
 import Sidebar from "@/components/navigation/Sidebar";
 
@@ -52,6 +52,7 @@ function DefaultAppView() {
   const { data: config } = useSWR<FrigateConfig>("config", {
     revalidateOnFocus: false,
   });
+  const location = useLocation();
 
   // Compute required roles for main routes, ensuring we have config first
   // to prevent race condition where custom roles are temporarily unavailable
@@ -69,10 +70,15 @@ function DefaultAppView() {
     );
   }
 
+  // Only show the fixed statusbar on non-system pages.
+  // This prevents it from following when scrolling on the system telemetry metrics page.
+  const isSystemPage = location.pathname.startsWith("/system");
+  const showStatusbar = isDesktop && !isSystemPage;
+
   return (
     <div className="size-full overflow-hidden">
       {isDesktop && <Sidebar />}
-      {isDesktop && <Statusbar />}
+      {showStatusbar && <Statusbar />}
       {isMobile && <Bottombar />}
       <div
         id="pageRoot"
@@ -80,7 +86,9 @@ function DefaultAppView() {
           "absolute right-0 top-0 overflow-hidden",
           isMobile
             ? `bottom-${isPWA ? 16 : 12} left-0 md:bottom-16 landscape:bottom-14 landscape:md:bottom-16`
-            : "bottom-8 left-[52px]",
+            : showStatusbar
+              ? "bottom-[108px] left-[52px]"
+              : "bottom-0 left-[52px]",
         )}
       >
         <Suspense

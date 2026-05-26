@@ -44,6 +44,7 @@ export default function AddDeviceDialog({ onSave, isOpen, setIsOpen }: AddDevice
   
   const [probing, setProbing] = useState(false);
   const [probeSuccess, setProbeSuccess] = useState<boolean | null>(null);
+  const [activeTab, setActiveTab] = useState("discovery");
 
   const handleProbe = () => {
     if (!newAsset.ip_address || !newAsset.username || !newAsset.password) {
@@ -59,12 +60,14 @@ export default function AddDeviceDialog({ onSave, isOpen, setIsOpen }: AddDevice
         ...prev,
         rtsp_url: `rtsp://${prev.username}:${prev.password}@${prev.ip_address}:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif`
       }));
+      // Automatically switch to manual setup tab on success
+      setActiveTab("manual");
     }, 1500);
   };
 
   const handleSaveClick = async () => {
     if (!newAsset.name || !newAsset.rtsp_url) {
-      toast.error("Please ensure asset is named and stream is verified");
+      toast.error("Please ensure asset is named and stream URL is filled");
       return;
     }
     await onSave(newAsset);
@@ -78,10 +81,28 @@ export default function AddDeviceDialog({ onSave, isOpen, setIsOpen }: AddDevice
       rtsp_url: ""
     });
     setProbeSuccess(null);
+    setActiveTab("discovery");
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      // Clean reset when dialog is closed/cancelled
+      setNewAsset({
+        name: "",
+        device_type: "cctv",
+        ip_address: "",
+        username: "",
+        password: "",
+        rtsp_url: ""
+      });
+      setProbeSuccess(null);
+      setActiveTab("discovery");
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2">
           <MdAdd className="h-4 w-4" />
@@ -95,32 +116,34 @@ export default function AddDeviceDialog({ onSave, isOpen, setIsOpen }: AddDevice
             Enter the connection details to discover and register an asset.
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="discovery" className="mt-4">
+        
+        {/* Shared Device Type Selector */}
+        <div className="space-y-2 mt-4">
+          <Label htmlFor="device_type">Device Type</Label>
+          <Select 
+            value={newAsset.device_type} 
+            onValueChange={(val) => setNewAsset({...newAsset, device_type: val})}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select device type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cctv">CCTV Camera</SelectItem>
+              <SelectItem value="nvr">NVR System</SelectItem>
+              <SelectItem value="ptz">PTZ Camera</SelectItem>
+              <SelectItem value="bodycam">Body Camera</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="discovery">Discovery</TabsTrigger>
-            <TabsTrigger value="manual" disabled={!probeSuccess}>Registration</TabsTrigger>
+            <TabsTrigger value="discovery">Auto Discovery</TabsTrigger>
+            <TabsTrigger value="manual">Manual Setup</TabsTrigger>
           </TabsList>
           
           <TabsContent value="discovery" className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="device_type">Device Type</Label>
-                <Select 
-                  value={newAsset.device_type} 
-                  onValueChange={(val) => setNewAsset({...newAsset, device_type: val})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select device type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cctv">CCTV Camera</SelectItem>
-                    <SelectItem value="nvr">NVR System</SelectItem>
-                    <SelectItem value="ptz">PTZ Camera</SelectItem>
-                    <SelectItem value="bodycam">Body Camera</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="ip">IP Address / Host</Label>
                 <Input 
@@ -184,12 +207,13 @@ export default function AddDeviceDialog({ onSave, isOpen, setIsOpen }: AddDevice
               <Label htmlFor="rtsp">Detected RTSP Stream URL (Editable)</Label>
               <Input 
                 id="rtsp" 
+                placeholder="rtsp://username:password@ip:port/stream_path"
                 value={newAsset.rtsp_url} 
                 onChange={(e) => setNewAsset({...newAsset, rtsp_url: e.target.value})} 
               />
             </div>
             <div className="flex justify-end pt-4 gap-3">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
               <Button onClick={handleSaveClick}>Save Registration</Button>
             </div>
           </TabsContent>

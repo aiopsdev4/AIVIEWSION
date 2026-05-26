@@ -22,6 +22,7 @@ import { ThresholdBarGraph } from "@/components/graph/SystemGraph";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { CiCircleAlert } from "react-icons/ci";
+import Statusbar from "@/components/Statusbar";
 
 type GeneralMetricsProps = {
   lastUpdated: number;
@@ -1000,6 +1001,8 @@ export default function GeneralMetrics({
             <Skeleton className="aspect-tall w-full" />
           )}
         </div>
+        
+        <Statusbar isStatic />
       </div>
     </>
   );
