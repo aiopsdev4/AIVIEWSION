@@ -2,6 +2,7 @@ import Providers from "@/context/providers";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Wrapper from "@/components/Wrapper";
 import Sidebar from "@/components/navigation/Sidebar";
+import Header from "@/components/navigation/Header";
 
 import { isDesktop, isMobile } from "react-device-detect";
 import Statusbar from "./components/Statusbar";
@@ -77,18 +78,19 @@ function DefaultAppView() {
 
   return (
     <div className="size-full overflow-hidden">
+      {isDesktop && <Header />}
       {isDesktop && <Sidebar />}
       {showStatusbar && <Statusbar />}
       {isMobile && <Bottombar />}
       <div
         id="pageRoot"
         className={cn(
-          "absolute right-0 top-0 overflow-hidden",
+          "absolute right-0 overflow-hidden",
           isMobile
-            ? `bottom-${isPWA ? 16 : 12} left-0 md:bottom-16 landscape:bottom-14 landscape:md:bottom-16`
+            ? `top-0 bottom-${isPWA ? 16 : 12} left-0 md:bottom-16 landscape:bottom-14 landscape:md:bottom-16`
             : showStatusbar
-              ? "bottom-[108px] left-[52px]"
-              : "bottom-0 left-[52px]",
+              ? "top-14 bottom-[108px] left-[52px]"
+              : "top-14 bottom-0 left-[52px]",
         )}
       >
         <Suspense

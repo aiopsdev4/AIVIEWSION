@@ -1,11 +1,5 @@
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { baseUrl } from "../../api/baseUrl";
 import { cn } from "@/lib/utils";
-import { TooltipPortal } from "@radix-ui/react-tooltip";
 import { isDesktop } from "react-device-detect";
 import { VscAccount } from "react-icons/vsc";
 import {
@@ -82,28 +76,21 @@ export default function AccountSettings({ className }: AccountSettingsProps) {
 
   return (
     <Container modal={!isDesktop}>
-      <Tooltip>
-        <Trigger asChild>
-          <TooltipTrigger asChild>
-            <div
-              className={cn(
-                "flex flex-col items-center justify-center",
-                isDesktop
-                  ? "cursor-pointer rounded-lg bg-secondary text-secondary-foreground hover:bg-muted"
-                  : "text-secondary-foreground",
-                className,
-              )}
-            >
-              <VscAccount className="size-5 md:m-[6px]" />
-            </div>
-          </TooltipTrigger>
-        </Trigger>
-        <TooltipPortal>
-          <TooltipContent side="right" sideOffset={5}>
-            <p>{t("menu.user.account", { ns: "common" })}</p>
-          </TooltipContent>
-        </TooltipPortal>
-      </Tooltip>
+      <Trigger asChild>
+        <div
+          className={cn(
+            "flex items-center gap-2.5 cursor-pointer rounded-lg hover:bg-white/5 p-1 px-2.5 transition-colors",
+            className,
+          )}
+        >
+          <div className="flex items-center justify-center size-8 rounded-full bg-blue-500 text-white shadow-sm">
+            <VscAccount className="size-5" />
+          </div>
+          <span className="text-sm font-medium text-slate-200 select-none">
+            {profile?.username || "admin"}
+          </span>
+        </div>
+      </Trigger>
 
       <Content
         className={cn(
