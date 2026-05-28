@@ -63,21 +63,24 @@ def get_auth_header(username: str, password: str) -> str:
 """
 
 async def check_ip_ports(ip: str, sem: asyncio.Semaphore) -> Tuple[str, List[int]]:
-    """Asynchronously scan defined ports on an IP address."""
+    """Asynchronously scan defined ports on an IP address in parallel."""
     async with sem:
         open_ports = []
-        for port in PORTS_TO_SCAN:
+        
+        async def check_single_port(port: int):
             try:
                 reader, writer = await asyncio.wait_for(
                     asyncio.open_connection(ip, port),
-                    timeout=0.6
+                    timeout=0.5
                 )
                 open_ports.append(port)
                 writer.close()
                 await writer.wait_closed()
             except Exception:
                 pass
-        return ip, open_ports
+
+        await asyncio.gather(*(check_single_port(p) for p in PORTS_TO_SCAN))
+        return ip, sorted(open_ports)
 
 def send_soap_request(ip: str, port: int, body_content: str, username: str = "", password: str = "") -> str:
     """Send SOAP XML request to a device ONVIF service endpoint."""
@@ -170,6 +173,7 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
     """Execute ffprobe asynchronously to perform a frame-level playability check."""
     cmd = [
         FFPROBE_PATH, "-v", "error",
+        "-rtsp_transport", "tcp",
         "-select_streams", "v:0",
         "-show_entries", "stream=codec_name,width,height,r_frame_rate",
         "-of", "default=noprint_wrappers=1:nokey=0",
@@ -181,7 +185,7 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=3.5)
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=3.0)
         if proc.returncode == 0:
             out = stdout.decode().strip()
             info = {}

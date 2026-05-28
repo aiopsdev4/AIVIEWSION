@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { MdSearch, MdDownload, MdRefresh, MdAdd } from "react-icons/md";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 import { FrigateConfig } from "@/types/frigateConfig";
-import { removeCameraFromYaml, addCameraToYaml } from "@/helpers/configHelpers";
+import { addCameraToYaml } from "@/helpers/configHelpers";
 import { saveAndRestartConfig } from "@/services/configService";
 
 import AssetTable, { Asset } from "@/components/assets/AssetTable";
@@ -41,9 +42,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-
 export default function AssetsDashboard() {
   const { t } = useTranslation(["views/settings"]);
+  const { mutate } = useSWRConfig();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
@@ -114,10 +115,11 @@ export default function AssetsDashboard() {
     setCameraToDelete(null);
     setIsDeleting(camId);
     try {
-      const updatedYaml = removeCameraFromYaml(rawConfig!, camId);
-      await saveAndRestartConfig(updatedYaml);
-      toast.success("Device deleted! The video engine is rebooting...");
-      setTimeout(pollServer, 5000);
+      await axios.delete(`cameras/${camId}`);
+      toast.success("Device deleted successfully! Database and files cleaned.");
+      mutate("config");
+      mutate("config/raw");
+      setIsDeleting(null);
     } catch (e) {
       const err = e as {
         response?: { data?: { message?: string } };
@@ -132,26 +134,28 @@ export default function AssetsDashboard() {
     }
   };
 
-  const handleSave = async (newAsset: NewAsset) => {
+  const handleSaveMultiple = async (newAssets: NewAsset[]) => {
     if (!rawConfig) {
       toast.error("System configuration not loaded yet.");
       return;
     }
 
-    const camId = newAsset.name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+    let updatedYaml = rawConfig;
+    const registeredIds = Object.keys(config?.cameras || {});
 
-    if (Object.keys(config?.cameras || {}).includes(camId)) {
-      toast.error(
-        `Device ID '${camId}' is already registered! Use a unique name.`,
-      );
-      return;
+    for (const asset of newAssets) {
+      const camId = asset.name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+      if (registeredIds.includes(camId)) {
+        toast.warning(`Device ID '${camId}' is already registered! Skipping.`);
+        continue;
+      }
+      updatedYaml = addCameraToYaml(updatedYaml, camId, asset.rtsp_url);
     }
 
     try {
-      const updatedYaml = addCameraToYaml(rawConfig, camId, newAsset.rtsp_url);
       await saveAndRestartConfig(updatedYaml);
       toast.success(
-        "Asset saved! The video engine is now rebooting, please wait...",
+        "Assets saved! The video engine is now rebooting, please wait...",
       );
       setIsAdding(false);
       setTimeout(pollServer, 5000);
@@ -191,7 +195,7 @@ export default function AssetsDashboard() {
           <AutoDiscoverDialog
             isOpen={isDiscovering}
             setIsOpen={setIsDiscovering}
-            onSave={handleSave}
+            onSaveMultiple={handleSaveMultiple}
           />
           <Button
             className="flex items-center gap-2"
@@ -243,18 +247,25 @@ export default function AssetsDashboard() {
         />
       </Card>
 
-      <AlertDialog open={!!cameraToDelete} onOpenChange={(open) => !open && setCameraToDelete(null)}>
+      <AlertDialog
+        open={!!cameraToDelete}
+        onOpenChange={(open) => !open && setCameraToDelete(null)}
+      >
         <AlertDialogContent className="border-secondary-highlight bg-background">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-primary">Delete Device</AlertDialogTitle>
+            <AlertDialogTitle className="text-primary">
+              Delete Device
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete the device '{cameraToDelete}'? This action cannot be undone and will reboot the video engine.
+              Are you sure you want to permanently delete the device '
+              {cameraToDelete}'? This action cannot be undone and will reboot
+              the video engine.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-danger text-danger-foreground hover:bg-danger/90"
+              className="text-danger-foreground bg-danger hover:bg-danger/90"
               onClick={confirmDelete}
             >
               Delete

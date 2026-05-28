@@ -24,7 +24,7 @@ import ActivityIndicator from "@/components/indicators/activity-indicator";
 import { NewAsset } from "./AddDeviceDialog";
 
 interface AutoDiscoverDialogProps {
-  onSave: (asset: NewAsset) => Promise<void>;
+  onSaveMultiple: (assets: NewAsset[]) => Promise<void>;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
@@ -47,7 +47,7 @@ interface DiscoveredDevice {
 }
 
 export default function AutoDiscoverDialog({
-  onSave,
+  onSaveMultiple,
   isOpen,
   setIsOpen,
 }: AutoDiscoverDialogProps) {
@@ -69,7 +69,8 @@ export default function AutoDiscoverDialog({
       const data = await res.json();
       setDevices(
         data.map((dev: DiscoveredDevice) => {
-          const suffix = dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
+          const suffix =
+            dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
           return {
             ...dev,
             selected: dev.status === "Online",
@@ -77,9 +78,11 @@ export default function AutoDiscoverDialog({
             username: dev.username || "admin",
             password: dev.password || "password1",
           };
-        })
+        }),
       );
-      toast.success(`Scan complete! Found ${data.length} active camera devices.`);
+      toast.success(
+        `Scan complete! Found ${data.length} active camera devices.`,
+      );
     } catch (e) {
       toast.error(`Scan failed: ${(e as Error).message}`);
     } finally {
@@ -91,7 +94,8 @@ export default function AutoDiscoverDialog({
     const dev = devices[idx];
     setTestingRows((prev) => ({ ...prev, [idx]: true }));
     try {
-      const channelParam = dev.channel_index !== undefined ? `&channel=${dev.channel_index}` : "";
+      const channelParam =
+        dev.channel_index !== undefined ? `&channel=${dev.channel_index}` : "";
       const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${dev.username || ""}&password=${dev.password || ""}${channelParam}`;
       const res = await fetch(url);
       if (!res.ok) {
@@ -101,12 +105,15 @@ export default function AutoDiscoverDialog({
       if (data && data.length > 0) {
         const tested = data[0];
         const updated = [...devices];
-        const suffix = dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
+        const suffix =
+          dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
         updated[idx] = {
           ...dev,
           ...tested,
           selected: tested.status === "Online",
-          customName: dev.customName || `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
+          customName:
+            dev.customName ||
+            `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
           username: dev.username,
           password: dev.password,
         };
@@ -114,7 +121,9 @@ export default function AutoDiscoverDialog({
         if (tested.status === "Online") {
           toast.success(`Successfully verified connection to ${dev.ip}!`);
         } else {
-          toast.warning(`Connection tested but stream is unplayable: ${tested.status}`);
+          toast.warning(
+            `Connection tested but stream is unplayable: ${tested.status}`,
+          );
         }
       } else {
         toast.error(`No response from device at ${dev.ip}`);
@@ -134,28 +143,29 @@ export default function AutoDiscoverDialog({
     }
 
     setSaving(true);
-    let successCount = 0;
     try {
+      const assetsToSave: NewAsset[] = [];
       for (const dev of selectedDevices) {
         const name = dev.customName || `cam_${dev.ip.replace(/\./g, "_")}`;
-        
+
         // Ensure RTSP URL uses the latest typed credentials
         const updatedRtsp = dev.rtsp_url
-          ? dev.rtsp_url.replace(/rtsp:\/\/[^@]+@/, `rtsp://${dev.username}:${dev.password}@`)
+          ? dev.rtsp_url.replace(
+              /rtsp:\/\/[^@]+@/,
+              `rtsp://${dev.username}:${dev.password}@`,
+            )
           : `rtsp://${dev.username}:${dev.password}@${dev.ip}:554/h264/ch1/main/av_stream`;
 
-        const asset: NewAsset = {
+        assetsToSave.push({
           name,
           device_type: dev.device_type,
           ip_address: dev.ip,
           username: dev.username || "",
           password: dev.password || "",
           rtsp_url: updatedRtsp,
-        };
-        await onSave(asset);
-        successCount++;
+        });
       }
-      toast.success(`Successfully registered ${successCount} device(s)! Video engine is rebooting.`);
+      await onSaveMultiple(assetsToSave);
       setIsOpen(false);
       setDevices([]);
     } catch (e) {
@@ -173,20 +183,24 @@ export default function AutoDiscoverDialog({
           Auto-Discover
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[950px] bg-background border border-secondary-highlight shadow-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border border-secondary-highlight bg-background shadow-xl sm:max-w-[950px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-primary">
             Network CCTV Auto-Scanner
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Scan local network range and dynamically manage individual device credentials.
+            Scan local network range and dynamically manage individual device
+            credentials.
           </DialogDescription>
         </DialogHeader>
 
         {/* Scanner Configurations */}
-        <div className="flex gap-4 items-end mt-4 p-4 border border-secondary-highlight bg-card rounded-lg max-w-sm">
-          <div className="space-y-2 flex-grow">
-            <Label htmlFor="subnet" className="text-xs font-semibold text-foreground">
+        <div className="mt-4 flex max-w-sm items-end gap-4 rounded-lg border border-secondary-highlight bg-card p-4">
+          <div className="flex-grow space-y-2">
+            <Label
+              htmlFor="subnet"
+              className="text-xs font-semibold text-foreground"
+            >
               Target Subnet Range
             </Label>
             <Input
@@ -194,15 +208,19 @@ export default function AutoDiscoverDialog({
               placeholder="e.g. 172.16.0"
               value={subnet}
               onChange={(e) => setSubnet(e.target.value)}
-              className="bg-background h-9"
+              className="h-9 bg-background"
             />
           </div>
           <Button
             onClick={handleScan}
             disabled={scanning || !subnet}
-            className="flex items-center justify-center gap-2 h-9"
+            className="flex h-9 items-center justify-center gap-2"
           >
-            {scanning ? <ActivityIndicator className="h-4 w-4" /> : <MdSearch className="h-5 w-5" />}
+            {scanning ? (
+              <ActivityIndicator className="h-4 w-4" />
+            ) : (
+              <MdSearch className="h-5 w-5" />
+            )}
             {scanning ? "Scanning..." : "Scan Subnet"}
           </Button>
         </div>
@@ -210,21 +228,21 @@ export default function AutoDiscoverDialog({
         {/* Scan Status / Results Table */}
         <div className="mt-6">
           {scanning && (
-            <div className="flex flex-col items-center justify-center py-16 space-y-4">
-              <div className="relative flex items-center justify-center w-24 h-24">
-                <div className="absolute w-full h-full rounded-full border-4 border-primary/20 animate-ping" />
-                <div className="absolute w-16 h-16 rounded-full border-4 border-primary/40 animate-pulse" />
-                <MdSettingsEthernet className="h-10 w-10 text-primary animate-spin" />
+            <div className="flex flex-col items-center justify-center space-y-4 py-16">
+              <div className="relative flex h-24 w-24 items-center justify-center">
+                <div className="absolute h-full w-full animate-ping rounded-full border-4 border-primary/20" />
+                <div className="absolute h-16 w-16 animate-pulse rounded-full border-4 border-primary/40" />
+                <MdSettingsEthernet className="h-10 w-10 animate-spin text-primary" />
               </div>
-              <p className="text-sm font-medium text-primary animate-pulse">
+              <p className="animate-pulse text-sm font-medium text-primary">
                 Probing active IPs and ONVIF profiles...
               </p>
             </div>
           )}
 
           {!scanning && devices.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 border border-dashed border-secondary-highlight rounded-lg">
-              <MdSettingsEthernet className="h-12 w-12 text-muted-foreground mb-2" />
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-secondary-highlight py-12">
+              <MdSettingsEthernet className="mb-2 h-12 w-12 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 No search results. Enter a subnet above and click scan.
               </p>
@@ -236,11 +254,11 @@ export default function AutoDiscoverDialog({
               <h3 className="text-sm font-semibold text-foreground">
                 Discovered Camera Assets ({devices.length})
               </h3>
-              <div className="border border-secondary-highlight bg-card rounded-md overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
+              <div className="overflow-hidden rounded-md border border-secondary-highlight bg-card">
+                <table className="w-full border-collapse text-left text-xs">
                   <thead>
-                    <tr className="bg-background border-b border-secondary-highlight text-muted-foreground font-semibold">
-                      <th className="p-3 w-8"></th>
+                    <tr className="border-b border-secondary-highlight bg-background font-semibold text-muted-foreground">
+                      <th className="w-8 p-3"></th>
                       <th className="p-3">Brand & Model</th>
                       <th className="p-3">IP Address</th>
                       <th className="p-3">Type</th>
@@ -248,7 +266,7 @@ export default function AutoDiscoverDialog({
                       <th className="p-3">PTZ</th>
                       <th className="p-3">Status</th>
                       <th className="p-3">Device Credentials</th>
-                      <th className="p-3 w-16">Verify</th>
+                      <th className="w-16 p-3">Verify</th>
                       <th className="p-3">Name Device</th>
                     </tr>
                   </thead>
@@ -256,7 +274,7 @@ export default function AutoDiscoverDialog({
                     {devices.map((dev, idx) => (
                       <tr
                         key={idx}
-                        className={`border-b border-secondary-highlight hover:bg-background_alt transition ${
+                        className={`border-b border-secondary-highlight transition hover:bg-background_alt ${
                           dev.selected ? "bg-primary/5" : ""
                         }`}
                       >
@@ -270,7 +288,7 @@ export default function AutoDiscoverDialog({
                               updated[idx].selected = e.target.checked;
                               setDevices(updated);
                             }}
-                            className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                           />
                         </td>
                         <td className="p-3 font-medium">
@@ -281,13 +299,15 @@ export default function AutoDiscoverDialog({
                             {dev.model}
                           </div>
                         </td>
-                        <td className="p-3 text-foreground font-mono">{dev.ip}</td>
+                        <td className="p-3 font-mono text-foreground">
+                          {dev.ip}
+                        </td>
                         <td className="p-3">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                               dev.device_type === "nvr"
-                                ? "bg-purple-900/40 text-purple-300 border border-purple-800"
-                                : "bg-blue-900/40 text-blue-300 border border-blue-800"
+                                ? "border border-purple-800 bg-purple-900/40 text-purple-300"
+                                : "border border-blue-800 bg-blue-900/40 text-blue-300"
                             }`}
                           >
                             {dev.device_type}
@@ -304,22 +324,24 @@ export default function AutoDiscoverDialog({
                           {dev.ptz ? (
                             <MdOpenWith className="h-4 w-4 text-green-400" />
                           ) : (
-                            <span className="text-[10px] text-muted-foreground">-</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              -
+                            </span>
                           )}
                         </td>
                         <td className="p-3">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                               dev.status === "Online"
-                                ? "bg-green-950 text-green-400 border border-green-900"
-                                : "bg-red-950 text-red-400 border border-red-900"
+                                ? "border border-green-900 bg-green-950 text-green-400"
+                                : "border border-red-900 bg-red-950 text-red-400"
                             }`}
                           >
                             {dev.status}
                           </span>
                         </td>
                         <td className="p-3">
-                          <div className="flex flex-col gap-1 max-w-[120px]">
+                          <div className="flex max-w-[120px] flex-col gap-1">
                             <Input
                               placeholder="Username"
                               value={dev.username || ""}
@@ -328,7 +350,7 @@ export default function AutoDiscoverDialog({
                                 updated[idx].username = e.target.value;
                                 setDevices(updated);
                               }}
-                              className="h-6 text-[10px] py-0.5 px-1.5 bg-background"
+                              className="h-6 bg-background px-1.5 py-0.5 text-[10px]"
                             />
                             <Input
                               placeholder="Password"
@@ -339,7 +361,7 @@ export default function AutoDiscoverDialog({
                                 updated[idx].password = e.target.value;
                                 setDevices(updated);
                               }}
-                              className="h-6 text-[10px] py-0.5 px-1.5 bg-background"
+                              className="h-6 bg-background px-1.5 py-0.5 text-[10px]"
                             />
                           </div>
                         </td>
@@ -349,9 +371,13 @@ export default function AutoDiscoverDialog({
                             variant="outline"
                             onClick={() => handleTestRow(idx)}
                             disabled={testingRows[idx]}
-                            className="h-7 text-[10px] px-2 font-medium"
+                            className="h-7 px-2 text-[10px] font-medium"
                           >
-                            {testingRows[idx] ? <ActivityIndicator className="h-3 w-3" /> : "Test"}
+                            {testingRows[idx] ? (
+                              <ActivityIndicator className="h-3 w-3" />
+                            ) : (
+                              "Test"
+                            )}
                           </Button>
                         </td>
                         <td className="p-3">
@@ -364,7 +390,7 @@ export default function AutoDiscoverDialog({
                               updated[idx].customName = e.target.value;
                               setDevices(updated);
                             }}
-                            className="h-7 text-xs bg-background max-w-[130px]"
+                            className="h-7 max-w-[130px] bg-background text-xs"
                           />
                         </td>
                       </tr>
@@ -386,11 +412,19 @@ export default function AutoDiscoverDialog({
                 </Button>
                 <Button
                   onClick={handleOnboard}
-                  disabled={saving || devices.filter((d) => d.selected).length === 0}
+                  disabled={
+                    saving || devices.filter((d) => d.selected).length === 0
+                  }
                   className="flex items-center gap-2"
                 >
-                  {saving ? <ActivityIndicator className="h-4 w-4" /> : <MdCheck className="h-4 w-4" />}
-                  {saving ? "Registering Assets..." : "Register Selected Devices"}
+                  {saving ? (
+                    <ActivityIndicator className="h-4 w-4" />
+                  ) : (
+                    <MdCheck className="h-4 w-4" />
+                  )}
+                  {saving
+                    ? "Registering Assets..."
+                    : "Register Selected Devices"}
                 </Button>
               </div>
             </div>
