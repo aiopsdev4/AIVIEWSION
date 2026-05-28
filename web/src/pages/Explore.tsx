@@ -777,7 +777,7 @@ export default function Explore() {
           </div>
 
           {/* Column 3: Details & Controls */}
-          <div className="flex w-96 flex-col border-l border-border/60 bg-background/95">
+          <div className="flex w-[450px] flex-col border-l border-border/60 bg-background/95">
             {/* 1. Video Player */}
             <div className="p-4 border-b border-border/50 flex flex-col gap-3">
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
@@ -881,45 +881,8 @@ export default function Explore() {
               )}
             </div>
 
-            {/* 2. Event Video List */}
-            <div className="flex-1 flex flex-col overflow-hidden min-h-0 border-b border-border/50">
-              <div className="p-4 pb-2">
-                <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
-                  Event Video
-                </h2>
-              </div>
-              <ScrollArea className="flex-1">
-                <div className="flex flex-col gap-1 p-3 pt-1">
-                  {gridEvents.map((event) => (
-                    <div
-                      key={event.id}
-                      onClick={() => setSelectedEvent(event)}
-                      className={cn(
-                        "flex flex-col gap-0.5 p-2.5 rounded-lg text-xs cursor-pointer transition-all duration-200 border",
-                        selectedEvent?.id === event.id
-                          ? "bg-accent border-primary/30 text-accent-foreground shadow-sm"
-                          : "hover:bg-accent/40 border-transparent text-muted-foreground"
-                      )}
-                    >
-                      <div className="flex items-center justify-between font-medium">
-                        <span className="truncate">
-                          {event.camera.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                        </span>
-                        <span className="text-[10px] opacity-80">
-                          {new Date(event.start_time * 1000).toLocaleTimeString(undefined, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <div className="text-[10px] opacity-75">
-                        {new Date(event.start_time * 1000).toLocaleDateString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
+            {/* Spacer */}
+            <div className="flex-1 bg-background/95 border-b border-border/50" />
 
             {/* 3. Calendar Widget */}
             <div className="p-4 bg-background/95">
