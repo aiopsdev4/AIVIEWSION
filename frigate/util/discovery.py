@@ -294,7 +294,100 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
     # This prevents non-CCTV webservers/printers on Port 80/8080 from appearing.
     return False, {}
 
-async def scan_network(subnet_prefix: str, custom_user: str = "", custom_pwd: str = "") -> List[Dict[str, Any]]:
+async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Dict[str, Any]]:
+    """Probe an NVR to find all connected active channels and return them as separate devices."""
+    if dev.get("device_type") != "nvr":
+        return [dev]
+        
+    ip = dev["ip"]
+    manufacturer = dev.get("manufacturer", "Generic")
+    username = dev.get("username", "admin")
+    password = dev.get("password", "password1")
+    port = dev.get("port", 554)
+    mac = dev.get("mac", "")
+    
+    brand_lower = manufacturer.lower()
+    is_dahua = "dahua" in brand_lower
+    is_hik = "hikvision" in brand_lower
+    
+    active_channels = []
+    
+    # If a specific channel is requested, only probe that one
+    ch_range = [channel] if channel is not None else list(range(1, 17))
+    
+    sem = asyncio.Semaphore(8)
+    
+    async def probe_ch(ch_idx: int) -> Dict[str, Any] | None:
+        async with sem:
+            # Dahua URL
+            dahua_url = f"rtsp://{username}:{password}@{ip}:554/cam/realmonitor?channel={ch_idx}&subtype=0"
+            # Hikvision URL
+            hik_url = f"rtsp://{username}:{password}@{ip}:554/Streaming/Channels/{ch_idx}01"
+            
+            urls = []
+            if is_dahua:
+                urls = [dahua_url, hik_url]
+            elif is_hik:
+                urls = [hik_url, dahua_url]
+            else:
+                urls = [dahua_url, hik_url]
+                
+            for url in urls:
+                try:
+                    playable, codec, w, h, fps = await validate_rtsp_stream(url)
+                    if playable:
+                        return {
+                            "ip": ip,
+                            "mac": mac,
+                            "status": "Online",
+                            "manufacturer": manufacturer,
+                            "model": f"{dev.get('model', 'NVR')} (Channel {ch_idx})",
+                            "device_type": "cctv",
+                            "ptz": dev.get("ptz", False),
+                            "audio": dev.get("audio", False),
+                            "port": port,
+                            "rtsp_url": url,
+                            "username": username,
+                            "password": password,
+                            "resolution": f"{w}x{h}",
+                            "fps": fps,
+                            "codec": codec,
+                            "channel_index": ch_idx
+                        }
+                except Exception:
+                    pass
+            return None
+
+    tasks = [probe_ch(ch) for ch in ch_range]
+    results = await asyncio.gather(*tasks)
+    
+    expanded = [r for r in results if r is not None]
+    
+    if not expanded:
+        # Fallback: if no active channels are found, return the NVR device itself
+        if channel is not None:
+            # If specifically testing a channel that failed, return it as offline
+            url = f"rtsp://{username}:{password}@{ip}:554/cam/realmonitor?channel={channel}&subtype=0" if is_dahua else f"rtsp://{username}:{password}@{ip}:554/Streaming/Channels/{channel}01"
+            return [{
+                "ip": ip,
+                "mac": mac,
+                "status": "Offline",
+                "manufacturer": manufacturer,
+                "model": f"{dev.get('model', 'NVR')} (Channel {channel})",
+                "device_type": "cctv",
+                "ptz": False,
+                "audio": False,
+                "port": port,
+                "rtsp_url": url,
+                "username": username,
+                "password": password,
+                "channel_index": channel
+            }]
+        return [dev]
+        
+    return expanded
+
+async def scan_network(subnet_prefix: str, custom_user: str = "", custom_pwd: str = "", channel: int = None) -> List[Dict[str, Any]]:
     """Scan subnet and probe all active IPs concurrently or test a single IP."""
     if subnet_prefix.count(".") == 3:
         logger.info("Probing single IP: %s", subnet_prefix)
@@ -303,7 +396,9 @@ async def scan_network(subnet_prefix: str, custom_user: str = "", custom_pwd: st
         if not open_ports:
             return []
         is_cam, dev = await probe_device(subnet_prefix, open_ports, custom_user, custom_pwd)
-        return [dev] if is_cam else []
+        if not is_cam:
+            return []
+        return await expand_nvr_device(dev, channel)
 
     logger.info("Scanning local subnet: %s.0/24", subnet_prefix)
     sem = asyncio.Semaphore(60)
@@ -326,4 +421,12 @@ async def scan_network(subnet_prefix: str, custom_user: str = "", custom_pwd: st
     
     # Filter out discarded (non-CCTV) devices
     devices = [dev for is_cam, dev in probe_results if is_cam]
-    return devices
+    
+    # 3. Expand NVRs into separate channels
+    final_devices = []
+    expand_tasks = [expand_nvr_device(dev, channel) for dev in devices]
+    expand_results = await asyncio.gather(*expand_tasks)
+    for res_list in expand_results:
+        final_devices.extend(res_list)
+        
+    return final_devices

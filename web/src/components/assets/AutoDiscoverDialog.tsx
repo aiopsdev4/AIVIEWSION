@@ -43,6 +43,7 @@ interface DiscoveredDevice {
   password?: string;
   customName?: string;
   selected?: boolean;
+  channel_index?: number;
 }
 
 export default function AutoDiscoverDialog({
@@ -67,13 +68,16 @@ export default function AutoDiscoverDialog({
       }
       const data = await res.json();
       setDevices(
-        data.map((dev: DiscoveredDevice) => ({
-          ...dev,
-          selected: dev.status === "Online",
-          customName: `${dev.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${dev.ip.split(".").pop()}`,
-          username: dev.username || "admin",
-          password: dev.password || "password1",
-        }))
+        data.map((dev: DiscoveredDevice) => {
+          const suffix = dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
+          return {
+            ...dev,
+            selected: dev.status === "Online",
+            customName: `${dev.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${dev.ip.split(".").pop()}${suffix}`,
+            username: dev.username || "admin",
+            password: dev.password || "password1",
+          };
+        })
       );
       toast.success(`Scan complete! Found ${data.length} active camera devices.`);
     } catch (e) {
@@ -87,7 +91,8 @@ export default function AutoDiscoverDialog({
     const dev = devices[idx];
     setTestingRows((prev) => ({ ...prev, [idx]: true }));
     try {
-      const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${dev.username || ""}&password=${dev.password || ""}`;
+      const channelParam = dev.channel_index !== undefined ? `&channel=${dev.channel_index}` : "";
+      const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${dev.username || ""}&password=${dev.password || ""}${channelParam}`;
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error(await res.text());
@@ -96,11 +101,12 @@ export default function AutoDiscoverDialog({
       if (data && data.length > 0) {
         const tested = data[0];
         const updated = [...devices];
+        const suffix = dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
         updated[idx] = {
           ...dev,
           ...tested,
           selected: tested.status === "Online",
-          customName: dev.customName || `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}`,
+          customName: dev.customName || `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
           username: dev.username,
           password: dev.password,
         };
