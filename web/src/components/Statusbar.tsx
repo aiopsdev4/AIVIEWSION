@@ -101,6 +101,7 @@ export default function Statusbar({ isStatic = false }: StatusbarProps) {
 
         setStats(newData);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error("Failed to fetch system stats", err);
       }
     };

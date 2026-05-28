@@ -47,6 +47,7 @@ i18n
       "components/icons",
       "components/input",
       "components/player",
+      "views/aiviewsion",
       "views/chat",
       "views/classificationModel",
       "views/configEditor",

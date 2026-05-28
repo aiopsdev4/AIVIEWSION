@@ -123,9 +123,11 @@ export default function AssetsDashboard() {
       );
       setIsAdding(false);
       setTimeout(pollServer, 5000);
-    } catch (e: any) {
+    } catch (e) {
+      const err = e as Error;
       toast.error(
-        e.message || "Failed to commit settings to main system configuration.",
+        err.message ||
+          "Failed to commit settings to main system configuration.",
       );
     }
   };
