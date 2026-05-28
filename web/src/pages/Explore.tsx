@@ -37,6 +37,165 @@ import TimeAgo from "@/components/dynamic/TimeAgo";
 import { cn } from "@/lib/utils";
 import { JINA_EMBEDDING_MODELS } from "@/lib/const";
 
+function CategoryCarousel({
+  label,
+  labelEvents,
+  selectedEvent,
+  setSelectedEvent,
+  setSelectedCategory,
+  apiHost,
+  formatTime,
+}: {
+  label: string;
+  labelEvents: SearchResult[];
+  selectedEvent: SearchResult | null;
+  setSelectedEvent: (event: SearchResult) => void;
+  setSelectedCategory: (category: string) => void;
+  apiHost: string;
+  formatTime: (time: number) => string;
+}) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      setCanScrollLeft(el.scrollLeft > 2);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    // A small timeout to ensure DOM has completed layout
+    const timer = setTimeout(checkScroll, 100);
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [labelEvents]);
+
+  const handleScroll = () => {
+    checkScroll();
+  };
+
+  const scroll = (direction: "left" | "right") => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const scrollAmount = el.clientWidth * 0.75;
+      el.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const totalCount = (labelEvents[0] as SearchResult & { event_count?: number })?.event_count || labelEvents.length;
+
+  return (
+    <div className="flex flex-col gap-2 w-full min-w-0">
+      {/* Row Header */}
+      <div className="flex items-baseline gap-2 px-1">
+        <h3 className="text-sm font-bold text-foreground capitalize">
+          {label}
+        </h3>
+        <span className="text-[11px] text-muted-foreground">
+          {totalCount} Tracked Objects
+        </span>
+      </div>
+
+      {/* Carousel Container */}
+      <div 
+        className="relative w-full group min-w-0"
+        onMouseEnter={checkScroll}
+      >
+        {/* Left Arrow Button */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-2 top-[66px] -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground hover:text-primary hover:border-primary shadow-lg transition-all duration-300 hover:scale-110"
+            title="Scroll Left"
+          >
+            <LuChevronLeft className="size-4 stroke-[2.5]" />
+          </button>
+        )}
+
+        {/* Right Arrow Button */}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-2 top-[66px] -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground hover:text-primary hover:border-primary shadow-lg transition-all duration-300 hover:scale-110"
+            title="Scroll Right"
+          >
+            <LuChevronRight className="size-4 stroke-[2.5]" />
+          </button>
+        )}
+
+        {/* Horizontally Scrollable Cards Container */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="w-full flex flex-row gap-4 overflow-x-auto pb-3 pt-1 horizontal-scrollbar select-none scroll-smooth"
+        >
+          {labelEvents.map((event) => (
+            <div
+              key={event.id}
+              onClick={() => setSelectedEvent(event)}
+              className={cn(
+                "w-48 shrink-0 flex flex-col overflow-hidden rounded-xl border bg-background transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+                selectedEvent?.id === event.id
+                  ? "border-primary ring-1 ring-primary"
+                  : "border-border/50"
+              )}
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-black/10">
+                <img
+                  src={`${apiHost}api/events/${event.id}/thumbnail.webp`}
+                  alt={event.label}
+                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                {event.label && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-black/60 text-white backdrop-blur-sm">
+                    {event.label}
+                  </span>
+                )}
+                <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-[9px] rounded bg-black/60 text-white backdrop-blur-sm">
+                  <TimeAgo time={event.start_time * 1000} dense />
+                </span>
+              </div>
+              <div className="flex flex-col p-2.5">
+                <p className="text-[11px] font-semibold text-foreground truncate">
+                  {event.camera.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </p>
+                <p className="text-[9px] text-muted-foreground mt-0.5">
+                  {formatTime(event.start_time)}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {/* Special "Explore More" Card at the end of the carousel */}
+          <div
+            onClick={() => setSelectedCategory(label)}
+            className="w-48 shrink-0 flex flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-border hover:border-primary bg-background/30 hover:bg-background/80 transition-all duration-300 cursor-pointer self-stretch"
+            title={`View all ${label} events`}
+          >
+            <LuChevronRight className="size-6 text-muted-foreground hover:text-primary mb-1 transition-colors duration-300" />
+            <span className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors duration-300">
+              View All {label}s
+            </span>
+          </div>
+          {/* Spacer to guarantee padding at scroll end */}
+          <div className="w-2 shrink-0 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Explore() {
   const { t } = useTranslation(["views/explore"]);
 
@@ -541,12 +700,24 @@ export default function Explore() {
                     <LuCalendar className="size-10 stroke-1" />
                     <p className="text-sm">No events found matching current criteria</p>
                   </div>
+                ) : selectedCategory === "all" ? (
+                  Object.entries(eventsByLabel).map(([label, labelEvents]) => (
+                    <CategoryCarousel
+                      key={label}
+                      label={label}
+                      labelEvents={labelEvents}
+                      selectedEvent={selectedEvent}
+                      setSelectedEvent={setSelectedEvent}
+                      setSelectedCategory={setSelectedCategory}
+                      apiHost={apiHost}
+                      formatTime={formatTime}
+                    />
+                  ))
                 ) : (
                   Object.entries(eventsByLabel).map(([label, labelEvents]) => {
-                    // Get total count of objects for this label from custom response property
                     const totalCount = (labelEvents[0] as SearchResult & { event_count?: number })?.event_count || labelEvents.length;
                     return (
-                      <div key={label} className="flex flex-col gap-2 w-full min-w-0">
+                      <div key={label} className="flex flex-col gap-4 w-full min-w-0">
                         {/* Row Header */}
                         <div className="flex items-baseline gap-2 px-1">
                           <h3 className="text-sm font-bold text-foreground capitalize">
@@ -557,55 +728,45 @@ export default function Explore() {
                           </span>
                         </div>
 
-                        {/* Horizontally Scrollable Cards Container */}
-                        <div className="w-full flex flex-row items-center gap-2 overflow-hidden min-w-0">
-                          <div className="flex-1 min-w-0 flex flex-row gap-4 overflow-x-auto pb-3 pt-1 no-scrollbar select-none">
-                            {labelEvents.map((event) => (
-                              <div
-                                key={event.id}
-                                onClick={() => setSelectedEvent(event)}
-                                className={cn(
-                                  "w-48 shrink-0 flex flex-col overflow-hidden rounded-xl border bg-background transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
-                                  selectedEvent?.id === event.id
-                                    ? "border-primary ring-1 ring-primary"
-                                    : "border-border/50"
-                                )}
-                              >
-                                <div className="relative aspect-video w-full overflow-hidden bg-black/10">
-                                  <img
-                                    src={`${apiHost}api/events/${event.id}/thumbnail.webp`}
-                                    alt={event.label}
-                                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                                    loading="lazy"
-                                  />
-                                  {event.label && (
-                                    <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-black/60 text-white backdrop-blur-sm">
-                                      {event.label}
-                                    </span>
-                                  )}
-                                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-[9px] rounded bg-black/60 text-white backdrop-blur-sm">
-                                    <TimeAgo time={event.start_time * 1000} dense />
+                        {/* Wrapping Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full pb-6">
+                          {labelEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              onClick={() => setSelectedEvent(event)}
+                              className={cn(
+                                "w-full flex flex-col overflow-hidden rounded-xl border bg-background transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+                                selectedEvent?.id === event.id
+                                  ? "border-primary ring-1 ring-primary"
+                                  : "border-border/50"
+                              )}
+                            >
+                              <div className="relative aspect-video w-full overflow-hidden bg-black/10">
+                                <img
+                                  src={`${apiHost}api/events/${event.id}/thumbnail.webp`}
+                                  alt={event.label}
+                                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                  loading="lazy"
+                                />
+                                {event.label && (
+                                  <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-black/60 text-white backdrop-blur-sm">
+                                    {event.label}
                                   </span>
-                                </div>
-                                <div className="flex flex-col p-2.5">
-                                  <p className="text-[11px] font-semibold text-foreground truncate">
-                                    {event.camera.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                                  </p>
-                                  <p className="text-[9px] text-muted-foreground mt-0.5">
-                                    {formatTime(event.start_time)}
-                                  </p>
-                                </div>
+                                )}
+                                <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-[9px] rounded bg-black/60 text-white backdrop-blur-sm">
+                                  <TimeAgo time={event.start_time * 1000} dense />
+                                </span>
                               </div>
-                            ))}
-                          </div>
-                          {/* Explore More arrow button at the end of the row */}
-                          <button
-                            onClick={() => setSelectedCategory(label)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/40 hover:border-primary text-primary/80 hover:text-primary transition-all duration-300 bg-background/30 hover:bg-background/80 shadow-inner hover:scale-110 shrink-0 mr-1"
-                            title={`Filter by ${label}`}
-                          >
-                            <LuChevronRight className="size-5 stroke-[2]" />
-                          </button>
+                              <div className="flex flex-col p-2.5">
+                                <p className="text-[11px] font-semibold text-foreground truncate">
+                                  {event.camera.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                                </p>
+                                <p className="text-[9px] text-muted-foreground mt-0.5">
+                                  {formatTime(event.start_time)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );

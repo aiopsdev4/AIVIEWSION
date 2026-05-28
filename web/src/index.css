@@ -42,6 +42,25 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Sleek theme-aware horizontal scrollbar */
+.horizontal-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.horizontal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border) / 0.6);
+  border-radius: 9999px;
+}
+.horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+.horizontal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border) / 0.6) transparent;
+}
+
 /* static fonts */
 @font-face {
   font-family: "Inter";
