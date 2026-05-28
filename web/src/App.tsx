@@ -1,11 +1,10 @@
 import Providers from "@/context/providers";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Wrapper from "@/components/Wrapper";
 import Sidebar from "@/components/navigation/Sidebar";
 import Header from "@/components/navigation/Header";
 
 import { isDesktop, isMobile } from "react-device-detect";
-import Statusbar from "./components/Statusbar";
 import Bottombar from "./components/navigation/Bottombar";
 import { Suspense, lazy } from "react";
 import { Redirect } from "./components/navigation/Redirect";
@@ -53,7 +52,6 @@ function DefaultAppView() {
   const { data: config } = useSWR<FrigateConfig>("config", {
     revalidateOnFocus: false,
   });
-  const location = useLocation();
 
   // Compute required roles for main routes, ensuring we have config first
   // to prevent race condition where custom roles are temporarily unavailable
@@ -71,16 +69,10 @@ function DefaultAppView() {
     );
   }
 
-  // Only show the fixed statusbar on non-system pages.
-  // This prevents it from following when scrolling on the system telemetry metrics page.
-  const isSystemPage = location.pathname.startsWith("/system");
-  const showStatusbar = isDesktop && !isSystemPage;
-
   return (
     <div className="size-full overflow-hidden">
       {isDesktop && <Header />}
       {isDesktop && <Sidebar />}
-      {showStatusbar && <Statusbar />}
       {isMobile && <Bottombar />}
       <div
         id="pageRoot"
@@ -88,9 +80,7 @@ function DefaultAppView() {
           "absolute right-0 overflow-hidden",
           isMobile
             ? `top-0 bottom-${isPWA ? 16 : 12} left-0 md:bottom-16 landscape:bottom-14 landscape:md:bottom-16`
-            : showStatusbar
-              ? "bottom-[108px] left-[52px] top-14"
-              : "bottom-0 left-[52px] top-14",
+            : "bottom-0 left-[52px] top-14",
         )}
       >
         <Suspense
