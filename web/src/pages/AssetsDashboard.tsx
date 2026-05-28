@@ -81,7 +81,7 @@ export default function AssetsDashboard() {
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [devices, setDevices] = useState<DiscoveredDevice[]>([]);
-  const [testingRows, setTestingRows] = useState<Record<number, boolean>>({});
+  const [testingRows, setTestingRows] = useState<Record<string, boolean>>({});
 
   const assets: Asset[] = useMemo(() => {
     if (!config?.cameras) return [];
@@ -103,6 +103,11 @@ export default function AssetsDashboard() {
       };
     });
   }, [config]);
+
+  const discoveredDevices = useMemo(() => {
+    const registeredIps = new Set(assets.map((a) => a.ip_address));
+    return devices.filter((d) => !registeredIps.has(d.ip));
+  }, [devices, assets]);
 
   const filteredAssets = useMemo(() => {
     return assets.filter((item) => {
@@ -266,9 +271,10 @@ export default function AssetsDashboard() {
     }
   };
 
-  const handleTestRow = async (idx: number) => {
-    const dev = devices[idx];
-    setTestingRows((prev) => ({ ...prev, [idx]: true }));
+  const handleTestRow = async (ip: string) => {
+    const dev = devices.find((d) => d.ip === ip);
+    if (!dev) return;
+    setTestingRows((prev) => ({ ...prev, [ip]: true }));
     try {
       const channelParam =
         dev.channel_index !== undefined ? `&channel=${dev.channel_index}` : "";
@@ -280,20 +286,25 @@ export default function AssetsDashboard() {
       const data = await res.json();
       if (data && data.length > 0) {
         const tested = data[0];
-        const updated = [...devices];
         const suffix =
           dev.channel_index !== undefined ? `_ch${dev.channel_index}` : "";
-        updated[idx] = {
-          ...dev,
-          ...tested,
-          selected: tested.status === "Online",
-          customName:
-            dev.customName ||
-            `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
-          username: dev.username,
-          password: dev.password,
-        };
-        setDevices(updated);
+        setDevices((prev) =>
+          prev.map((d) => {
+            if (d.ip === ip) {
+              return {
+                ...d,
+                ...tested,
+                selected: tested.status === "Online",
+                customName:
+                  d.customName ||
+                  `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
+                username: d.username,
+                password: d.password,
+              };
+            }
+            return d;
+          }),
+        );
         if (tested.status === "Online") {
           toast.success(`Successfully verified connection to ${dev.ip}!`);
         } else {
@@ -307,7 +318,7 @@ export default function AssetsDashboard() {
     } catch (e) {
       toast.error(`Verification failed for ${dev.ip}: ${(e as Error).message}`);
     } finally {
-      setTestingRows((prev) => ({ ...prev, [idx]: false }));
+      setTestingRows((prev) => ({ ...prev, [ip]: false }));
     }
   };
 
@@ -434,12 +445,14 @@ export default function AssetsDashboard() {
                 size="sm"
                 onClick={handleOnboard}
                 disabled={
-                  saving || devices.filter((d) => d.selected).length === 0
+                  saving ||
+                  discoveredDevices.filter((d) => d.selected).length === 0
                 }
                 className="flex h-8 items-center gap-1.5 bg-primary text-xs text-primary-foreground hover:bg-primary/95"
               >
                 {saving && <ActivityIndicator className="h-3.5 w-3.5" />}
-                Add to Device List ({devices.filter((d) => d.selected).length})
+                Add to Device List (
+                {discoveredDevices.filter((d) => d.selected).length})
               </Button>
             </div>
           </div>
@@ -459,7 +472,7 @@ export default function AssetsDashboard() {
               </div>
             )}
 
-            {!scanning && devices.length === 0 && (
+            {!scanning && discoveredDevices.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16">
                 <MdSettingsEthernet className="mb-2 h-8 w-8 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">
@@ -468,7 +481,7 @@ export default function AssetsDashboard() {
               </div>
             )}
 
-            {!scanning && devices.length > 0 && (
+            {!scanning && discoveredDevices.length > 0 && (
               <table className="w-full border-collapse text-left text-xs">
                 <thead>
                   <tr className="sticky top-0 z-10 border-b border-border/40 bg-background/50 font-semibold text-muted-foreground">
@@ -476,15 +489,25 @@ export default function AssetsDashboard() {
                       <input
                         type="checkbox"
                         checked={
-                          devices.length > 0 && devices.every((d) => d.selected)
+                          discoveredDevices.length > 0 &&
+                          discoveredDevices.every((d) => d.selected)
                         }
                         onChange={(e) => {
                           const checked = e.target.checked;
                           setDevices((prev) =>
-                            prev.map((d) => ({
-                              ...d,
-                              selected: d.status === "Online" ? checked : false,
-                            })),
+                            prev.map((d) => {
+                              const isRegistered = assets.some(
+                                (a) => a.ip_address === d.ip,
+                              );
+                              if (!isRegistered) {
+                                return {
+                                  ...d,
+                                  selected:
+                                    d.status === "Online" ? checked : false,
+                                };
+                              }
+                              return d;
+                            }),
                           );
                         }}
                         className="h-4 w-4 rounded border-border/40 bg-background text-primary focus:ring-primary"
@@ -505,9 +528,9 @@ export default function AssetsDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {devices.map((dev, idx) => (
+                  {discoveredDevices.map((dev) => (
                     <tr
-                      key={idx}
+                      key={dev.ip}
                       className={`border-b border-border/40 transition hover:bg-background/40 ${
                         dev.selected ? "bg-primary/5" : ""
                       }`}
@@ -518,9 +541,14 @@ export default function AssetsDashboard() {
                           checked={!!dev.selected}
                           disabled={dev.status !== "Online"}
                           onChange={(e) => {
-                            const updated = [...devices];
-                            updated[idx].selected = e.target.checked;
-                            setDevices(updated);
+                            const checked = e.target.checked;
+                            setDevices((prev) =>
+                              prev.map((d) =>
+                                d.ip === dev.ip
+                                  ? { ...d, selected: checked }
+                                  : d,
+                              ),
+                            );
                           }}
                           className="h-4 w-4 rounded border-border/40 bg-background text-primary focus:ring-primary"
                         />
@@ -552,11 +580,19 @@ export default function AssetsDashboard() {
                             placeholder="admin"
                             value={dev.username || ""}
                             onChange={(e) => {
-                              const updated = [...devices];
-                              updated[idx].username = e.target.value;
-                              updated[idx].status = "Unverified";
-                              updated[idx].selected = false;
-                              setDevices(updated);
+                              const val = e.target.value;
+                              setDevices((prev) =>
+                                prev.map((d) =>
+                                  d.ip === dev.ip
+                                    ? {
+                                        ...d,
+                                        username: val,
+                                        status: "Unverified",
+                                        selected: false,
+                                      }
+                                    : d,
+                                ),
+                              );
                             }}
                             className="h-8 w-20 rounded-md border-border/40 bg-background/50 text-xs"
                           />
@@ -565,22 +601,30 @@ export default function AssetsDashboard() {
                             type="password"
                             value={dev.password || ""}
                             onChange={(e) => {
-                              const updated = [...devices];
-                              updated[idx].password = e.target.value;
-                              updated[idx].status = "Unverified";
-                              updated[idx].selected = false;
-                              setDevices(updated);
+                              const val = e.target.value;
+                              setDevices((prev) =>
+                                prev.map((d) =>
+                                  d.ip === dev.ip
+                                    ? {
+                                        ...d,
+                                        password: val,
+                                        status: "Unverified",
+                                        selected: false,
+                                      }
+                                    : d,
+                                ),
+                              );
                             }}
                             className="h-8 w-28 rounded-md border-border/40 bg-background/50 text-xs"
                           />
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleTestRow(idx)}
-                            disabled={testingRows[idx]}
+                            onClick={() => handleTestRow(dev.ip)}
+                            disabled={testingRows[dev.ip]}
                             className="h-8 border-border/40 px-2 text-[10px] font-semibold hover:bg-muted"
                           >
-                            {testingRows[idx] ? (
+                            {testingRows[dev.ip] ? (
                               <ActivityIndicator className="h-3 w-3" />
                             ) : (
                               "Test"
