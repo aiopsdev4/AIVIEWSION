@@ -10,16 +10,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { MdSearch, MdDownload, MdRefresh } from "react-icons/md";
+import { MdSearch, MdDownload, MdRefresh, MdAdd } from "react-icons/md";
 import useSWR from "swr";
+import { useTranslation } from "react-i18next";
 
 import { FrigateConfig } from "@/types/frigateConfig";
 import { removeCameraFromYaml, addCameraToYaml } from "@/helpers/configHelpers";
 import { saveAndRestartConfig } from "@/services/configService";
 
 import AssetTable, { Asset } from "@/components/assets/AssetTable";
-import AddDeviceDialog, { NewAsset } from "@/components/assets/AddDeviceDialog";
 import AutoDiscoverDialog from "@/components/assets/AutoDiscoverDialog";
+import CameraWizardDialog from "@/components/settings/CameraWizardDialog";
+
+interface NewAsset {
+  name: string;
+  device_type: string;
+  ip_address: string;
+  username: string;
+  password: string;
+  rtsp_url: string;
+}
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +43,7 @@ import {
 
 
 export default function AssetsDashboard() {
+  const { t } = useTranslation(["views/settings"]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
@@ -182,10 +193,16 @@ export default function AssetsDashboard() {
             setIsOpen={setIsDiscovering}
             onSave={handleSave}
           />
-          <AddDeviceDialog
-            isOpen={isAdding}
-            setIsOpen={setIsAdding}
-            onSave={handleSave}
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsAdding(true)}
+          >
+            <MdAdd className="h-4 w-4" />
+            {t("cameraManagement.addCamera")}
+          </Button>
+          <CameraWizardDialog
+            open={isAdding}
+            onClose={() => setIsAdding(false)}
           />
         </div>
       </div>
