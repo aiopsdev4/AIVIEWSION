@@ -20,8 +20,7 @@ import {
   getPreviewForTimeRange,
   usePreviewForTimeRange,
 } from "@/hooks/use-camera-previews";
-import { useTranslation } from "react-i18next";
-import { useCameraFriendlyName } from "@/hooks/use-camera-friendly-name";
+
 
 type PreviewPlayerProps = {
   previewRef?: (ref: HTMLDivElement | null) => void;
@@ -48,7 +47,7 @@ export default function PreviewPlayer({
   onControllerReady,
   onClick,
 }: PreviewPlayerProps) {
-  const { t } = useTranslation(["components/player"]);
+
   const [currentHourFrame, setCurrentHourFrame] = useState<string>();
   const currentPreview = usePreviewForTimeRange(
     cameraPreviews,
@@ -90,16 +89,7 @@ export default function PreviewPlayer({
     );
   }
 
-  return (
-    <div
-      className={cn(
-        "flex size-full items-center justify-center rounded-lg bg-background_alt text-primary md:rounded-2xl",
-        className,
-      )}
-    >
-      {t("noPreviewFound")}
-    </div>
-  );
+  return null;
 }
 
 export abstract class PreviewController {
@@ -146,10 +136,9 @@ function PreviewVideoPlayer({
   onClick,
   setCurrentHourFrame,
 }: PreviewVideoPlayerProps) {
-  const { t } = useTranslation(["components/player"]);
+
   const { data: config } = useSWR<FrigateConfig>("config");
 
-  const cameraName = useCameraFriendlyName(camera);
   // controlling playback
 
   const previewRef = useRef<HTMLVideoElement | null>(null);
@@ -343,11 +332,7 @@ function PreviewVideoPlayer({
           )}
         </video>
       )}
-      {cameraPreviews && !currentPreview && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background_alt text-primary dark:bg-black md:rounded-2xl">
-          {t("noPreviewFoundFor", { camera: cameraName })}
-        </div>
-      )}
+      {cameraPreviews && !currentPreview && null}
       {firstLoad && <Skeleton className="absolute aspect-video size-full" />}
     </div>
   );
@@ -465,9 +450,7 @@ function PreviewFramesPlayer({
   onControllerReady,
   onClick,
 }: PreviewFramesPlayerProps) {
-  const { t } = useTranslation(["components/player"]);
 
-  const cameraName = useCameraFriendlyName(camera);
   // frames data
 
   const { data: previewFrames } = useSWR<string[]>(
@@ -566,11 +549,7 @@ function PreviewFramesPlayer({
         loading="lazy"
         onLoad={onImageLoaded}
       />
-      {previewFrames?.length === 0 && (
-        <div className="-y-translate-1/2 align-center absolute inset-x-0 top-1/2 rounded-lg bg-background_alt text-center text-primary dark:bg-black md:rounded-2xl">
-          {t("noPreviewFoundFor", { cameraName: cameraName })}
-        </div>
-      )}
+      {previewFrames?.length === 0 && null}
       {firstLoad && <Skeleton className="absolute aspect-video size-full" />}
     </div>
   );

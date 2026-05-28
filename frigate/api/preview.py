@@ -150,6 +150,12 @@ def get_preview_frames_from_cache(camera_name: str, start_ts: float, end_ts: flo
     end_file = f"{file_start}-{end_ts}.{PREVIEW_FRAME_TYPE}"
     selected_previews = []
 
+    if not os.path.exists(preview_dir):
+        return JSONResponse(
+            content=[],
+            status_code=200,
+        )
+
     for file in sorted(os.listdir(preview_dir)):
         if not file.startswith(file_start):
             continue

@@ -906,7 +906,7 @@ function DetectionReview({
             )}
         </div>
       </div>
-      <div className="no-scrollbar h-[100px] w-full flex-shrink-0 px-4">
+      <div className="no-scrollbar h-[60px] w-full flex-shrink-0 px-4">
         {loading ? (
           <Skeleton className="size-full" />
         ) : (
@@ -1627,7 +1627,7 @@ function MotionReview({
         </div>
       </div>
       {!selectedMotionPreviewCamera && (
-        <div className="no-scrollbar h-[100px] w-full flex-shrink-0 px-4">
+        <div className="no-scrollbar h-[60px] w-full flex-shrink-0 px-4">
           {motionData ? (
             <MotionReviewTimeline
               segmentDuration={segmentDuration}

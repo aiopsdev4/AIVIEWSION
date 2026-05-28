@@ -27,6 +27,7 @@ import {
   ZoomLevel,
 } from "@/types/review";
 import { getChunkedTimeDay } from "@/utils/timelineUtil";
+
 import {
   MutableRefObject,
   useCallback,
@@ -175,6 +176,24 @@ export function RecordingView({
       chunkedTimeRange[chunkedTimeRange.length - 1],
     [selectedRangeIdx, chunkedTimeRange],
   );
+
+  const visibleCameraPreviews = useMemo(() => {
+
+    if (!allPreviews) {
+      return [];
+    }
+    return effectiveCameras.filter((cam) => {
+      if (cam === mainCamera || cam === "birdseye") {
+        return false;
+      }
+      return allPreviews.some(
+        (p) =>
+          p.camera === cam &&
+          Math.ceil(p.start) >= currentTimeRange.after &&
+          Math.floor(p.end) <= currentTimeRange.before + 5
+      );
+    });
+  }, [effectiveCameras, allPreviews, currentTimeRange, mainCamera]);
 
   const reviewFilterList = useMemo(() => {
     const uniqueLabels = new Set<string>();
@@ -845,7 +864,7 @@ export function RecordingView({
                   containerRef={mainLayoutRef}
                 />
               </div>
-              {isDesktop && effectiveCameras.length > 1 && (
+              {isDesktop && visibleCameraPreviews.length > 0 && (
                 <div
                   ref={previewRowRef}
                   className={cn(
@@ -858,11 +877,7 @@ export function RecordingView({
                   )}
                 >
                   <div className="w-2" />
-                  {effectiveCameras.map((cam) => {
-                    if (cam == mainCamera || cam == "birdseye") {
-                      return;
-                    }
-
+                  {visibleCameraPreviews.map((cam) => {
                     return (
                       <Tooltip key={cam}>
                         <TooltipTrigger asChild>
@@ -1067,7 +1082,7 @@ function Timeline({
       className={cn(
         "relative overflow-hidden",
         timelineType == "timeline"
-          ? "h-[100px] w-full flex-shrink-0 px-4"
+          ? "h-[60px] w-full flex-shrink-0 px-4"
           : isDesktop
             ? cn(
                 timelineType == "detail"
