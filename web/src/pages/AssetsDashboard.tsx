@@ -94,10 +94,6 @@ export default function AssetsDashboard() {
       toast.error("System configuration not loaded yet.");
       return;
     }
-    if (Object.keys(config?.cameras || {}).length <= 1) {
-      toast.error("Cannot delete the last remaining camera. The system requires at least one active camera.");
-      return;
-    }
     setCameraToDelete(camId);
   };
 

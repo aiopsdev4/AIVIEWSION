@@ -1,6 +1,7 @@
 /**
  * Removes a specific camera block from the raw YAML configuration string.
  * Uses Regex to identify and remove the block up to the next sibling key.
+ * If this results in an empty cameras block, normalizes it to "cameras: {}".
  */
 export const removeCameraFromYaml = (
   rawYaml: string,
@@ -9,7 +10,12 @@ export const removeCameraFromYaml = (
   const regex = new RegExp(
     `\\n\\s{2}${camId}:[\\s\\S]*?(?=\\n\\s{2}[a-zA-Z0-9_-]+:|\\n[a-zA-Z0-9_-]+:|$)`,
   );
-  return rawYaml.replace(regex, "");
+  let result = rawYaml.replace(regex, "");
+
+  // Normalize empty cameras block to "cameras: {}"
+  result = result.replace(/cameras:\s*(?=\n[a-zA-Z0-9_-]+:|$)/g, "cameras: {}");
+
+  return result;
 };
 
 /**
@@ -34,8 +40,11 @@ export const addCameraToYaml = (
       height: 720
       fps: 2\n`;
 
-  if (rawYaml.includes("cameras:\n")) {
-    return rawYaml.replace("cameras:\n", `cameras:${newCameraYaml}`);
+  // Normalize empty "cameras: {}" to "cameras:\n"
+  const normalizedYaml = rawYaml.replace(/cameras:\s*\{\}/g, "cameras:\n");
+
+  if (normalizedYaml.includes("cameras:\n")) {
+    return normalizedYaml.replace("cameras:\n", `cameras:${newCameraYaml}`);
   }
 
   throw new Error("Cannot find global 'cameras:' block in configuration.");
