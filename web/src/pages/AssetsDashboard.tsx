@@ -94,6 +94,10 @@ export default function AssetsDashboard() {
       toast.error("System configuration not loaded yet.");
       return;
     }
+    if (Object.keys(config?.cameras || {}).length <= 1) {
+      toast.error("Cannot delete the last remaining camera. The system requires at least one active camera.");
+      return;
+    }
     setCameraToDelete(camId);
   };
 
@@ -108,7 +112,15 @@ export default function AssetsDashboard() {
       toast.success("Device deleted! The video engine is rebooting...");
       setTimeout(pollServer, 5000);
     } catch (e) {
-      toast.error("Failed to delete device configuration.");
+      const err = e as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const errMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to delete device configuration.";
+      toast.error(errMsg);
       setIsDeleting(null);
     }
   };
@@ -137,11 +149,15 @@ export default function AssetsDashboard() {
       setIsAdding(false);
       setTimeout(pollServer, 5000);
     } catch (e) {
-      const err = e as Error;
-      toast.error(
+      const err = e as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const errMsg =
+        err.response?.data?.message ||
         err.message ||
-          "Failed to commit settings to main system configuration.",
-      );
+        "Failed to commit settings to main system configuration.";
+      toast.error(errMsg);
     }
   };
 
