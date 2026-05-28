@@ -43,8 +43,8 @@ export default function AutoDiscoverDialog({
   setIsOpen,
 }: AutoDiscoverDialogProps) {
   const [subnet, setSubnet] = useState("172.16.0");
-  const [bulkUsername, setBulkUsername] = useState("admin");
-  const [bulkPassword, setBulkPassword] = useState("password1");
+  const [bulkUsername, setBulkUsername] = useState("");
+  const [bulkPassword, setBulkPassword] = useState("");
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [devices, setDevices] = useState<DiscoveredDevice[]>([]);
@@ -88,8 +88,8 @@ export default function AutoDiscoverDialog({
             ...dev,
             selected: dev.status === "Online",
             customName: `${dev.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${dev.ip.split(".").pop()}${suffix}`,
-            username: dev.username || bulkUsername,
-            password: dev.password || bulkPassword,
+            username: bulkUsername,
+            password: bulkPassword,
           };
         }),
       );
