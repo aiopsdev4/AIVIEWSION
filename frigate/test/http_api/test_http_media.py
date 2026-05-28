@@ -5,8 +5,10 @@ from datetime import datetime, timezone
 import pytz
 from fastapi import Request
 
+from unittest.mock import MagicMock, patch
+
 from frigate.api.auth import get_allowed_cameras_for_filter, get_current_user
-from frigate.models import Recordings
+from frigate.models import Event, Recordings
 from frigate.test.http_api.base_http_test import AuthTestClient, BaseTestHttp
 
 
@@ -15,7 +17,7 @@ class TestHttpMedia(BaseTestHttp):
 
     def setUp(self):
         """Set up test fixtures."""
-        super().setUp([Recordings])
+        super().setUp([Recordings, Event])
         self.app = super().create_app()
 
         # Mock get_current_user for all tests
@@ -403,3 +405,115 @@ class TestHttpMedia(BaseTestHttp):
             assert len(summary) == 1
             assert "2024-03-10" in summary
             assert summary["2024-03-10"] is True
+
+    @patch("os.path.exists")
+    @patch("subprocess.check_output")
+    @patch("subprocess.Popen")
+    def test_event_clip_transcoding_hevc(self, mock_popen, mock_check_output, mock_exists):
+        """Test that HEVC/H.265 event clips are transcoded to H.264."""
+        # Mock existence of the recording file
+        mock_exists.return_value = True
+        # Mock ffprobe returning hevc
+        mock_check_output.return_value = "hevc\n"
+
+        # Mock Popen
+        mock_process = MagicMock()
+        mock_process.stdout.read.side_effect = [b"video_data", b""]
+        mock_process.returncode = 0
+        mock_popen.return_value.__enter__.return_value = mock_process
+
+        # Insert dummy event and recording
+        event_id = "test_hevc_event"
+        Event.insert(
+            id=event_id,
+            label="car",
+            camera="front_door",
+            start_time=1000.0,
+            end_time=1010.0,
+            zones=[],
+            has_clip=True,
+            has_snapshot=False,
+            retain_indefinitely=False,
+            data={},
+        ).execute()
+
+        Recordings.insert(
+            id="rec1",
+            camera="front_door",
+            path="/media/recordings/test.mp4",
+            start_time=1000.0,
+            end_time=1010.0,
+            duration=10.0,
+            segment_size=10.0,
+        ).execute()
+
+        with AuthTestClient(self.app) as client:
+            response = client.get(f"/events/{event_id}/clip.mp4")
+            assert response.status_code == 200
+
+            # Verify ffprobe was called on the recording path
+            mock_check_output.assert_called_once()
+            args, _ = mock_check_output.call_args
+            assert "/media/recordings/test.mp4" in args[0]
+
+            # Verify ffmpeg was called with libx264 transcoding options
+            mock_popen.assert_called_once()
+            ffmpeg_args = mock_popen.call_args[0][0]
+            assert "-c:v" in ffmpeg_args
+            assert "libx264" in ffmpeg_args
+            assert "ultrafast" in ffmpeg_args
+            assert "aac" in ffmpeg_args
+
+    @patch("os.path.exists")
+    @patch("subprocess.check_output")
+    @patch("subprocess.Popen")
+    def test_event_clip_no_transcoding_h264(self, mock_popen, mock_check_output, mock_exists):
+        """Test that H.264 event clips are not transcoded (copy codec)."""
+        # Mock existence of the recording file
+        mock_exists.return_value = True
+        # Mock ffprobe returning h264
+        mock_check_output.return_value = "h264\n"
+
+        # Mock Popen
+        mock_process = MagicMock()
+        mock_process.stdout.read.side_effect = [b"video_data", b""]
+        mock_process.returncode = 0
+        mock_popen.return_value.__enter__.return_value = mock_process
+
+        # Insert dummy event and recording
+        event_id = "test_h264_event"
+        Event.insert(
+            id=event_id,
+            label="person",
+            camera="front_door",
+            start_time=1000.0,
+            end_time=1010.0,
+            zones=[],
+            has_clip=True,
+            has_snapshot=False,
+            retain_indefinitely=False,
+            data={},
+        ).execute()
+
+        Recordings.insert(
+            id="rec2",
+            camera="front_door",
+            path="/media/recordings/test2.mp4",
+            start_time=1000.0,
+            end_time=1010.0,
+            duration=10.0,
+            segment_size=10.0,
+        ).execute()
+
+        with AuthTestClient(self.app) as client:
+            response = client.get(f"/events/{event_id}/clip.mp4")
+            assert response.status_code == 200
+
+            # Verify ffprobe was called
+            mock_check_output.assert_called_once()
+
+            # Verify ffmpeg used copy codec (-c copy)
+            mock_popen.assert_called_once()
+            ffmpeg_args = mock_popen.call_args[0][0]
+            assert "-c" in ffmpeg_args
+            assert "copy" in ffmpeg_args

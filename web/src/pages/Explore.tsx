@@ -151,26 +151,33 @@ export default function Explore() {
     }, {});
   }, [filteredEvents]);
 
-  // Limit Event Video List to exactly N=15 elements
+  // Limit Event Video List to exactly N=15 elements, ensuring selectedEvent is included
   const gridEvents = useMemo(() => {
-    if (!filteredEvents) return [];
-    return filteredEvents.slice(0, 15);
-  }, [filteredEvents]);
+    if (!filteredEvents || filteredEvents.length === 0) return [];
+    const baseList = filteredEvents.slice(0, 15);
+    if (selectedEvent && !baseList.some((e) => e.id === selectedEvent.id)) {
+      const selectedIndex = filteredEvents.findIndex((e) => e.id === selectedEvent.id);
+      if (selectedIndex !== -1) {
+        return [...baseList.slice(0, 14), filteredEvents[selectedIndex]];
+      }
+    }
+    return baseList;
+  }, [filteredEvents, selectedEvent]);
 
 
 
   // Automatically select the first event when grid updates
   useEffect(() => {
-    if (gridEvents.length > 0) {
-      // Keep selected event if it's still in the current grid, otherwise default to first
-      const exists = gridEvents.some((e) => e.id === selectedEvent?.id);
+    if (filteredEvents.length > 0) {
+      // Keep selected event if it's still in the current filtered events, otherwise default to first
+      const exists = filteredEvents.some((e) => e.id === selectedEvent?.id);
       if (!exists) {
-        setSelectedEvent(gridEvents[0]);
+        setSelectedEvent(filteredEvents[0]);
       }
     } else {
       setSelectedEvent(null);
     }
-  }, [gridEvents, selectedEvent]);
+  }, [filteredEvents, selectedEvent]);
 
   // Sync video play/pause states
   useEffect(() => {

@@ -497,26 +497,75 @@ async def recording_clip(
 
     config: FrigateConfig = request.app.frigate_config
 
-    ffmpeg_cmd = [
-        config.ffmpeg.ffmpeg_path,
-        "-hide_banner",
-        "-y",
-        "-protocol_whitelist",
-        "pipe,file",
-        "-f",
-        "concat",
-        "-safe",
-        "0",
-        "-i",
-        file_path,
-        "-c",
-        "copy",
-        "-movflags",
-        "frag_keyframe+empty_moov",
-        "-f",
-        "mp4",
-        "pipe:",
-    ]
+    transcode = False
+    if recordings.count() > 0:
+        first_recording_path = recordings[0].path
+        if os.path.exists(first_recording_path):
+            try:
+                ffprobe_path = config.ffmpeg.ffmpeg_path.replace("/bin/ffmpeg", "/bin/ffprobe")
+                ffprobe_cmd = [
+                    ffprobe_path,
+                    "-v", "error",
+                    "-select_streams", "v:0",
+                    "-show_entries", "stream=codec_name",
+                    "-of", "csv=p=0",
+                    first_recording_path
+                ]
+                codec = sp.check_output(ffprobe_cmd, text=True).strip()
+                if codec in ["hevc", "h265", "h.265"]:
+                    transcode = True
+                    logger.info(f"Detected HEVC/H.265 video stream for camera {camera_name}. Transcoding to H.264 for browser compatibility.")
+            except Exception as e:
+                logger.warning(f"Failed to probe video codec for {first_recording_path}: {e}")
+
+    if transcode:
+        ffmpeg_cmd = [
+            config.ffmpeg.ffmpeg_path,
+            "-hide_banner",
+            "-y",
+            "-protocol_whitelist",
+            "pipe,file",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            file_path,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-crf",
+            "28",
+            "-c:a",
+            "aac",
+            "-movflags",
+            "frag_keyframe+empty_moov",
+            "-f",
+            "mp4",
+            "pipe:",
+        ]
+    else:
+        ffmpeg_cmd = [
+            config.ffmpeg.ffmpeg_path,
+            "-hide_banner",
+            "-y",
+            "-protocol_whitelist",
+            "pipe,file",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            file_path,
+            "-c",
+            "copy",
+            "-movflags",
+            "frag_keyframe+empty_moov",
+            "-f",
+            "mp4",
+            "pipe:",
+        ]
 
     return StreamingResponse(
         run_download(ffmpeg_cmd, file_path),
