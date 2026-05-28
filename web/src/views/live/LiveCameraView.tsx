@@ -122,6 +122,8 @@ import {
   SnapshotResult,
 } from "@/utils/snapshotUtil";
 import ActivityIndicator from "@/components/indicators/activity-indicator";
+import AIViewsionModal from "@/components/menu/AIViewsionModal";
+import { Brain } from "lucide-react";
 
 type LiveCameraViewProps = {
   config?: FrigateConfig;
@@ -144,6 +146,7 @@ export default function LiveCameraView({
   const containerRef = useRef<HTMLDivElement>(null);
   const [{ width: windowWidth, height: windowHeight }] =
     useResizeObserver(window);
+  const [showAIViewsion, setShowAIViewsion] = useState(false);
 
   // supported features
 
@@ -499,6 +502,19 @@ export default function LiveCameraView({
                   </div>
                 )}
               </Button>
+              <Button
+                className="flex items-center gap-2.5 rounded-lg bg-[rgba(188,19,254,0.15)] border border-[rgba(188,19,254,0.45)] hover:bg-[rgba(188,19,254,0.3)] text-[var(--hud-purple)] shadow-[0_0_10px_rgba(188,19,254,0.15)] hover:text-white"
+                aria-label="AIViewsion Analysis"
+                size="sm"
+                onClick={() => setShowAIViewsion(true)}
+              >
+                <Brain className="size-5" />
+                {isDesktop && (
+                  <div className="text-[var(--hud-purple)] hover:text-white font-bold font-mono uppercase tracking-wider">
+                    AIViewsion
+                  </div>
+                )}
+              </Button>
             </div>
           ) : (
             <div />
@@ -700,6 +716,15 @@ export default function LiveCameraView({
             setClickOverlay={setClickOverlay}
           />
         </div>
+      )}
+      {showAIViewsion && (
+        <AIViewsionModal
+          isOpen={showAIViewsion}
+          camera={camera}
+          preferredLiveMode={preferredLiveMode}
+          streamName={streamName ?? ""}
+          onClose={() => setShowAIViewsion(false)}
+        />
       )}
     </TransformWrapper>
   );
