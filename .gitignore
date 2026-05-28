@@ -24,3 +24,5 @@ core
 .ipynb_checkpoints
 local_data/
 SECURITY.md
+CONTIBUTING.md
+AGENTS.md

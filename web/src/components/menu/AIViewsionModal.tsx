@@ -614,6 +614,7 @@ export default function AIViewsionModal({
             </div>
             <div className="hud-content p-1 bg-black flex items-center justify-center overflow-hidden">
               <LivePlayer
+                className="size-full"
                 cameraConfig={camera}
                 playAudio={false}
                 playInBackground={false}
