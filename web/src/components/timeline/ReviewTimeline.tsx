@@ -391,7 +391,9 @@ export function ReviewTimeline({
         ref={timelineRef}
         className={cn(
           "no-scrollbar relative h-full select-none transition-all duration-500 ease-in-out",
-          orientation === "horizontal" ? "w-full overflow-x-auto overflow-y-hidden" : "overflow-y-auto bg-secondary",
+          orientation === "horizontal"
+            ? "w-full overflow-x-auto overflow-y-hidden"
+            : "overflow-y-auto bg-secondary",
           isZooming && zoomDirection === "in" && "animate-timeline-zoom-in",
           isZooming && zoomDirection === "out" && "animate-timeline-zoom-out",
           isDragging && (showHandlebar || showExportHandles)
@@ -399,11 +401,19 @@ export function ReviewTimeline({
             : "cursor-auto",
         )}
       >
-        <div ref={segmentsRef} className={cn("relative", orientation === "horizontal" ? "flex flex-row h-full" : "flex flex-col h-full")}>
+        <div
+          ref={segmentsRef}
+          className={cn(
+            "relative",
+            orientation === "horizontal"
+              ? "flex h-full flex-row"
+              : "flex h-full flex-col",
+          )}
+        >
           {orientation === "horizontal" ? (
             <>
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[30px] h-full bg-gradient-to-r from-secondary to-transparent"></div>
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-[30px] h-full bg-gradient-to-l from-secondary to-transparent"></div>
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-20 h-full w-[30px] bg-gradient-to-r from-secondary to-transparent"></div>
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-20 h-full w-[30px] bg-gradient-to-l from-secondary to-transparent"></div>
             </>
           ) : (
             <>
@@ -417,22 +427,26 @@ export function ReviewTimeline({
           <>
             {showHandlebar && (
               <div
-                className={`absolute left-0 top-0 ${isDraggingHandlebar && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
+                className={`absolute left-0 top-0 ${isDraggingHandlebar && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "h-auto w-full"}`}
                 role="scrollbar"
                 ref={handlebarRef}
               >
                 <div
-                  className={orientation === "horizontal"
-                    ? "flex touch-none select-none flex-col items-center justify-start h-full"
-                    : "flex touch-none select-none items-center justify-center"}
+                  className={
+                    orientation === "horizontal"
+                      ? "flex h-full touch-none select-none flex-col items-center justify-start"
+                      : "flex touch-none select-none items-center justify-center"
+                  }
                   onMouseDown={handleHandlebar}
                   onTouchStart={handleHandlebar}
                 >
                   <div
                     className={cn(
                       "relative",
-                      orientation === "horizontal" ? "h-full w-[80px]" : "w-full",
-                      isDraggingHandlebar ? "cursor-grabbing" : "cursor-grab"
+                      orientation === "horizontal"
+                        ? "h-full w-[80px]"
+                        : "w-full",
+                      isDraggingHandlebar ? "cursor-grabbing" : "cursor-grab",
                     )}
                   >
                     <div
@@ -450,9 +464,11 @@ export function ReviewTimeline({
                       ></div>
                     </div>
                     <div
-                      className={orientation === "horizontal"
-                        ? `absolute w-[4px] h-full bg-destructive left-1/2 -translate-x-1/2 transform`
-                        : `absolute h-[4px] w-full bg-destructive ${isDraggingHandlebar && isMobile ? "top-1" : "top-1/2 -translate-y-1/2 transform"}`}
+                      className={
+                        orientation === "horizontal"
+                          ? `absolute left-1/2 h-full w-[4px] -translate-x-1/2 transform bg-destructive`
+                          : `absolute h-[4px] w-full bg-destructive ${isDraggingHandlebar && isMobile ? "top-1" : "top-1/2 -translate-y-1/2 transform"}`
+                      }
                     ></div>
                   </div>
                 </div>
@@ -467,22 +483,26 @@ export function ReviewTimeline({
             {showExportHandles && (
               <>
                 <div
-                  className={`export-end absolute left-0 top-0 ${isDraggingExportEnd && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
+                  className={`export-end absolute left-0 top-0 ${isDraggingExportEnd && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "h-auto w-full"}`}
                   role="scrollbar"
                   ref={exportEndRef}
                 >
                   <div
-                    className={orientation === "horizontal"
-                      ? "flex touch-none select-none flex-col items-center justify-start h-full"
-                      : "flex touch-none select-none items-center justify-center"}
+                    className={
+                      orientation === "horizontal"
+                        ? "flex h-full touch-none select-none flex-col items-center justify-start"
+                        : "flex touch-none select-none items-center justify-center"
+                    }
                     onMouseDown={handleExportEnd}
                     onTouchStart={handleExportEnd}
                   >
                     <div
                       className={cn(
                         "relative",
-                        orientation === "horizontal" ? "h-full mt-0 w-[80px]" : "mt-[6.5px] w-full",
-                        isDraggingExportEnd ? "cursor-grabbing" : "cursor-grab"
+                        orientation === "horizontal"
+                          ? "mt-0 h-full w-[80px]"
+                          : "mt-[6.5px] w-full",
+                        isDraggingExportEnd ? "cursor-grabbing" : "cursor-grab",
                       )}
                     >
                       <div
@@ -500,40 +520,52 @@ export function ReviewTimeline({
                         ></div>
                       </div>
                       <div
-                        className={orientation === "horizontal"
-                          ? `absolute w-[4px] h-full bg-selected left-1/2 -translate-x-1/2 transform`
-                          : `absolute h-[4px] w-full bg-selected ${isDraggingExportEnd && isMobile ? "top-0" : "top-1/2 -translate-y-1/2 transform"}`}
+                        className={
+                          orientation === "horizontal"
+                            ? `absolute left-1/2 h-full w-[4px] -translate-x-1/2 transform bg-selected`
+                            : `absolute h-[4px] w-full bg-selected ${isDraggingExportEnd && isMobile ? "top-0" : "top-1/2 -translate-y-1/2 transform"}`
+                        }
                       ></div>
                     </div>
                   </div>
                 </div>
                 <div
                   ref={exportSectionRef}
-                  className={orientation === "horizontal" ? "absolute h-full bg-selected/50" : "absolute w-full bg-selected/50"}
+                  className={
+                    orientation === "horizontal"
+                      ? "absolute h-full bg-selected/50"
+                      : "absolute w-full bg-selected/50"
+                  }
                 ></div>
                 <div
-                  className={`export-start absolute left-0 top-0 ${isDraggingExportStart && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "w-full h-auto"}`}
+                  className={`export-start absolute left-0 top-0 ${isDraggingExportStart && isIOS ? "" : "z-20"} ${orientation === "horizontal" ? "h-full w-auto" : "h-auto w-full"}`}
                   role="scrollbar"
                   ref={exportStartRef}
                 >
                   <div
-                    className={orientation === "horizontal"
-                      ? "flex touch-none select-none flex-col items-center justify-start h-full"
-                      : "flex touch-none select-none items-center justify-center"}
+                    className={
+                      orientation === "horizontal"
+                        ? "flex h-full touch-none select-none flex-col items-center justify-start"
+                        : "flex touch-none select-none items-center justify-center"
+                    }
                     onMouseDown={handleExportStart}
                     onTouchStart={handleExportStart}
                   >
                     <div
                       className={cn(
                         "relative",
-                        orientation === "horizontal" ? "h-full mt-0 w-[80px]" : "-mt-[6.5px] w-full",
-                        isDragging ? "cursor-grabbing" : "cursor-grab"
+                        orientation === "horizontal"
+                          ? "mt-0 h-full w-[80px]"
+                          : "-mt-[6.5px] w-full",
+                        isDragging ? "cursor-grabbing" : "cursor-grab",
                       )}
                     >
                       <div
-                        className={orientation === "horizontal"
-                          ? `absolute w-[4px] h-full bg-selected left-1/2 -translate-x-1/2 transform`
-                          : `absolute h-[4px] w-full bg-selected ${isDraggingExportStart && isMobile ? "top-[12px]" : "top-1/2 -translate-y-1/2 transform"}`}
+                        className={
+                          orientation === "horizontal"
+                            ? `absolute left-1/2 h-full w-[4px] -translate-x-1/2 transform bg-selected`
+                            : `absolute h-[4px] w-full bg-selected ${isDraggingExportStart && isMobile ? "top-[12px]" : "top-1/2 -translate-y-1/2 transform"}`
+                        }
                       ></div>
                       <div
                         className={`mx-auto bg-selected ${
@@ -566,7 +598,7 @@ export function ReviewTimeline({
               ? "bottom-2 right-2 flex-row"
               : isMobile
                 ? "bottom-4 right-1 flex-col-reverse gap-3"
-                : "bottom-2 left-1/2 -translate-x-1/2"
+                : "bottom-2 left-1/2 -translate-x-1/2",
           )}
         >
           <Tooltip>

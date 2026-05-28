@@ -13,7 +13,7 @@ import {
   Car,
   CheckCircle,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -28,8 +28,9 @@ import {
   Area,
   BarChart,
   Bar,
-  Cell
+  Cell,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import { CameraConfig } from "@/types/frigateConfig";
 import { LivePlayerMode } from "@/types/live";
@@ -52,100 +53,133 @@ interface AIModule {
   icon: React.ReactNode;
 }
 
+interface TrafficDataPoint {
+  name: string;
+  vehicles: number;
+  pedestrians: number;
+}
+
+interface VehicleTypeDataPoint {
+  name: string;
+  value: number;
+}
+
+interface ActivityTimelineDataPoint {
+  name: string;
+  general: number;
+  alerts: number;
+}
+
+interface PredictiveData {
+  situation_analysis: string;
+  risk_analysis: string;
+  predictive_analysis: string;
+  operational_recommendations: string;
+  timestamp: string;
+  is_heuristic: boolean;
+}
+
 export default function AIViewsionModal({
   isOpen,
   onClose,
   camera,
   preferredLiveMode,
-  streamName
+  streamName,
 }: AIViewsionModalProps) {
+  const { t } = useTranslation(["views/aiviewsion"]);
+
   // AI Modules list
-  const aiModules: AIModule[] = [
-    {
-      id: "objects",
-      name: "General Objects",
-      description: "Detects pedestrians, backpacks, bags, and general assets.",
-      icon: <Cctv className="size-4" />
-    },
-    {
-      id: "face",
-      name: "Face Recognition",
-      description: "Extracts biometric keypoints and cross-references POI records.",
-      icon: <User className="size-4" />
-    },
-    {
-      id: "people_count",
-      name: "People Counting",
-      description: "Maintains crowd density estimation and line-crossing counts.",
-      icon: <Users className="size-4" />
-    },
-    {
-      id: "vehicle",
-      name: "Road AI",
-      description: "Extracts plate numbers, makes, models, and color classifications.",
-      icon: <Car className="size-4" />
-    },
-    {
-      id: "vehicle_count",
-      name: "Vehicle Counting",
-      description: "Monitors traffic throughput, average speeds, and directional flow.",
-      icon: <TrendingUp className="size-4" />
-    },
-    {
-      id: "fire",
-      name: "Fire Detection",
-      description: "Flicker-frequency smoke and flame detection inference.",
-      icon: <Flame className="size-4" />
-    },
-    {
-      id: "flood",
-      name: "Flood Detection",
-      description: "Visual pooling and rising water level boundary tracking.",
-      icon: <Waves className="size-4" />
-    },
-    {
-      id: "violence",
-      name: "Violence",
-      description: "Skeletal motion analysis for physical altercations and weapons.",
-      icon: <ShieldAlert className="size-4" />
-    }
-  ];
+  const aiModules: AIModule[] = useMemo(
+    () => [
+      {
+        id: "objects",
+        name: t("modules.objects.name"),
+        description: t("modules.objects.description"),
+        icon: <Cctv className="size-4" />,
+      },
+      {
+        id: "face",
+        name: t("modules.face.name"),
+        description: t("modules.face.description"),
+        icon: <User className="size-4" />,
+      },
+      {
+        id: "people_count",
+        name: t("modules.people_count.name"),
+        description: t("modules.people_count.description"),
+        icon: <Users className="size-4" />,
+      },
+      {
+        id: "vehicle",
+        name: t("modules.vehicle.name"),
+        description: t("modules.vehicle.description"),
+        icon: <Car className="size-4" />,
+      },
+      {
+        id: "vehicle_count",
+        name: t("modules.vehicle_count.name"),
+        description: t("modules.vehicle_count.description"),
+        icon: <TrendingUp className="size-4" />,
+      },
+      {
+        id: "fire",
+        name: t("modules.fire.name"),
+        description: t("modules.fire.description"),
+        icon: <Flame className="size-4" />,
+      },
+      {
+        id: "flood",
+        name: t("modules.flood.name"),
+        description: t("modules.flood.description"),
+        icon: <Waves className="size-4" />,
+      },
+      {
+        id: "violence",
+        name: t("modules.violence.name"),
+        description: t("modules.violence.description"),
+        icon: <ShieldAlert className="size-4" />,
+      },
+    ],
+    [t],
+  );
 
   // Enabled modules state saved in localStorage for persistence
-  const [enabledModules, setEnabledModules] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(`aiviewsion-modules-${camera.name}`);
-      return saved
-        ? JSON.parse(saved)
-        : {
-            objects: true,
-            face: false,
-            people_count: false,
-            vehicle: false,
-            vehicle_count: false,
-            fire: false,
-            flood: false,
-            violence: false
-          };
-    } catch {
-      return {
-        objects: true,
-        face: false,
-        people_count: false,
-        vehicle: false,
-        vehicle_count: false,
-        fire: false,
-        flood: false,
-        violence: false
-      };
-    }
-  });
+  const [enabledModules, setEnabledModules] = useState<Record<string, boolean>>(
+    () => {
+      try {
+        const saved = localStorage.getItem(`aiviewsion-modules-${camera.name}`);
+        return saved
+          ? JSON.parse(saved)
+          : {
+              objects: true,
+              face: false,
+              people_count: false,
+              vehicle: false,
+              vehicle_count: false,
+              fire: false,
+              flood: false,
+              violence: false,
+            };
+      } catch {
+        return {
+          objects: true,
+          face: false,
+          people_count: false,
+          vehicle: false,
+          vehicle_count: false,
+          fire: false,
+          flood: false,
+          violence: false,
+        };
+      }
+    },
+  );
 
   // Persist modules to localStorage when changed
   useEffect(() => {
     localStorage.setItem(
       `aiviewsion-modules-${camera.name}`,
-      JSON.stringify(enabledModules)
+      JSON.stringify(enabledModules),
     );
   }, [enabledModules, camera.name]);
 
@@ -156,19 +190,24 @@ export default function AIViewsionModal({
   const [trafficFlowScore, setTrafficFlowScore] = useState(100);
 
   // Charts data state
-  const [trafficData, setTrafficData] = useState<any[]>([]);
-  const [vehicleTypesData, setVehicleTypesData] = useState<any[]>([]);
-  const [activityTimeline, setActivityTimeline] = useState<any[]>([]);
+  const [trafficData, setTrafficData] = useState<TrafficDataPoint[]>([]);
+  const [vehicleTypesData, setVehicleTypesData] = useState<
+    VehicleTypeDataPoint[]
+  >([]);
+  const [activityTimeline, setActivityTimeline] = useState<
+    ActivityTimelineDataPoint[]
+  >([]);
 
   // Simulation tick for live data
   useEffect(() => {
     // Generate initial charts baseline
     const baseTime = new Date();
-    const initialTraffic = [];
-    const initialActivity = [];
+    const initialTraffic: TrafficDataPoint[] = [];
+    const initialActivity: ActivityTimelineDataPoint[] = [];
     for (let i = 6; i >= 0; i--) {
-      const timeStr = new Date(baseTime.getTime() - i * 60 * 1000)
-        .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const timeStr = new Date(
+        baseTime.getTime() - i * 60 * 1000,
+      ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       initialTraffic.push({ name: timeStr, vehicles: 0, pedestrians: 0 });
       initialActivity.push({ name: timeStr, general: 0, alerts: 0 });
     }
@@ -179,14 +218,16 @@ export default function AIViewsionModal({
       { name: "Sedan", value: 0 },
       { name: "SUV", value: 0 },
       { name: "Truck", value: 0 },
-      { name: "Motorcycle", value: 0 }
+      { name: "Motorcycle", value: 0 },
     ]);
   }, []);
 
   // Update telemetry and charts in real-time when modules are toggled
   useEffect(() => {
-    const isRoadAIActive = enabledModules.vehicle || enabledModules.vehicle_count;
-    const isObjectsActive = enabledModules.objects || enabledModules.people_count;
+    const isRoadAIActive =
+      enabledModules.vehicle || enabledModules.vehicle_count;
+    const isObjectsActive =
+      enabledModules.objects || enabledModules.people_count;
 
     if (!isRoadAIActive && !isObjectsActive) {
       setVehicleCount(0);
@@ -217,7 +258,7 @@ export default function AIViewsionModal({
       const timeStr = new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit"
+        second: "2-digit",
       });
 
       setTrafficData((prev) => {
@@ -225,7 +266,7 @@ export default function AIViewsionModal({
         next.push({
           name: timeStr,
           vehicles: isRoadAIActive ? Math.floor(Math.random() * 5) + 2 : 0,
-          pedestrians: isObjectsActive ? Math.floor(Math.random() * 3) + 1 : 0
+          pedestrians: isObjectsActive ? Math.floor(Math.random() * 3) + 1 : 0,
         });
         return next;
       });
@@ -235,7 +276,10 @@ export default function AIViewsionModal({
         next.push({
           name: timeStr,
           general: baseObjects * 10,
-          alerts: enabledModules.violence || enabledModules.fire ? Math.floor(Math.random() * 15) : 0
+          alerts:
+            enabledModules.violence || enabledModules.fire
+              ? Math.floor(Math.random() * 15)
+              : 0,
         });
         return next;
       });
@@ -246,7 +290,7 @@ export default function AIViewsionModal({
           { name: "Sedan", value: Math.floor(Math.random() * 20) + 15 },
           { name: "SUV", value: Math.floor(Math.random() * 15) + 10 },
           { name: "Truck", value: Math.floor(Math.random() * 5) + 2 },
-          { name: "Motorcycle", value: Math.floor(Math.random() * 12) + 5 }
+          { name: "Motorcycle", value: Math.floor(Math.random() * 12) + 5 },
         ]);
       }
     }, 3000);
@@ -277,7 +321,9 @@ export default function AIViewsionModal({
   >(null);
 
   // Predictive Foresight state
-  const [predictiveData, setPredictiveData] = useState<any>(null);
+  const [predictiveData, setPredictiveData] = useState<PredictiveData | null>(
+    null,
+  );
   const [isPredicting, setIsPredicting] = useState(false);
 
   const handleGenerateForecast = () => {
@@ -287,7 +333,8 @@ export default function AIViewsionModal({
     setTimeout(() => {
       // Generate dynamically based on toggled modules and camera name
       const isRoadAI = enabledModules.vehicle || enabledModules.vehicle_count;
-      const isSecurity = enabledModules.face || enabledModules.violence || enabledModules.fire;
+      const isSecurity =
+        enabledModules.face || enabledModules.violence || enabledModules.fire;
 
       const sitrep = isRoadAI
         ? `Moderate traffic flow observed on CCTV node ${camera.name.toUpperCase()}. Average vehicle speed clocked at 34 km/h with fluent routing.`
@@ -311,10 +358,10 @@ export default function AIViewsionModal({
         predictive_analysis: forecast,
         operational_recommendations: recommendation,
         timestamp: new Date().toLocaleTimeString(),
-        is_heuristic: false
+        is_heuristic: false,
       });
       setIsPredicting(false);
-      toast.success("Foresight Analysis sitrep generated.");
+      toast.success(t("toast.foresight_success"));
     }, 2000);
   };
 
@@ -326,15 +373,20 @@ export default function AIViewsionModal({
       setConfirmModule(moduleId);
     } else {
       setEnabledModules((prev) => ({ ...prev, [moduleId]: true }));
-      toast.success(`Activated ${aiModules.find((m) => m.id === moduleId)?.name} module.`);
+      const mod = aiModules.find((m) => m.id === moduleId);
+      if (mod) {
+        toast.success(t("toast.activated", { module: mod.name }));
+      }
     }
   };
 
   const confirmDeactivate = () => {
     if (confirmModule) {
       setEnabledModules((prev) => ({ ...prev, [confirmModule]: false }));
-      const moduleName = aiModules.find((m) => m.id === confirmModule)?.name;
-      toast.info(`Deactivated ${moduleName} module.`);
+      const mod = aiModules.find((m) => m.id === confirmModule);
+      if (mod) {
+        toast.info(t("toast.deactivated", { module: mod.name }));
+      }
       setConfirmModule(null);
     }
   };
@@ -342,123 +394,124 @@ export default function AIViewsionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#010813] flex flex-col overflow-hidden animate-fade-in text-[#ffffff]">
+    <div className="animate-fade-in fixed inset-0 z-[9999] flex flex-col overflow-hidden bg-[#010813] text-[#ffffff]">
       {/* HUD Header */}
-      <div className="flex justify-between items-center px-6 py-4 border-b border-[rgba(0,243,255,0.2)] bg-[#030f22]/90 z-50 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
+      <div className="z-50 flex items-center justify-between border-b border-[rgba(0,243,255,0.2)] bg-[#030f22]/90 px-6 py-4 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-bold flex items-center gap-2 text-[var(--hud-cyan)] uppercase tracking-widest font-mono">
-            <ShieldAlert size={16} className="animate-pulse" /> AIViewsion Intelligence Portal
+          <h2 className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-widest text-[var(--hud-cyan)]">
+            <ShieldAlert size={16} className="animate-pulse" />{" "}
+            {t("portal_title")}
           </h2>
-          <div className="w-px h-4 bg-[rgba(0,243,255,0.4)] shadow-[0_0_8px_rgba(0,243,255,0.8)]"></div>
-          <p className="text-xs text-[var(--hud-text-sub)] font-mono uppercase tracking-widest">
-            {camera.name.toUpperCase()} • LIVE STREAM ANALYSIS
+          <div className="h-4 w-px bg-[rgba(0,243,255,0.4)] shadow-[0_0_8px_rgba(0,243,255,0.8)]"></div>
+          <p className="font-mono text-xs uppercase tracking-widest text-[var(--hud-text-sub)]">
+            {camera.name.toUpperCase()} • {t("live_stream_analysis")}
           </p>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-full border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.1)] hover:border-[var(--hud-cyan)] text-gray-400 hover:text-white transition-all"
+          className="rounded-full border border-[rgba(0,243,255,0.3)] p-1 text-gray-400 transition-all hover:border-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.1)] hover:text-white"
         >
           <X size={18} />
         </button>
       </div>
 
       {/* Main Grid Content */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-[#010813]">
+      <div className="grid flex-1 grid-cols-1 overflow-hidden bg-[#010813] lg:grid-cols-12">
         {/* Left Column: Visual Analytics & Charts (Cols 3) */}
-        <div className="lg:col-span-3 border-r border-[rgba(0,243,255,0.15)] flex flex-col overflow-y-auto p-4 space-y-4 scrollbar-container bg-[#020b18]/40">
+        <div className="scrollbar-container flex flex-col space-y-4 overflow-y-auto bg-[#020b18]/40 p-4 lg:col-span-3">
           {/* Live Counts Grid */}
-          <div className="grid grid-cols-2 gap-3 flex-shrink-0">
-            <div className="hud-panel">
+          <div className="grid flex-shrink-0 grid-cols-2 gap-3">
+            <div className="hud-panel relative">
               <div className="hud-panel-br"></div>
-              <div className="hud-header">Total Vehicles</div>
-              <div className="hud-content py-3.5 flex flex-col justify-center items-center">
-                <div className="text-2xl font-bold font-mono text-[var(--hud-cyan)] tracking-tight">
+              <div className="hud-header">{t("total_vehicles")}</div>
+              <div className="hud-content flex flex-col items-center justify-center py-3.5">
+                <div className="font-mono text-2xl font-bold tracking-tight text-[var(--hud-cyan)]">
                   {enabledModules.vehicle || enabledModules.vehicle_count ? (
                     vehicleCount
                   ) : (
-                    <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">
-                      Disabled
+                    <span className="font-mono text-xs font-bold uppercase tracking-widest text-gray-500">
+                      {t("disabled")}
                     </span>
                   )}
                 </div>
-                <div className="text-[8px] text-gray-400 font-mono uppercase mt-1">
-                  Accumulated Count
+                <div className="mt-1 font-mono text-[8px] uppercase text-gray-400">
+                  {t("accumulated_count")}
                 </div>
               </div>
             </div>
 
-            <div className="hud-panel">
+            <div className="hud-panel relative">
               <div className="hud-panel-br"></div>
-              <div className="hud-header">Active Objects</div>
-              <div className="hud-content py-3.5 flex flex-col justify-center items-center">
-                <div className="text-2xl font-bold font-mono text-[var(--hud-cyan)] tracking-tight animate-pulse">
+              <div className="hud-header">{t("active_objects")}</div>
+              <div className="hud-content flex flex-col items-center justify-center py-3.5">
+                <div className="animate-pulse font-mono text-2xl font-bold tracking-tight text-[var(--hud-cyan)]">
                   {enabledModules.objects || enabledModules.people_count ? (
                     activeObjects
                   ) : (
-                    <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">
-                      Standby
+                    <span className="font-mono text-xs font-bold uppercase tracking-widest text-gray-500">
+                      {t("standby")}
                     </span>
                   )}
                 </div>
-                <div className="text-[8px] text-gray-400 font-mono uppercase mt-1">
-                  Active in Scene
+                <div className="mt-1 font-mono text-[8px] uppercase text-gray-400">
+                  {t("active_in_scene")}
                 </div>
               </div>
             </div>
 
-            <div className="hud-panel">
+            <div className="hud-panel relative">
               <div className="hud-panel-br"></div>
-              <div className="hud-header">Road Density</div>
-              <div className="hud-content py-3.5 flex flex-col justify-center items-center">
-                <div className="text-2xl font-bold font-mono text-[var(--hud-cyan)] tracking-tight">
+              <div className="hud-header">{t("road_density")}</div>
+              <div className="hud-content flex flex-col items-center justify-center py-3.5">
+                <div className="font-mono text-2xl font-bold tracking-tight text-[var(--hud-cyan)]">
                   {enabledModules.vehicle || enabledModules.vehicle_count ? (
                     `${roadDensity}%`
                   ) : (
-                    <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">
-                      Off
+                    <span className="font-mono text-xs font-bold uppercase tracking-widest text-gray-500">
+                      {t("off")}
                     </span>
                   )}
                 </div>
-                <div className="text-[8px] text-gray-400 font-mono uppercase mt-1">
-                  Occupancy Ratio
+                <div className="mt-1 font-mono text-[8px] uppercase text-gray-400">
+                  {t("occupancy_ratio")}
                 </div>
               </div>
             </div>
 
-            <div className="hud-panel">
+            <div className="hud-panel relative">
               <div className="hud-panel-br"></div>
-              <div className="hud-header">Traffic Flow</div>
-              <div className="hud-content py-3.5 flex flex-col justify-center items-center">
+              <div className="hud-header">{t("traffic_flow")}</div>
+              <div className="hud-content flex flex-col items-center justify-center py-3.5">
                 <div
-                  className="text-sm font-bold font-mono tracking-wider uppercase"
+                  className="font-mono text-sm font-bold uppercase tracking-wider"
                   style={{
                     color:
                       !enabledModules.vehicle && !enabledModules.vehicle_count
                         ? "#64748b"
                         : trafficFlowScore > 92
                           ? "#39FF14"
-                          : "#f59e0b"
+                          : "#f59e0b",
                   }}
                 >
                   {!enabledModules.vehicle && !enabledModules.vehicle_count
-                    ? "STANDBY"
+                    ? t("standby").toUpperCase()
                     : trafficFlowScore > 92
-                      ? "FLUID"
-                      : "STABLE"}
+                      ? t("fluid")
+                      : t("stable")}
                 </div>
-                <div className="text-[8px] text-gray-400 font-mono uppercase mt-1">
+                <div className="mt-1 font-mono text-[8px] uppercase text-gray-400">
                   {!enabledModules.vehicle && !enabledModules.vehicle_count
-                    ? "Flow Monitor Off"
-                    : `Score: ${trafficFlowScore}/100`}
+                    ? t("flow_monitor_off")
+                    : t("score", { score: trafficFlowScore })}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Traffic Flow Analysis Chart */}
-          <div className="hud-panel h-[180px] flex-shrink-0">
+          <div className="hud-panel relative h-[180px] flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">Traffic Flow (Last 10m)</div>
+            <div className="hud-header">{t("traffic_flow_last_10m")}</div>
             <div className="hud-content p-2">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trafficData}>
@@ -480,13 +533,13 @@ export default function AIViewsionModal({
                       border: "1px solid rgba(0, 243, 255, 0.3)",
                       fontSize: "10px",
                       color: "#fff",
-                      fontFamily: "monospace"
+                      fontFamily: "monospace",
                     }}
                   />
                   <Line
                     type="monotone"
                     dataKey="vehicles"
-                    name="Vehicles"
+                    name={t("vehicles")}
                     stroke="#00f3ff"
                     strokeWidth={2}
                     dot={false}
@@ -494,7 +547,7 @@ export default function AIViewsionModal({
                   <Line
                     type="monotone"
                     dataKey="pedestrians"
-                    name="Pedestrians"
+                    name={t("pedestrians")}
                     stroke="#bc13fe"
                     strokeWidth={1.5}
                     dot={false}
@@ -505,9 +558,9 @@ export default function AIViewsionModal({
           </div>
 
           {/* Vehicle Types Distribution Chart */}
-          <div className="hud-panel h-[180px] flex-shrink-0">
+          <div className="hud-panel relative h-[180px] flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">Vehicle Classifications</div>
+            <div className="hud-header">{t("vehicle_classifications")}</div>
             <div className="hud-content p-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={vehicleTypesData} layout="vertical">
@@ -527,10 +580,14 @@ export default function AIViewsionModal({
                       border: "1px solid rgba(0, 243, 255, 0.3)",
                       fontSize: "10px",
                       color: "#fff",
-                      fontFamily: "monospace"
+                      fontFamily: "monospace",
                     }}
                   />
-                  <Bar dataKey="value" name="Detected" radius={[0, 4, 4, 0]}>
+                  <Bar
+                    dataKey="value"
+                    name={t("detected")}
+                    radius={[0, 4, 4, 0]}
+                  >
                     {vehicleTypesData.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
@@ -552,9 +609,9 @@ export default function AIViewsionModal({
           </div>
 
           {/* Combined Activity Timeline Stacked Area Chart */}
-          <div className="hud-panel h-[170px] flex-shrink-0">
+          <div className="hud-panel relative h-[170px] flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">Combined Activity Timeline</div>
+            <div className="hud-header">{t("combined_activity_timeline")}</div>
             <div className="hud-content p-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={activityTimeline}>
@@ -576,13 +633,13 @@ export default function AIViewsionModal({
                       border: "1px solid rgba(0, 243, 255, 0.3)",
                       fontSize: "10px",
                       color: "#fff",
-                      fontFamily: "monospace"
+                      fontFamily: "monospace",
                     }}
                   />
                   <Area
                     type="monotone"
                     dataKey="general"
-                    name="Motion"
+                    name={t("motion")}
                     stackId="1"
                     stroke="#00f3ff"
                     fill="rgba(0, 243, 255, 0.1)"
@@ -590,7 +647,7 @@ export default function AIViewsionModal({
                   <Area
                     type="monotone"
                     dataKey="alerts"
-                    name="Alerts"
+                    name={t("alerts")}
                     stackId="1"
                     stroke="#ef4444"
                     fill="rgba(239, 68, 68, 0.2)"
@@ -602,17 +659,17 @@ export default function AIViewsionModal({
         </div>
 
         {/* Center Column: Live feed, Map, Registry triggers (Cols 6) */}
-        <div className="lg:col-span-6 border-r border-[rgba(0,243,255,0.15)] flex flex-col overflow-y-auto p-4 space-y-4 scrollbar-container bg-[#010813]">
+        <div className="scrollbar-container flex flex-col space-y-4 overflow-y-auto bg-[#010813] p-4 lg:col-span-6">
           {/* Live Player Container */}
-          <div className="hud-panel aspect-video w-full flex-shrink-0">
+          <div className="hud-panel relative aspect-video w-full flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header flex justify-between items-center">
-              <span>LIVE VIDEO STREAM feed</span>
-              <span className="text-[9px] text-[var(--hud-cyan)] animate-pulse">
-                ● 1080P • 30FPS • {camera.name.toUpperCase()}
+            <div className="hud-header flex items-center justify-between">
+              <span>{t("live_video_stream_feed")}</span>
+              <span className="animate-pulse font-mono text-[9px] text-[var(--hud-cyan)]">
+                {t("live_specs", { camera: camera.name.toUpperCase() })}
               </span>
             </div>
-            <div className="hud-content p-1 bg-black flex items-center justify-center overflow-hidden">
+            <div className="hud-content flex items-center justify-center overflow-hidden bg-black p-1">
               <LivePlayer
                 className="size-full"
                 cameraConfig={camera}
@@ -630,9 +687,9 @@ export default function AIViewsionModal({
           </div>
 
           {/* Location Intelligence Map */}
-          <div className="hud-panel h-[230px] flex-shrink-0">
+          <div className="hud-panel relative h-[230px] flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">Location Intelligence GIS</div>
+            <div className="hud-header">{t("location_intelligence_gis")}</div>
             <div className="hud-content p-1">
               <LocationIntelligenceMap
                 latitude={coordinates.lat}
@@ -643,67 +700,67 @@ export default function AIViewsionModal({
           </div>
 
           {/* Action Trigger Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
+          <div className="grid flex-shrink-0 grid-cols-2 gap-3 md:grid-cols-4">
             <button
               onClick={() => setQuickAddType("person")}
-              className="px-3 py-2.5 bg-[#031534]/60 border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.15)] hover:border-[var(--hud-cyan)] text-[#e0f8ff] font-mono text-[10px] tracking-wider uppercase transition-all flex flex-col items-center justify-center gap-1.5 shadow-[inset_0_0_10px_rgba(0,243,255,0.02)]"
+              className="flex flex-col items-center justify-center gap-1.5 border border-[rgba(0,243,255,0.3)] bg-[#031534]/60 px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-[#e0f8ff] shadow-[inset_0_0_10px_rgba(0,243,255,0.02)] transition-all hover:border-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.15)]"
             >
               <User size={16} className="text-[var(--hud-cyan)]" />
-              <span>Person of Interest</span>
+              <span>{t("person_of_interest")}</span>
             </button>
 
             <button
               onClick={() => setQuickAddType("vehicle")}
-              className="px-3 py-2.5 bg-[#031534]/60 border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.15)] hover:border-[var(--hud-cyan)] text-[#e0f8ff] font-mono text-[10px] tracking-wider uppercase transition-all flex flex-col items-center justify-center gap-1.5 shadow-[inset_0_0_10px_rgba(0,243,255,0.02)]"
+              className="flex flex-col items-center justify-center gap-1.5 border border-[rgba(0,243,255,0.3)] bg-[#031534]/60 px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-[#e0f8ff] shadow-[inset_0_0_10px_rgba(0,243,255,0.02)] transition-all hover:border-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.15)]"
             >
               <Car size={16} className="text-[var(--hud-cyan)]" />
-              <span>Target Vehicle</span>
+              <span>{t("target_vehicle")}</span>
             </button>
 
             <button
               onClick={() => setQuickAddType("asset")}
-              className="px-3 py-2.5 bg-[#031534]/60 border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.15)] hover:border-[var(--hud-cyan)] text-[#e0f8ff] font-mono text-[10px] tracking-wider uppercase transition-all flex flex-col items-center justify-center gap-1.5 shadow-[inset_0_0_10px_rgba(0,243,255,0.02)]"
+              className="flex flex-col items-center justify-center gap-1.5 border border-[rgba(0,243,255,0.3)] bg-[#031534]/60 px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-[#e0f8ff] shadow-[inset_0_0_10px_rgba(0,243,255,0.02)] transition-all hover:border-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.15)]"
             >
               <Cctv size={16} className="text-[var(--hud-cyan)]" />
-              <span>Tracked Asset</span>
+              <span>{t("tracked_asset")}</span>
             </button>
 
             <button
               onClick={() => setQuickAddType("roi")}
-              className="px-3 py-2.5 bg-[#031534]/60 border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.15)] hover:border-[var(--hud-cyan)] text-[#e0f8ff] font-mono text-[10px] tracking-wider uppercase transition-all flex flex-col items-center justify-center gap-1.5 shadow-[inset_0_0_10px_rgba(0,243,255,0.02)]"
+              className="flex flex-col items-center justify-center gap-1.5 border border-[rgba(0,243,255,0.3)] bg-[#031534]/60 px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-[#e0f8ff] shadow-[inset_0_0_10px_rgba(0,243,255,0.02)] transition-all hover:border-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.15)]"
             >
               <ShieldAlert size={16} className="text-[var(--hud-cyan)]" />
-              <span>Security ROI Zone</span>
+              <span>{t("security_roi_zone")}</span>
             </button>
           </div>
         </div>
 
         {/* Right Column: AI Toggles & Predictive Foresight (Cols 3) */}
-        <div className="lg:col-span-3 flex flex-col overflow-y-auto p-4 space-y-4 scrollbar-container bg-[#020b18]/40">
+        <div className="scrollbar-container flex flex-col space-y-4 overflow-y-auto bg-[#020b18]/40 p-4 lg:col-span-3">
           {/* AI Suite Modules */}
-          <div className="hud-panel flex-shrink-0">
+          <div className="hud-panel relative flex-shrink-0">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">AI Intelligent Suite</div>
-            <div className="hud-content p-3 space-y-3.5">
+            <div className="hud-header">{t("ai_intelligent_suite")}</div>
+            <div className="hud-content space-y-3.5 p-3">
               {aiModules.map((module) => {
                 const isActive = enabledModules[module.id];
                 return (
                   <div
                     key={module.id}
-                    className="flex justify-between items-start gap-3 border-b border-[rgba(255,255,255,0.03)] pb-2.5 last:border-0 last:pb-0"
+                    className="flex items-start justify-between gap-3 border-b border-[rgba(255,255,255,0.03)] pb-2.5 last:border-0 last:pb-0"
                   >
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2 text-xs font-bold text-gray-200 font-mono">
+                      <div className="flex items-center gap-2 font-mono text-xs font-bold text-gray-200">
                         <span
                           style={{
-                            color: isActive ? "var(--hud-cyan)" : "#64748b"
+                            color: isActive ? "var(--hud-cyan)" : "#64748b",
                           }}
                         >
                           {module.icon}
                         </span>
                         <span>{module.name}</span>
                       </div>
-                      <p className="text-[9px] text-gray-400 font-mono leading-tight">
+                      <p className="font-mono text-[9px] leading-tight text-gray-400">
                         {module.description}
                       </p>
                     </div>
@@ -714,15 +771,15 @@ export default function AIViewsionModal({
                         onCheckedChange={() => handleToggleModule(module.id)}
                       />
                       <span
-                        className="text-[8px] font-mono font-bold uppercase tracking-wider px-1 py-0.5 rounded"
+                        className="rounded px-1 py-0.5 font-mono text-[8px] font-bold uppercase tracking-wider"
                         style={{
                           color: isActive ? "#39FF14" : "#64748b",
                           background: isActive
                             ? "rgba(57, 255, 20, 0.05)"
-                            : "rgba(255, 255, 255, 0.02)"
+                            : "rgba(255, 255, 255, 0.02)",
                         }}
                       >
-                        {isActive ? "ONLINE" : "STANDBY"}
+                        {isActive ? t("online") : t("standby").toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -732,70 +789,72 @@ export default function AIViewsionModal({
           </div>
 
           {/* AI Predictive Foresight */}
-          <div className="hud-panel flex-1 min-h-[250px]">
+          <div className="hud-panel relative min-h-[250px] flex-1">
             <div className="hud-panel-br"></div>
-            <div className="hud-header">AI Predictive Foresight</div>
-            <div className="hud-content p-3 flex flex-col justify-between">
+            <div className="hud-header">{t("ai_predictive_foresight")}</div>
+            <div className="hud-content flex flex-col justify-between p-3">
               {/* Output Analysis Blocks */}
-              <div className="space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-[420px]">
+              <div className="no-scrollbar max-h-[420px] flex-1 space-y-3 overflow-y-auto">
                 {!predictiveData && !isPredicting && (
-                  <div className="h-full flex flex-col justify-center items-center py-12 text-center space-y-3">
-                    <Brain className="size-12 text-gray-500 animate-pulse" />
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-mono">
-                      Predictive engine ready. Trigger scanner below.
+                  <div className="flex flex-col items-center justify-center space-y-3 py-12 text-center">
+                    <Brain className="size-12 animate-pulse text-gray-500" />
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                      {t("predictive_engine_ready")}
                     </p>
                   </div>
                 )}
 
                 {isPredicting && (
-                  <div className="py-16 flex flex-col items-center justify-center space-y-4">
-                    <RefreshCw className="size-8 text-[var(--hud-cyan)] animate-spin" />
-                    <span className="text-[9px] text-[var(--hud-cyan)] font-mono uppercase tracking-widest animate-pulse">
-                      SCANNING STREAM & VLM ANALYSIS IN PROGRESS...
+                  <div className="flex flex-col items-center justify-center space-y-4 py-16">
+                    <RefreshCw className="size-8 animate-spin text-[var(--hud-cyan)]" />
+                    <span className="animate-pulse font-mono text-[9px] uppercase tracking-widest text-[var(--hud-cyan)]">
+                      {t("scanning_in_progress")}
                     </span>
                   </div>
                 )}
 
                 {predictiveData && (
                   <div className="space-y-3">
-                    <div className="bg-[var(--hud-cyan-dim)] p-2.5 border-l-[3px] border-[var(--hud-cyan)]">
-                      <div className="text-[9px] text-[var(--hud-cyan)] font-bold uppercase mb-1 tracking-widest font-mono flex items-center gap-1.5">
-                        <Eye size={12} /> Situation Analysis
+                    <div className="border-l-[3px] border-[var(--hud-cyan)] bg-[var(--hud-cyan-dim)] p-2.5">
+                      <div className="mb-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[var(--hud-cyan)]">
+                        <Eye size={12} /> {t("situation_analysis")}
                       </div>
-                      <p className="text-[10px] text-[#e0f8ff] leading-relaxed font-mono">
+                      <p className="font-mono text-[10px] leading-relaxed text-[#e0f8ff]">
                         {predictiveData.situation_analysis}
                       </p>
                     </div>
 
-                    <div className="bg-[rgba(245,158,11,0.05)] p-2.5 border-l-[3px] border-[#f59e0b]">
-                      <div className="text-[9px] text-[#f59e0b] font-bold uppercase mb-1 tracking-widest font-mono flex items-center gap-1.5">
-                        <ShieldAlert size={12} /> Risk Index
+                    <div className="border-l-[3px] border-[#f59e0b] bg-[rgba(245,158,11,0.05)] p-2.5">
+                      <div className="mb-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#f59e0b]">
+                        <ShieldAlert size={12} /> {t("risk_index")}
                       </div>
-                      <p className="text-[10px] text-[#e0f8ff] leading-relaxed font-mono">
+                      <p className="font-mono text-[10px] leading-relaxed text-[#e0f8ff]">
                         {predictiveData.risk_analysis}
                       </p>
                     </div>
 
-                    <div className="bg-[rgba(188,19,254,0.05)] p-2.5 border-l-[3px] border-[#bc13fe]">
-                      <div className="text-[9px] text-[#bc13fe] font-bold uppercase mb-1 tracking-widest font-mono flex items-center gap-1.5">
-                        <Brain size={12} /> Foresight Forecast
+                    <div className="border-l-[3px] border-[#bc13fe] bg-[rgba(188,19,254,0.05)] p-2.5">
+                      <div className="mb-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#bc13fe]">
+                        <Brain size={12} /> {t("foresight_forecast")}
                       </div>
-                      <p className="text-[10px] text-[#e0f8ff] leading-relaxed font-mono">
+                      <p className="font-mono text-[10px] leading-relaxed text-[#e0f8ff]">
                         {predictiveData.predictive_analysis}
                       </p>
                     </div>
 
-                    <div className="bg-[rgba(57,255,20,0.05)] p-2.5 border-l-[3px] border-[#39FF14]">
-                      <div className="text-[9px] text-[#39FF14] font-bold uppercase mb-1 tracking-widest font-mono flex items-center gap-1.5">
-                        <CheckCircle size={12} /> Recommended Action
+                    <div className="border-l-[3px] border-[#39FF14] bg-[rgba(57,255,20,0.05)] p-2.5">
+                      <div className="mb-1 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#39FF14]">
+                        <CheckCircle size={12} /> {t("recommended_action")}
                       </div>
-                      <p className="text-[10px] text-[#e0f8ff] leading-relaxed font-mono">
+                      <p className="font-mono text-[10px] leading-relaxed text-[#e0f8ff]">
                         {predictiveData.operational_recommendations}
                       </p>
                     </div>
 
-                    <div className="text-[8px] text-right text-gray-500 font-mono mt-1">
-                       Vision Language Model • {predictiveData.timestamp}
+                    <div className="mt-1 text-right font-mono text-[8px] text-gray-500">
+                      {t("vlm_model_timestamp", {
+                        timestamp: predictiveData.timestamp,
+                      })}
                     </div>
                   </div>
                 )}
@@ -805,10 +864,10 @@ export default function AIViewsionModal({
               <button
                 onClick={handleGenerateForecast}
                 disabled={isPredicting}
-                className="w-full mt-3 py-2 bg-[rgba(0,243,255,0.15)] border border-[var(--hud-cyan)] text-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.25)] rounded font-mono text-[10px] uppercase font-bold tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_12px_rgba(0,243,255,0.1)]"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded border border-[var(--hud-cyan)] bg-[rgba(0,243,255,0.15)] py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--hud-cyan)] shadow-[0_0_12px_rgba(0,243,255,0.1)] transition-all hover:bg-[rgba(0,243,255,0.25)] disabled:opacity-50"
               >
                 <Brain size={12} />
-                <span>Generate Foresight Forecast</span>
+                <span>{t("generate_forecast_btn")}</span>
               </button>
             </div>
           </div>
@@ -817,41 +876,35 @@ export default function AIViewsionModal({
 
       {/* Confirmation Dialog Modal */}
       {confirmModule && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-[110000] backdrop-blur-sm">
-          <div className="hud-panel w-full max-w-md p-6 bg-[#030f22] border border-[rgba(0,243,255,0.3)] shadow-[0_0_30px_rgba(0,243,255,0.2)] text-[#ffffff]">
+        <div className="fixed inset-0 z-[110000] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="hud-panel w-full max-w-md border border-[rgba(0,243,255,0.3)] bg-[#030f22] p-6 text-[#ffffff] shadow-[0_0_30px_rgba(0,243,255,0.2)]">
             <div className="hud-panel-br"></div>
-            <div className="flex gap-3 items-start mb-4">
-              <AlertTriangle className="size-8 text-[#ef4444] animate-pulse flex-shrink-0" />
+            <div className="mb-4 flex items-start gap-3">
+              <AlertTriangle className="size-8 flex-shrink-0 animate-pulse text-[#ef4444]" />
               <div>
-                <h3 className="text-sm font-bold font-mono text-[#ef4444] uppercase tracking-wider">
-                  Disable Module Inference Warning
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-[#ef4444]">
+                  {t("disable_warning_title")}
                 </h3>
-                <p className="text-xs text-gray-300 font-mono mt-2 leading-relaxed">
-                  Are you sure you want to deactivate the{" "}
-                  <span className="text-[var(--hud-cyan)] font-bold">
-                    {aiModules.find((m) => m.id === confirmModule)?.name}
-                  </span>{" "}
-                  module? This will permanently close the active inference stream and purge
-                  temporary target track logs for node{" "}
-                  <span className="text-[var(--hud-cyan)] font-bold">
-                    {camera.name.toUpperCase()}
-                  </span>
-                  .
+                <p className="mt-2 font-mono text-xs leading-relaxed text-gray-300">
+                  {t("disable_warning_desc", {
+                    module: aiModules.find((m) => m.id === confirmModule)?.name,
+                    camera: camera.name.toUpperCase(),
+                  })}
                 </p>
               </div>
             </div>
-            <div className="flex gap-3 mt-5">
+            <div className="mt-5 flex gap-3">
               <button
                 onClick={() => setConfirmModule(null)}
-                className="flex-1 py-1.5 border border-gray-500 hover:bg-white/5 rounded text-xs font-mono uppercase text-gray-300 transition-colors"
+                className="flex-1 rounded border border-gray-500 py-1.5 font-mono text-xs uppercase text-gray-300 transition-colors hover:bg-white/5"
               >
-                CANCEL
+                {t("cancel")}
               </button>
               <button
                 onClick={confirmDeactivate}
-                className="flex-1 py-1.5 bg-[#ef4444]/20 border border-[#ef4444] hover:bg-[#ef4444]/35 text-[#ef4444] rounded text-xs font-mono uppercase font-bold tracking-wider transition-all"
+                className="flex-1 rounded border border-[#ef4444] bg-[#ef4444]/20 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#ef4444] transition-all hover:bg-[#ef4444]/35"
               >
-                CONFIRM DEACTIVATION
+                {t("confirm_deactivation")}
               </button>
             </div>
           </div>

@@ -15,7 +15,7 @@ function Sidebar() {
   const navbarLinks = useNavigation();
 
   return (
-    <aside className="scrollbar-container scrollbar-hidden absolute top-14 bottom-0 left-0 z-10 flex w-[52px] flex-col justify-between overflow-y-auto border-r border-secondary-highlight bg-background_alt py-4">
+    <aside className="scrollbar-container scrollbar-hidden absolute bottom-0 left-0 top-14 z-10 flex w-[52px] flex-col justify-between overflow-y-auto border-r border-secondary-highlight bg-background_alt py-4">
       <span tabIndex={0} className="sr-only" />
       <div className="flex w-full flex-col items-center gap-0">
         {navbarLinks.map((item) => {

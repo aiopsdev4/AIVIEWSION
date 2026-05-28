@@ -69,16 +69,21 @@ export const VirtualizedMotionSegments = forwardRef<
 
     const updateVisibleRange = useCallback(() => {
       if (timelineRef.current) {
-        const scroll = orientation === "horizontal" ? timelineRef.current.scrollLeft : timelineRef.current.scrollTop;
-        const client = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
+        const scroll =
+          orientation === "horizontal"
+            ? timelineRef.current.scrollLeft
+            : timelineRef.current.scrollTop;
+        const client =
+          orientation === "horizontal"
+            ? timelineRef.current.clientWidth
+            : timelineRef.current.clientHeight;
         const start = Math.max(
           0,
           Math.floor(scroll / SEGMENT_SIZE) - OVERSCAN_COUNT,
         );
         const end = Math.min(
           segments.length,
-          Math.ceil((scroll + client) / SEGMENT_SIZE) +
-            OVERSCAN_COUNT,
+          Math.ceil((scroll + client) / SEGMENT_SIZE) + OVERSCAN_COUNT,
         );
         setVisibleRange({ start, end });
       }
@@ -115,10 +120,12 @@ export const VirtualizedMotionSegments = forwardRef<
           containerRef.current &&
           timelineRef.current
         ) {
-          const client = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
+          const client =
+            orientation === "horizontal"
+              ? timelineRef.current.clientWidth
+              : timelineRef.current.clientHeight;
           const targetScroll = segmentIndex * SEGMENT_SIZE;
-          const centeredScroll =
-            targetScroll - client / 2 + SEGMENT_SIZE / 2;
+          const centeredScroll = targetScroll - client / 2 + SEGMENT_SIZE / 2;
 
           const isVisible =
             segmentIndex > visibleRange.start + OVERSCAN_COUNT &&
@@ -191,17 +198,21 @@ export const VirtualizedMotionSegments = forwardRef<
         return (
           <div
             key={`${segmentTime}_${segmentDuration}`}
-            style={orientation === "horizontal" ? {
-              position: "absolute",
-              left: `${(visibleRange.start + index) * SEGMENT_SIZE}px`,
-              width: `${SEGMENT_SIZE}px`,
-              height: "100%",
-            } : {
-              position: "absolute",
-              top: `${(visibleRange.start + index) * SEGMENT_SIZE}px`,
-              height: `${SEGMENT_SIZE}px`,
-              width: "100%",
-            }}
+            style={
+              orientation === "horizontal"
+                ? {
+                    position: "absolute",
+                    left: `${(visibleRange.start + index) * SEGMENT_SIZE}px`,
+                    width: `${SEGMENT_SIZE}px`,
+                    height: "100%",
+                  }
+                : {
+                    position: "absolute",
+                    top: `${(visibleRange.start + index) * SEGMENT_SIZE}px`,
+                    height: `${SEGMENT_SIZE}px`,
+                    width: "100%",
+                  }
+            }
           >
             <MotionSegment
               events={events}
@@ -257,20 +268,34 @@ export const VirtualizedMotionSegments = forwardRef<
         className="h-full w-full"
         style={{ position: "relative", willChange: "transform" }}
       >
-        <div style={orientation === "horizontal" ? { width: `${totalSize}px`, height: "100%", position: "relative" } : { height: `${totalSize}px`, position: "relative" }}>
+        <div
+          style={
+            orientation === "horizontal"
+              ? {
+                  width: `${totalSize}px`,
+                  height: "100%",
+                  position: "relative",
+                }
+              : { height: `${totalSize}px`, position: "relative" }
+          }
+        >
           {visibleRange.start > 0 && (
             <div
-              style={orientation === "horizontal" ? {
-                position: "absolute",
-                left: 0,
-                width: `${visibleRange.start * SEGMENT_SIZE}px`,
-                height: "100%",
-              } : {
-                position: "absolute",
-                top: 0,
-                height: `${visibleRange.start * SEGMENT_SIZE}px`,
-                width: "100%",
-              }}
+              style={
+                orientation === "horizontal"
+                  ? {
+                      position: "absolute",
+                      left: 0,
+                      width: `${visibleRange.start * SEGMENT_SIZE}px`,
+                      height: "100%",
+                    }
+                  : {
+                      position: "absolute",
+                      top: 0,
+                      height: `${visibleRange.start * SEGMENT_SIZE}px`,
+                      width: "100%",
+                    }
+              }
               aria-hidden="true"
             />
           )}
@@ -279,21 +304,25 @@ export const VirtualizedMotionSegments = forwardRef<
           )}
           {visibleRange.end < segments.length && (
             <div
-              style={orientation === "horizontal" ? {
-                position: "absolute",
-                left: `${visibleRange.end * SEGMENT_SIZE}px`,
-                width: `${
-                  (segments.length - visibleRange.end) * SEGMENT_SIZE
-                }px`,
-                height: "100%",
-              } : {
-                position: "absolute",
-                top: `${visibleRange.end * SEGMENT_SIZE}px`,
-                height: `${
-                  (segments.length - visibleRange.end) * SEGMENT_SIZE
-                }px`,
-                width: "100%",
-              }}
+              style={
+                orientation === "horizontal"
+                  ? {
+                      position: "absolute",
+                      left: `${visibleRange.end * SEGMENT_SIZE}px`,
+                      width: `${
+                        (segments.length - visibleRange.end) * SEGMENT_SIZE
+                      }px`,
+                      height: "100%",
+                    }
+                  : {
+                      position: "absolute",
+                      top: `${visibleRange.end * SEGMENT_SIZE}px`,
+                      height: `${
+                        (segments.length - visibleRange.end) * SEGMENT_SIZE
+                      }px`,
+                      width: "100%",
+                    }
+              }
               aria-hidden="true"
             />
           )}

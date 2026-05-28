@@ -89,8 +89,8 @@ function DefaultAppView() {
           isMobile
             ? `top-0 bottom-${isPWA ? 16 : 12} left-0 md:bottom-16 landscape:bottom-14 landscape:md:bottom-16`
             : showStatusbar
-              ? "top-14 bottom-[108px] left-[52px]"
-              : "top-14 bottom-0 left-[52px]",
+              ? "bottom-[108px] left-[52px] top-14"
+              : "bottom-0 left-[52px] top-14",
         )}
       >
         <Suspense
@@ -108,7 +108,6 @@ function DefaultAppView() {
               <Route path="/device-registry" element={<AssetsDashboard />} />
             </Route>
             <Route element={<ProtectedRoute requiredRoles={["admin"]} />}>
-
               <Route path="/system" element={<System />} />
               <Route path="/config" element={<ConfigEditor />} />
               <Route path="/logs" element={<Logs />} />

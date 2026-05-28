@@ -146,33 +146,34 @@ export function MotionSegment({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showMinimap, isFirstSegmentInMinimap, events, segmentDuration]);
 
-  const segmentClasses = orientation === "horizontal"
-    ? `w-[8px] h-full relative ${
-        showMinimap
-          ? isInMinimapRange
-            ? "bg-secondary-highlight"
-            : isLastSegmentInMinimap
-              ? ""
-              : "opacity-70"
-          : ""
-      } ${
-        isFirstSegmentInMinimap || isLastSegmentInMinimap
-          ? "relative w-[8px] border-r-2 border-gray-500"
-          : ""
-      }`
-    : `h-[8px] relative w-full ${
-        showMinimap
-          ? isInMinimapRange
-            ? "bg-secondary-highlight"
-            : isLastSegmentInMinimap
-              ? ""
-              : "opacity-70"
-          : ""
-      } ${
-        isFirstSegmentInMinimap || isLastSegmentInMinimap
-          ? "relative h-[8px] border-b-2 border-gray-500"
-          : ""
-      }`;
+  const segmentClasses =
+    orientation === "horizontal"
+      ? `w-[8px] h-full relative ${
+          showMinimap
+            ? isInMinimapRange
+              ? "bg-secondary-highlight"
+              : isLastSegmentInMinimap
+                ? ""
+                : "opacity-70"
+            : ""
+        } ${
+          isFirstSegmentInMinimap || isLastSegmentInMinimap
+            ? "relative w-[8px] border-r-2 border-gray-500"
+            : ""
+        }`
+      : `h-[8px] relative w-full ${
+          showMinimap
+            ? isInMinimapRange
+              ? "bg-secondary-highlight"
+              : isLastSegmentInMinimap
+                ? ""
+                : "opacity-70"
+            : ""
+        } ${
+          isFirstSegmentInMinimap || isLastSegmentInMinimap
+            ? "relative h-[8px] border-b-2 border-gray-500"
+            : ""
+        }`;
 
   const severityColorsBg: { [key: number]: string } = {
     1: reviewed
@@ -216,14 +217,22 @@ export function MotionSegment({
           onTouchEnd={(event) => handleTouchStart(event, segmentClick)}
         >
           {isFirstSegmentWithoutRecording && (
-            <div className={orientation === "horizontal"
-              ? "absolute right-[0px] top-0 bottom-0 w-[1px] bg-primary-variant/40"
-              : "absolute bottom-[0px] left-0 right-0 h-[1px] bg-primary-variant/40"} />
+            <div
+              className={
+                orientation === "horizontal"
+                  ? "absolute bottom-0 right-[0px] top-0 w-[1px] bg-primary-variant/40"
+                  : "absolute bottom-[0px] left-0 right-0 h-[1px] bg-primary-variant/40"
+              }
+            />
           )}
           {isLastSegmentWithoutRecording && (
-            <div className={orientation === "horizontal"
-              ? "absolute -left-[1px] top-0 bottom-0 w-[1px] bg-primary-variant/50"
-              : "absolute -top-[1px] left-0 right-0 h-[1px] bg-primary-variant/50"} />
+            <div
+              className={
+                orientation === "horizontal"
+                  ? "absolute -left-[1px] bottom-0 top-0 w-[1px] bg-primary-variant/50"
+                  : "absolute -top-[1px] left-0 right-0 h-[1px] bg-primary-variant/50"
+              }
+            />
           )}
           {!motionOnly && (
             <>
@@ -261,12 +270,20 @@ export function MotionSegment({
             firstHalfSegmentWidth > 0 ||
             secondHalfSegmentWidth > 0 ||
             alwaysShowMotionLine) && (
-            <div className={orientation === "horizontal"
-              ? "absolute top-1/2 z-10 w-[8px] h-[20px] -translate-y-1/2 transform cursor-pointer md:h-[40px]"
-              : "absolute left-1/2 z-10 h-[8px] w-[20px] -translate-x-1/2 transform cursor-pointer md:w-[40px]"}>
-              <div className={orientation === "horizontal"
-                ? "ml-[1px] flex h-[20px] flex-col justify-center pl-[1px] md:h-[40px]"
-                : "mb-[1px] flex w-[20px] flex-row justify-center pt-[1px] md:w-[40px]"}>
+            <div
+              className={
+                orientation === "horizontal"
+                  ? "absolute top-1/2 z-10 h-[20px] w-[8px] -translate-y-1/2 transform cursor-pointer md:h-[40px]"
+                  : "absolute left-1/2 z-10 h-[8px] w-[20px] -translate-x-1/2 transform cursor-pointer md:w-[40px]"
+              }
+            >
+              <div
+                className={
+                  orientation === "horizontal"
+                    ? "ml-[1px] flex h-[20px] flex-col justify-center pl-[1px] md:h-[40px]"
+                    : "mb-[1px] flex w-[20px] flex-row justify-center pt-[1px] md:w-[40px]"
+                }
+              >
                 <div className="flex justify-center">
                   <div
                     key={`${segmentKey}_motion_data_1`}
@@ -278,16 +295,22 @@ export function MotionSegment({
                         ? "bg-motion_review"
                         : "bg-muted-foreground",
                     )}
-                    style={orientation === "horizontal"
-                      ? { height: secondHalfSegmentWidth || 1 }
-                      : { width: secondHalfSegmentWidth || 1 }}
+                    style={
+                      orientation === "horizontal"
+                        ? { height: secondHalfSegmentWidth || 1 }
+                        : { width: secondHalfSegmentWidth || 1 }
+                    }
                   ></div>
                 </div>
               </div>
 
-              <div className={orientation === "horizontal"
-                ? "flex h-[20px] flex-col justify-center pb-[1px] md:h-[40px]"
-                : "flex w-[20px] flex-row justify-center pb-[1px] md:w-[40px]"}>
+              <div
+                className={
+                  orientation === "horizontal"
+                    ? "flex h-[20px] flex-col justify-center pb-[1px] md:h-[40px]"
+                    : "flex w-[20px] flex-row justify-center pb-[1px] md:w-[40px]"
+                }
+              >
                 <div className="flex justify-center">
                   <div
                     key={`${segmentKey}_motion_data_2`}
@@ -299,9 +322,11 @@ export function MotionSegment({
                         ? "bg-motion_review"
                         : "bg-muted-foreground",
                     )}
-                    style={orientation === "horizontal"
-                      ? { height: firstHalfSegmentWidth || 1 }
-                      : { width: firstHalfSegmentWidth || 1 }}
+                    style={
+                      orientation === "horizontal"
+                        ? { height: firstHalfSegmentWidth || 1 }
+                        : { width: firstHalfSegmentWidth || 1 }
+                    }
                   ></div>
                 </div>
               </div>

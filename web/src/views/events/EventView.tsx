@@ -476,9 +476,7 @@ export default function EventView({
         </div>
       )}
 
-      <div
-        className="h-full min-h-0 overflow-hidden flex flex-col gap-2"
-      >
+      <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         {severity != "significant_motion" && (
           <DetectionReview
             contentRef={contentRef}
@@ -908,7 +906,7 @@ function DetectionReview({
             )}
         </div>
       </div>
-      <div className="no-scrollbar w-full h-[100px] px-4 flex-shrink-0">
+      <div className="no-scrollbar h-[100px] w-full flex-shrink-0 px-4">
         {loading ? (
           <Skeleton className="size-full" />
         ) : (
@@ -1629,7 +1627,7 @@ function MotionReview({
         </div>
       </div>
       {!selectedMotionPreviewCamera && (
-        <div className="no-scrollbar w-full h-[100px] px-4 flex-shrink-0">
+        <div className="no-scrollbar h-[100px] w-full flex-shrink-0 px-4">
           {motionData ? (
             <MotionReviewTimeline
               segmentDuration={segmentDuration}

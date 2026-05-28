@@ -44,7 +44,9 @@ export default function BirdseyeLivePlayer({
       <HlsVideoPlayer
         videoRef={internalVideoRef}
         visible={true}
-        currentSource={{ playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=birdseye` }}
+        currentSource={{
+          playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=birdseye`,
+        }}
         camera="birdseye"
         frigateControls={false}
         hotKeys={false}

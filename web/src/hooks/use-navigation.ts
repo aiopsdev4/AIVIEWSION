@@ -6,7 +6,12 @@ import { isDesktop } from "react-device-detect";
 import { FaCompactDisc, FaVideo } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
 import { LuConstruction } from "react-icons/lu";
-import { MdCategory, MdChat, MdVideoLibrary, MdOutlineDeviceHub } from "react-icons/md";
+import {
+  MdCategory,
+  MdChat,
+  MdVideoLibrary,
+  MdOutlineDeviceHub,
+} from "react-icons/md";
 import { TbFaceId } from "react-icons/tb";
 import useSWR from "swr";
 import { useIsAdmin } from "./use-is-admin";

@@ -76,10 +76,20 @@ export function MinimapBounds({
   );
 }
 
-export function Tick({ timestamp, timestampSpread, orientation = "vertical" }: TickSegmentProps) {
+export function Tick({
+  timestamp,
+  timestampSpread,
+  orientation = "vertical",
+}: TickSegmentProps) {
   return (
     <div className="absolute">
-      <div className={orientation === "horizontal" ? "flex w-[8px] h-[12px] items-end" : "flex h-[8px] w-[12px] content-end items-end"}>
+      <div
+        className={
+          orientation === "horizontal"
+            ? "flex h-[12px] w-[8px] items-end"
+            : "flex h-[8px] w-[12px] content-end items-end"
+        }
+      >
         <div
           className={`pointer-events-none select-none ${
             orientation === "horizontal"
@@ -87,7 +97,8 @@ export function Tick({ timestamp, timestampSpread, orientation = "vertical" }: T
                   timestamp.getMinutes() % timestampSpread === 0 &&
                   timestamp.getSeconds() === 0
                     ? "h-[12px] bg-neutral_variant dark:bg-neutral"
-                    : timestamp.getMinutes() % (timestampSpread == 15 ? 5 : 1) ===
+                    : timestamp.getMinutes() %
+                          (timestampSpread == 15 ? 5 : 1) ===
                           0 && timestamp.getSeconds() === 0
                       ? "h-[8px] bg-neutral" // Minor tick mark
                       : "h-[5px] bg-neutral-400 dark:bg-neutral_variant"
@@ -96,7 +107,8 @@ export function Tick({ timestamp, timestampSpread, orientation = "vertical" }: T
                   timestamp.getMinutes() % timestampSpread === 0 &&
                   timestamp.getSeconds() === 0
                     ? "w-[12px] bg-neutral_variant dark:bg-neutral"
-                    : timestamp.getMinutes() % (timestampSpread == 15 ? 5 : 1) ===
+                    : timestamp.getMinutes() %
+                          (timestampSpread == 15 ? 5 : 1) ===
                           0 && timestamp.getSeconds() === 0
                       ? "w-[8px] bg-neutral" // Minor tick mark
                       : "w-[5px] bg-neutral-400 dark:bg-neutral_variant"
@@ -136,11 +148,17 @@ export function Timestamp({
   }, [timestamp, timestampSpread]);
 
   return (
-    <div className={orientation === "horizontal" ? "absolute top-[15px] z-10 w-[8px]" : "absolute left-[15px] z-10 h-[8px]"}>
+    <div
+      className={
+        orientation === "horizontal"
+          ? "absolute top-[15px] z-10 w-[8px]"
+          : "absolute left-[15px] z-10 h-[8px]"
+      }
+    >
       {!isFirstSegmentInMinimap && !isLastSegmentInMinimap && shouldDisplay && (
         <div
           key={`${segmentKey}_timestamp`}
-          className="pointer-events-none select-none text-[8px] text-neutral_variant dark:text-neutral whitespace-nowrap -translate-x-1/2"
+          className="pointer-events-none -translate-x-1/2 select-none whitespace-nowrap text-[8px] text-neutral_variant dark:text-neutral"
         >
           {formattedTimestamp}
         </div>

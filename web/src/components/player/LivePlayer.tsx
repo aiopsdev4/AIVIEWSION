@@ -273,7 +273,9 @@ export default function LivePlayer({
           key={"hls_" + key}
           videoRef={internalVideoRef}
           visible={true}
-          currentSource={{ playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=${streamName}` }}
+          currentSource={{
+            playlist: `${baseUrl}live/webrtc/api/stream.m3u8?src=${streamName}`,
+          }}
           camera={streamName}
           frigateControls={false}
           hotKeys={false}

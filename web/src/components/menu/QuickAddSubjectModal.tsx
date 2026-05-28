@@ -3,9 +3,10 @@ import {
   X,
   Download as DownloadIcon,
   Image as ImageIcon,
-  Target
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface QuickAddSubjectModalProps {
   isOpen: boolean;
@@ -18,8 +19,9 @@ export default function QuickAddSubjectModal({
   isOpen,
   onClose,
   type,
-  cameraName
+  cameraName,
 }: QuickAddSubjectModalProps) {
+  const { t } = useTranslation(["views/aiviewsion"]);
   const [isSaving, setIsSaving] = useState(false);
   const [isCalibratingROI, setIsCalibratingROI] = useState(false);
   const [calibrationProgress, setCalibrationProgress] = useState(0);
@@ -34,18 +36,18 @@ export default function QuickAddSubjectModal({
     expiry_date: "",
     missing_date: "",
     additional_details: {} as Record<string, string>,
-    reference_images: [] as string[]
+    reference_images: [] as string[],
   });
 
   useEffect(() => {
     if (isOpen && type) {
-      const generateId = (t: string) => {
+      const generateId = (tVal: string) => {
         const prefix =
-          t === "vehicle"
+          tVal === "vehicle"
             ? "VID-"
-            : t === "asset"
+            : tVal === "asset"
               ? "AID-"
-              : t === "roi"
+              : tVal === "roi"
                 ? "ZID-"
                 : "PID-";
         return (
@@ -63,7 +65,7 @@ export default function QuickAddSubjectModal({
         missing_date: "",
         additional_details:
           type === "roi" ? { roi_type: "tripwire", camera_id: cameraName } : {},
-        reference_images: []
+        reference_images: [],
       });
       setIsCalibratingROI(false);
       setCalibrationProgress(0);
@@ -74,16 +76,16 @@ export default function QuickAddSubjectModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    toast.info("Uploading image and extracting features...");
+    toast.info(t("quick_add.toast.uploading"));
     setIsSaving(true);
 
     setTimeout(() => {
       const fakeUrl = URL.createObjectURL(file);
       setCurrentObject((prev) => ({
         ...prev,
-        reference_images: [...prev.reference_images, fakeUrl]
+        reference_images: [...prev.reference_images, fakeUrl],
       }));
-      toast.success("Intelligence profile image updated successfully.");
+      toast.success(t("quick_add.toast.image_success"));
       setIsSaving(false);
     }, 1200);
   };
@@ -93,8 +95,8 @@ export default function QuickAddSubjectModal({
       ...prev,
       additional_details: {
         ...prev.additional_details,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
@@ -107,7 +109,7 @@ export default function QuickAddSubjectModal({
     }
 
     if (!finalName && currentObject.object_type !== "roi") {
-      toast.error("Please enter a name or identifier.");
+      toast.error(t("quick_add.toast.name_required"));
       return;
     }
 
@@ -118,7 +120,9 @@ export default function QuickAddSubjectModal({
 
     setIsSaving(true);
     setTimeout(() => {
-      toast.success(`Registered subject ${currentObject.unique_id} successfully!`);
+      toast.success(
+        t("quick_add.toast.register_success", { id: currentObject.unique_id }),
+      );
       setIsSaving(false);
       onClose(true);
     }, 1000);
@@ -132,7 +136,7 @@ export default function QuickAddSubjectModal({
           if (prev >= 100) {
             clearInterval(interval);
             setTimeout(() => {
-              toast.success("Security ROI Zone calibrated and registered.");
+              toast.success(t("quick_add.toast.roi_success"));
               setIsCalibratingROI(false);
               onClose(true);
             }, 500);
@@ -143,7 +147,7 @@ export default function QuickAddSubjectModal({
       }, 150);
       return () => clearInterval(interval);
     }
-  }, [isCalibratingROI, onClose]);
+  }, [isCalibratingROI, onClose, t]);
 
   if (!isOpen) return null;
 
@@ -165,27 +169,27 @@ export default function QuickAddSubjectModal({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black/85 z-[100000] backdrop-blur-md p-4"
+      className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
       onClick={() => onClose()}
     >
       <div
-        className="hud-panel w-full max-w-[900px] max-h-[90vh] overflow-y-auto rounded-none border border-[rgba(0,243,255,0.2)] bg-[#030f22]/95 shadow-[0_0_30px_rgba(0,243,255,0.1)] p-6"
+        className="hud-panel relative max-h-[90vh] w-full max-w-[900px] overflow-y-auto rounded-none border border-[rgba(0,243,255,0.2)] bg-[#030f22]/95 p-6 shadow-[0_0_30px_rgba(0,243,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="hud-panel-br"></div>
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-[rgba(0,243,255,0.2)] pb-4 mb-6">
+        <div className="mb-6 flex items-center justify-between border-b border-[rgba(0,243,255,0.2)] pb-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-base font-bold text-[var(--hud-cyan)] uppercase tracking-wider font-mono flex items-center gap-2">
-              <Target size={18} /> Register Intelligence Subject
+            <h2 className="flex items-center gap-2 font-mono text-base font-bold uppercase tracking-wider text-[var(--hud-cyan)]">
+              <Target size={18} /> {t("quick_add.title")}
             </h2>
-            <span className="text-[10px] text-[var(--hud-cyan)] bg-[rgba(0,243,255,0.1)] border border-[rgba(0,243,255,0.3)] px-2 py-0.5 rounded font-mono uppercase">
+            <span className="rounded border border-[rgba(0,243,255,0.3)] bg-[rgba(0,243,255,0.1)] px-2 py-0.5 font-mono text-[10px] uppercase text-[var(--hud-cyan)]">
               {type}
             </span>
           </div>
           <button
             onClick={() => onClose()}
-            className="text-gray-400 hover:text-[var(--hud-cyan)] transition-colors"
+            className="text-gray-400 transition-colors hover:text-[var(--hud-cyan)]"
           >
             <X size={20} />
           </button>
@@ -194,116 +198,164 @@ export default function QuickAddSubjectModal({
         {/* Content */}
         {!isCalibratingROI ? (
           <form onSubmit={handleSaveObject} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Left Column */}
               <div className="space-y-4">
-                <h4 className="text-[11px] text-[var(--hud-cyan)] uppercase tracking-widest font-mono border-b border-[rgba(0,243,255,0.15)] pb-1.5 font-bold">
-                  Basic Identification
+                <h4 className="border-b border-[rgba(0,243,255,0.15)] pb-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-[var(--hud-cyan)]">
+                  {t("quick_add.basic_identification")}
                 </h4>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-[rgba(0,243,255,0.7)] uppercase tracking-wider font-mono">
-                    Name / Identifier
+                  <label className="font-mono text-[10px] uppercase tracking-wider text-[rgba(0,243,255,0.7)]">
+                    {t("quick_add.name_label")}
                   </label>
                   <input
                     required={type !== "roi"}
                     value={currentObject.name}
                     onChange={(e) =>
-                      setCurrentObject({ ...currentObject, name: e.target.value })
+                      setCurrentObject({
+                        ...currentObject,
+                        name: e.target.value,
+                      })
                     }
                     placeholder={
                       type === "roi"
-                        ? "e.g. Main Entry Tripwire (Blank for auto-name)"
+                        ? t("quick_add.name_placeholder_roi")
                         : type === "vehicle"
-                          ? "e.g. Red SUV @ Makati"
-                          : "e.g. Juan De La Cruz"
+                          ? t("quick_add.name_placeholder_vehicle")
+                          : t("quick_add.name_placeholder_person")
                     }
-                    className="w-full bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded px-3 py-2 text-sm text-[#e0f8ff] font-mono focus:border-[var(--hud-cyan)] focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] focus:outline-none"
+                    className="w-full rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 px-3 py-2 font-mono text-sm text-[#e0f8ff] focus:border-[var(--hud-cyan)] focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-[rgba(0,243,255,0.7)] uppercase tracking-wider font-mono">
-                    Registry ID (Auto-Generated)
+                  <label className="font-mono text-[10px] uppercase tracking-wider text-[rgba(0,243,255,0.7)]">
+                    {t("quick_add.registry_id_label")}
                   </label>
                   <input
                     readOnly
                     value={currentObject.unique_id}
-                    className="w-full bg-[#031129]/30 border border-[rgba(0,243,255,0.15)] rounded px-3 py-2 text-sm text-[var(--hud-cyan)] font-mono font-bold opacity-80 cursor-not-allowed"
+                    className="w-full cursor-not-allowed rounded border border-[rgba(0,243,255,0.15)] bg-[#031129]/30 px-3 py-2 font-mono text-sm font-bold text-[var(--hud-cyan)] opacity-80 focus:outline-none"
                   />
                 </div>
 
                 {type === "roi" && (
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-[rgba(0,243,255,0.7)] uppercase tracking-wider font-mono">
-                      Type of ROI
+                    <label className="font-mono text-[10px] uppercase tracking-wider text-[rgba(0,243,255,0.7)]">
+                      {t("quick_add.type_of_roi")}
                     </label>
                     <select
-                      value={currentObject.additional_details?.roi_type || "tripwire"}
+                      value={
+                        currentObject.additional_details?.roi_type || "tripwire"
+                      }
                       onChange={(e) => {
                         const newType = e.target.value;
                         let defaultRisk = "Monitoring";
-                        if (newType === "tripwire") defaultRisk = "Perimeter Breach";
-                        else if (newType === "zone") defaultRisk = "Restricted Access";
+                        if (newType === "tripwire")
+                          defaultRisk = "Perimeter Breach";
+                        else if (newType === "zone")
+                          defaultRisk = "Restricted Access";
                         setCurrentObject({
                           ...currentObject,
                           risk_level: defaultRisk,
                           additional_details: {
                             ...currentObject.additional_details,
-                            roi_type: newType
-                          }
+                            roi_type: newType,
+                          },
                         });
                       }}
-                      className="w-full bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded px-3 py-2 text-sm text-[#e0f8ff] font-mono focus:border-[var(--hud-cyan)] focus:outline-none"
+                      className="w-full rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 px-3 py-2 font-mono text-sm text-[#e0f8ff] focus:border-[var(--hud-cyan)] focus:outline-none"
                     >
-                      <option value="tripwire">Tripwire (Line Crossing)</option>
-                      <option value="zone">Restricted Zone (Polygon Area)</option>
-                      <option value="departure">Departure Zone (Asset Guard)</option>
-                      <option value="lane">Traffic Lane (Flow Monitor)</option>
+                      <option value="tripwire">
+                        {t("quick_add.tripwire")}
+                      </option>
+                      <option value="zone">
+                        {t("quick_add.restricted_zone")}
+                      </option>
+                      <option value="departure">
+                        {t("quick_add.departure_zone")}
+                      </option>
+                      <option value="lane">
+                        {t("quick_add.traffic_lane")}
+                      </option>
                     </select>
                   </div>
                 )}
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-[rgba(0,243,255,0.7)] uppercase tracking-wider font-mono">
-                    Status / Alert Level
+                  <label className="font-mono text-[10px] uppercase tracking-wider text-[rgba(0,243,255,0.7)]">
+                    {t("quick_add.status_alert_level")}
                   </label>
                   <select
                     value={currentObject.risk_level}
                     onChange={(e) =>
-                      setCurrentObject({ ...currentObject, risk_level: e.target.value })
+                      setCurrentObject({
+                        ...currentObject,
+                        risk_level: e.target.value,
+                      })
                     }
-                    style={{ color: getRiskBadgeColor(currentObject.risk_level) }}
-                    className="w-full bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded px-3 py-2 text-sm font-mono focus:border-[var(--hud-cyan)] focus:outline-none font-bold"
+                    style={{
+                      color: getRiskBadgeColor(currentObject.risk_level),
+                    }}
+                    className="w-full rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 px-3 py-2 font-mono text-sm font-bold focus:border-[var(--hud-cyan)] focus:outline-none"
                   >
                     {type === "person" && (
                       <>
-                        <option value="Monitoring">Monitoring - Observation Only</option>
-                        <option value="Missing">Missing - Report Filed</option>
-                        <option value="Wanted">Wanted - Active Search</option>
-                        <option value="Blacklisted">Blacklisted - Banned</option>
+                        <option value="Monitoring">
+                          {t("quick_add.risk.monitoring_person")}
+                        </option>
+                        <option value="Missing">
+                          {t("quick_add.risk.missing_person")}
+                        </option>
+                        <option value="Wanted">
+                          {t("quick_add.risk.wanted_person")}
+                        </option>
+                        <option value="Blacklisted">
+                          {t("quick_add.risk.blacklisted_person")}
+                        </option>
                       </>
                     )}
                     {type === "vehicle" && (
                       <>
-                        <option value="Monitoring">Monitoring - Standard tracking</option>
-                        <option value="Missing">Missing - Stolen / Lost</option>
-                        <option value="Wanted">Wanted - Linked to incident</option>
-                        <option value="Blacklisted">Blacklisted - Prohibited Entry</option>
+                        <option value="Monitoring">
+                          {t("quick_add.risk.monitoring_vehicle")}
+                        </option>
+                        <option value="Missing">
+                          {t("quick_add.risk.missing_vehicle")}
+                        </option>
+                        <option value="Wanted">
+                          {t("quick_add.risk.wanted_vehicle")}
+                        </option>
+                        <option value="Blacklisted">
+                          {t("quick_add.risk.blacklisted_vehicle")}
+                        </option>
                       </>
                     )}
                     {type === "asset" && (
                       <>
-                        <option value="Monitoring">Monitoring - In warehouse</option>
-                        <option value="Missing">Missing - Unaccounted</option>
-                        <option value="Blacklisted">Blacklisted - Blocked</option>
+                        <option value="Monitoring">
+                          {t("quick_add.risk.monitoring_asset")}
+                        </option>
+                        <option value="Missing">
+                          {t("quick_add.risk.missing_asset")}
+                        </option>
+                        <option value="Blacklisted">
+                          {t("quick_add.risk.blacklisted_asset")}
+                        </option>
                       </>
                     )}
                     {type === "roi" && (
                       <>
-                        <option value="Perimeter Breach">Perimeter Breach - Alert on Line Cross</option>
-                        <option value="Restricted Access">Restricted Access - High-Security Area</option>
-                        <option value="Monitoring">Monitoring - Traffic Stats Only</option>
+                        <option value="Perimeter Breach">
+                          {t("quick_add.risk.perimeter_breach_desc")}
+                        </option>
+                        <option value="Restricted Access">
+                          {t("quick_add.risk.restricted_access_desc")}
+                        </option>
+                        <option value="Monitoring">
+                          {t("quick_add.risk.monitoring_roi")}
+                        </option>
                       </>
                     )}
                   </select>
@@ -312,20 +364,20 @@ export default function QuickAddSubjectModal({
 
               {/* Right Column */}
               <div className="space-y-4">
-                <h4 className="text-[11px] text-[var(--hud-cyan)] uppercase tracking-widest font-mono border-b border-[rgba(0,243,255,0.15)] pb-1.5 font-bold">
-                  Telemetry & Details
+                <h4 className="border-b border-[rgba(0,243,255,0.15)] pb-1.5 font-mono text-[11px] font-bold uppercase tracking-widest text-[var(--hud-cyan)]">
+                  {t("quick_add.telemetry_details")}
                 </h4>
 
                 {type !== "roi" && (
-                  <div className="bg-[#031534]/50 border border-[rgba(0,243,255,0.15)] rounded p-4 flex gap-4 items-start">
+                  <div className="flex items-start gap-4 rounded border border-[rgba(0,243,255,0.15)] bg-[#031534]/50 p-4">
                     <div className="flex-1 space-y-3">
-                      <label className="text-[10px] text-[rgba(0,243,255,0.7)] uppercase tracking-wider font-mono block">
-                        Reference Image
+                      <label className="block font-mono text-[10px] uppercase tracking-wider text-[rgba(0,243,255,0.7)]">
+                        {t("quick_add.reference_image")}
                       </label>
                       <div className="flex gap-2">
                         <input
-                          placeholder="Paste image URL..."
-                          className="flex-1 bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded px-2.5 py-1 text-xs text-[#e0f8ff] font-mono focus:border-[var(--hud-cyan)] focus:outline-none"
+                          placeholder={t("quick_add.paste_url")}
+                          className="flex-1 rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 px-2.5 py-1 font-mono text-xs text-[#e0f8ff] focus:border-[var(--hud-cyan)] focus:outline-none"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
@@ -333,7 +385,10 @@ export default function QuickAddSubjectModal({
                               if (val) {
                                 setCurrentObject((prev) => ({
                                   ...prev,
-                                  reference_images: [...prev.reference_images, val]
+                                  reference_images: [
+                                    ...prev.reference_images,
+                                    val,
+                                  ],
                                 }));
                                 (e.target as HTMLInputElement).value = "";
                               }
@@ -343,7 +398,7 @@ export default function QuickAddSubjectModal({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="px-3 bg-[rgba(0,243,255,0.1)] hover:bg-[rgba(0,243,255,0.2)] text-[var(--hud-cyan)] border border-[rgba(0,243,255,0.4)] rounded text-xs flex items-center justify-center transition-colors"
+                          className="flex items-center justify-center rounded border border-[rgba(0,243,255,0.4)] bg-[rgba(0,243,255,0.1)] px-3 text-xs text-[var(--hud-cyan)] transition-colors hover:bg-[rgba(0,243,255,0.2)]"
                         >
                           <DownloadIcon size={14} className="rotate-180" />
                         </button>
@@ -355,13 +410,13 @@ export default function QuickAddSubjectModal({
                           onChange={handleImageUpload}
                         />
                       </div>
-                      <p className="text-[9px] text-gray-400 font-mono leading-normal">
-                        Supports local files. Vision pipeline crops face boxes automatically.
+                      <p className="font-mono text-[9px] leading-normal text-gray-400">
+                        {t("quick_add.image_help")}
                       </p>
                     </div>
 
                     {/* Image Preview Box */}
-                    <div className="w-[80px] h-[80px] border border-[rgba(0,243,255,0.3)] bg-[#031534] flex items-center justify-center overflow-hidden rounded">
+                    <div className="flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded border border-[rgba(0,243,255,0.3)] bg-[#031534]">
                       {currentObject.reference_images.length > 0 ? (
                         <img
                           src={
@@ -370,12 +425,14 @@ export default function QuickAddSubjectModal({
                             ]
                           }
                           alt="POI"
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <div className="text-center text-[rgba(0,243,255,0.3)]">
                           <ImageIcon size={20} className="mx-auto mb-1" />
-                          <div className="text-[8px] font-mono">NO IMAGE</div>
+                          <div className="font-mono text-[8px]">
+                            {t("quick_add.no_image")}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -384,108 +441,128 @@ export default function QuickAddSubjectModal({
 
                 {/* Dynamic Fields by Type */}
                 {type === "person" && (
-                  <div className="bg-[#031534]/50 border border-[rgba(0,243,255,0.15)] rounded p-4 space-y-3">
+                  <div className="space-y-3 rounded border border-[rgba(0,243,255,0.15)] bg-[#031534]/50 p-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Gender
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.gender")}
                         </label>
                         <select
                           value={currentObject.additional_details.gender || ""}
-                          onChange={(e) => handleFieldChange("gender", e.target.value)}
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          onChange={(e) =>
+                            handleFieldChange("gender", e.target.value)
+                          }
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         >
-                          <option value="">Select</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
+                          <option value="">{t("quick_add.select")}</option>
+                          <option value="Male">{t("quick_add.male")}</option>
+                          <option value="Female">
+                            {t("quick_add.female")}
+                          </option>
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Age Group
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.age_group")}
                         </label>
                         <input
                           value={currentObject.additional_details.age || ""}
-                          onChange={(e) => handleFieldChange("age", e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange("age", e.target.value)
+                          }
                           placeholder="e.g. 25-35"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                        Distinguishing Features
+                      <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                        {t("quick_add.features")}
                       </label>
                       <textarea
                         rows={2}
                         value={currentObject.additional_details.features || ""}
-                        onChange={(e) => handleFieldChange("features", e.target.value)}
-                        placeholder="e.g. Cap, glasses, dark blue jacket..."
-                        className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none resize-none"
+                        onChange={(e) =>
+                          handleFieldChange("features", e.target.value)
+                        }
+                        placeholder={t("quick_add.features_placeholder")}
+                        className="resize-none rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                       />
                     </div>
                   </div>
                 )}
 
                 {type === "vehicle" && (
-                  <div className="bg-[#031534]/50 border border-[rgba(0,243,255,0.15)] rounded p-4 space-y-3">
+                  <div className="space-y-3 rounded border border-[rgba(0,243,255,0.15)] bg-[#031534]/50 p-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Plate Number
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.plate_number")}
                         </label>
                         <input
-                          value={currentObject.additional_details.plate_number || ""}
+                          value={
+                            currentObject.additional_details.plate_number || ""
+                          }
                           onChange={(e) =>
                             handleFieldChange("plate_number", e.target.value)
                           }
                           placeholder="LTO Plate / Temp"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Color
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.color")}
                         </label>
                         <input
                           value={currentObject.additional_details.color || ""}
-                          onChange={(e) => handleFieldChange("color", e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange("color", e.target.value)
+                          }
                           placeholder="e.g. Silver, Black"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Make/Model
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.make_model")}
                         </label>
                         <input
-                          value={currentObject.additional_details.make_model || ""}
+                          value={
+                            currentObject.additional_details.make_model || ""
+                          }
                           onChange={(e) =>
                             handleFieldChange("make_model", e.target.value)
                           }
                           placeholder="Toyota Fortuner"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Vehicle Type
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.vehicle_type")}
                         </label>
                         <select
-                          value={currentObject.additional_details.vehicle_type || ""}
+                          value={
+                            currentObject.additional_details.vehicle_type || ""
+                          }
                           onChange={(e) =>
                             handleFieldChange("vehicle_type", e.target.value)
                           }
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         >
-                          <option value="">Select</option>
-                          <option value="Sedan">Sedan</option>
-                          <option value="SUV">SUV</option>
-                          <option value="Pickup">Pickup</option>
-                          <option value="Motorcycle">Motorcycle</option>
-                          <option value="Van">Van</option>
+                          <option value="">{t("quick_add.select")}</option>
+                          <option value="Sedan">{t("quick_add.sedan")}</option>
+                          <option value="SUV">{t("quick_add.suv")}</option>
+                          <option value="Pickup">
+                            {t("quick_add.pickup")}
+                          </option>
+                          <option value="Motorcycle">
+                            {t("quick_add.motorcycle")}
+                          </option>
+                          <option value="Van">{t("quick_add.van")}</option>
                         </select>
                       </div>
                     </div>
@@ -493,41 +570,49 @@ export default function QuickAddSubjectModal({
                 )}
 
                 {type === "asset" && (
-                  <div className="bg-[#031534]/50 border border-[rgba(0,243,255,0.15)] rounded p-4 space-y-3">
+                  <div className="space-y-3 rounded border border-[rgba(0,243,255,0.15)] bg-[#031534]/50 p-4">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                        Visual ID Tag / Code
+                      <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                        {t("quick_add.visual_id_tag")}
                       </label>
                       <input
-                        value={currentObject.additional_details.visual_tag || ""}
-                        onChange={(e) => handleFieldChange("visual_tag", e.target.value)}
-                        placeholder="Tag label visible in video feed"
-                        className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                        value={
+                          currentObject.additional_details.visual_tag || ""
+                        }
+                        onChange={(e) =>
+                          handleFieldChange("visual_tag", e.target.value)
+                        }
+                        placeholder={t("quick_add.tag_placeholder")}
+                        className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Asset Model
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.asset_model")}
                         </label>
                         <input
                           value={currentObject.additional_details.model || ""}
-                          onChange={(e) => handleFieldChange("model", e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange("model", e.target.value)
+                          }
                           placeholder="e.g. Server Pack"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono">
-                          Classification
+                        <label className="font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                          {t("quick_add.classification")}
                         </label>
                         <input
-                          value={currentObject.additional_details.category || ""}
+                          value={
+                            currentObject.additional_details.category || ""
+                          }
                           onChange={(e) =>
                             handleFieldChange("category", e.target.value)
                           }
                           placeholder="e.g. Tactical / Logistics"
-                          className="bg-[#031129]/60 border border-[rgba(0,243,255,0.2)] rounded p-1.5 text-xs font-mono focus:outline-none"
+                          className="rounded border border-[rgba(0,243,255,0.2)] bg-[#031129]/60 p-1.5 font-mono text-xs focus:outline-none"
                         />
                       </div>
                     </div>
@@ -535,17 +620,17 @@ export default function QuickAddSubjectModal({
                 )}
 
                 {type === "roi" && (
-                  <div className="bg-[#031534]/50 border border-[rgba(0,243,255,0.15)] rounded p-4 space-y-2">
-                    <label className="text-[9px] text-[rgba(0,243,255,0.7)] uppercase font-mono block">
-                      Target Camera Asset
+                  <div className="space-y-2 rounded border border-[rgba(0,243,255,0.15)] bg-[#031534]/50 p-4">
+                    <label className="block font-mono text-[9px] uppercase text-[rgba(0,243,255,0.7)]">
+                      {t("quick_add.target_camera_asset")}
                     </label>
                     <input
                       readOnly
                       value={cameraName.toUpperCase()}
-                      className="w-full bg-[#031129]/40 border border-[rgba(0,243,255,0.15)] rounded px-3 py-2 text-xs text-white font-mono opacity-80 cursor-not-allowed"
+                      className="w-full cursor-not-allowed rounded border border-[rgba(0,243,255,0.15)] bg-[#031129]/40 px-3 py-2 font-mono text-xs text-white opacity-80 focus:outline-none"
                     />
-                    <p className="text-[9px] text-gray-400 font-mono leading-normal mt-1">
-                      The editor will open coordinate calibration overlay on this specific stream feed.
+                    <p className="mt-1 font-mono text-[9px] leading-normal text-gray-400">
+                      {t("quick_add.editor_help")}
                     </p>
                   </div>
                 )}
@@ -557,45 +642,52 @@ export default function QuickAddSubjectModal({
               <button
                 type="button"
                 onClick={() => onClose()}
-                className="flex-1 bg-transparent border border-[rgba(0,243,255,0.3)] hover:bg-[rgba(0,243,255,0.05)] text-[var(--hud-cyan)] py-2.5 rounded font-mono text-xs uppercase tracking-wider transition-colors"
+                className="flex-1 rounded border border-[rgba(0,243,255,0.3)] bg-transparent py-2.5 font-mono text-xs uppercase tracking-wider text-[var(--hud-cyan)] transition-colors hover:bg-[rgba(0,243,255,0.05)]"
               >
-                CANCEL
+                {t("quick_add.cancel")}
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex-2 bg-[rgba(0,243,255,0.15)] border border-[var(--hud-cyan)] text-[var(--hud-cyan)] hover:bg-[rgba(0,243,255,0.25)] py-2.5 rounded font-mono text-xs uppercase tracking-widest font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,243,255,0.1)]"
+                className="flex-2 rounded border border-[var(--hud-cyan)] bg-[rgba(0,243,255,0.15)] py-2.5 font-mono text-xs font-bold uppercase tracking-widest text-[var(--hud-cyan)] shadow-[0_0_15px_rgba(0,243,255,0.1)] transition-all hover:bg-[rgba(0,243,255,0.25)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSaving ? "PROCESSING..." : type === "roi" ? "START CALIBRATION" : "REGISTER IMMEDIATELY"}
+                {isSaving
+                  ? t("quick_add.processing")
+                  : type === "roi"
+                    ? t("quick_add.start_calibration")
+                    : t("quick_add.register_immediately")}
               </button>
             </div>
           </form>
         ) : (
           /* ROI Drawing Progress Animation overlay */
-          <div className="py-12 flex flex-col items-center justify-center space-y-6">
-            <div className="relative w-24 h-24 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-4 border-t-[var(--hud-cyan)] border-[rgba(0,243,255,0.1)] animate-spin"></div>
-              <Target className="size-8 text-[var(--hud-cyan)] animate-pulse" />
+          <div className="flex flex-col items-center justify-center space-y-6 py-12">
+            <div className="relative flex h-24 w-24 items-center justify-center">
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-[rgba(0,243,255,0.1)] border-t-[var(--hud-cyan)]"></div>
+              <Target className="size-8 animate-pulse text-[var(--hud-cyan)]" />
             </div>
 
-            <div className="text-center space-y-2">
-              <h3 className="text-sm font-bold text-[var(--hud-cyan)] uppercase tracking-widest font-mono">
-                Calibrating ROI Coordinates...
+            <div className="space-y-2 text-center">
+              <h3 className="font-mono text-sm font-bold uppercase tracking-widest text-[var(--hud-cyan)]">
+                {t("quick_add.calibrating_roi")}
               </h3>
-              <p className="text-xs text-gray-400 font-mono">
-                Drawing {currentObject.additional_details?.roi_type} zone on {cameraName.toUpperCase()} mainstream
+              <p className="font-mono text-xs text-gray-400">
+                {t("quick_add.drawing_zone", {
+                  type: currentObject.additional_details?.roi_type,
+                  camera: cameraName.toUpperCase(),
+                })}
               </p>
             </div>
 
             {/* Progress bar */}
-            <div className="w-full max-w-md bg-[rgba(255,255,255,0.05)] h-2 border border-[rgba(0,243,255,0.2)] p-0.5">
+            <div className="h-2 w-full max-w-md border border-[rgba(0,243,255,0.2)] bg-[rgba(255,255,255,0.05)] p-0.5">
               <div
-                className="bg-[var(--hud-cyan)] h-full transition-all duration-150"
+                className="h-full bg-[var(--hud-cyan)] transition-all duration-150"
                 style={{ width: `${calibrationProgress}%` }}
               ></div>
             </div>
-            <div className="text-[10px] text-gray-500 font-mono">
-              STAGE: GENERATING VECTORS & TRIPWIRE SEGMENTS ({calibrationProgress}%)
+            <div className="font-mono text-[10px] text-gray-500">
+              {t("quick_add.stage", { progress: calibrationProgress })}
             </div>
           </div>
         )}

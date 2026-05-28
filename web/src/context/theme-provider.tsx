@@ -72,7 +72,8 @@ export function ThemeProvider({
   const [colorScheme, setColorScheme] = useState<ColorScheme>(() => {
     try {
       const storedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
-      return storedData.colorScheme === "default" || storedData.colorScheme === "theme-default"
+      return storedData.colorScheme === "default" ||
+        storedData.colorScheme === "theme-default"
         ? defaultColorScheme
         : storedData.colorScheme || defaultColorScheme;
     } catch (error) {

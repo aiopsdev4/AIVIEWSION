@@ -82,7 +82,8 @@ function useDraggableElement({
   const draggingAtTopEdge = useMemo(() => {
     if (clientYPosition && timelineRef.current && scrollEdgeSize) {
       const timelineRect = timelineRef.current.getBoundingClientRect();
-      const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
+      const timelineTopAbsolute =
+        orientation === "horizontal" ? timelineRect.left : timelineRect.top;
       return (
         clientYPosition - timelineTopAbsolute < scrollEdgeSize && isDragging
       );
@@ -92,8 +93,10 @@ function useDraggableElement({
   const draggingAtBottomEdge = useMemo(() => {
     if (clientYPosition && timelineRef.current && scrollEdgeSize) {
       const timelineRect = timelineRef.current.getBoundingClientRect();
-      const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
-      const timelineHeightAbsolute = orientation === "horizontal" ? timelineRect.width : timelineRect.height;
+      const timelineTopAbsolute =
+        orientation === "horizontal" ? timelineRect.left : timelineRect.top;
+      const timelineHeightAbsolute =
+        orientation === "horizontal" ? timelineRect.width : timelineRect.height;
       return (
         timelineTopAbsolute + timelineHeightAbsolute - clientYPosition <
           scrollEdgeSize && isDragging
@@ -105,7 +108,10 @@ function useDraggableElement({
     (e: MouseEvent | TouchEvent) => {
       let client;
       if ("TouchEvent" in window && e instanceof TouchEvent) {
-        client = orientation === "horizontal" ? e.touches[0].clientX : e.touches[0].clientY;
+        client =
+          orientation === "horizontal"
+            ? e.touches[0].clientX
+            : e.touches[0].clientY;
       } else if (e instanceof MouseEvent) {
         client = orientation === "horizontal" ? e.clientX : e.clientY;
       }
@@ -131,15 +137,24 @@ function useDraggableElement({
 
       let client;
       if ("TouchEvent" in window && e.nativeEvent instanceof TouchEvent) {
-        client = orientation === "horizontal" ? e.nativeEvent.touches[0].clientX : e.nativeEvent.touches[0].clientY;
+        client =
+          orientation === "horizontal"
+            ? e.nativeEvent.touches[0].clientX
+            : e.nativeEvent.touches[0].clientY;
       } else if (e.nativeEvent instanceof MouseEvent) {
-        client = orientation === "horizontal" ? e.nativeEvent.clientX : e.nativeEvent.clientY;
+        client =
+          orientation === "horizontal"
+            ? e.nativeEvent.clientX
+            : e.nativeEvent.clientY;
       }
       if (client !== undefined && draggableElementRef.current) {
         const draggableElementRect =
           draggableElementRef.current.getBoundingClientRect();
         if (!isDragging) {
-          const rectStart = orientation === "horizontal" ? draggableElementRect.left : draggableElementRect.top;
+          const rectStart =
+            orientation === "horizontal"
+              ? draggableElementRect.left
+              : draggableElementRect.top;
           setInitialClickAdjustment(client - rectStart);
         }
         setClientYPosition(client);
@@ -268,7 +283,10 @@ function useDraggableElement({
         segments.length > 0 &&
         fullTimelineHeight
       ) {
-        const scrolled = orientation === "horizontal" ? timelineRef.current.scrollLeft : timelineRef.current.scrollTop;
+        const scrolled =
+          orientation === "horizontal"
+            ? timelineRef.current.scrollLeft
+            : timelineRef.current.scrollTop;
 
         const parentScrollTop = getCumulativeScrollTop(timelineRef.current);
 
@@ -283,7 +301,8 @@ function useDraggableElement({
           : segmentHeight * 1.5;
 
         const timelineRect = timelineRef.current.getBoundingClientRect();
-        const timelineTopAbsolute = orientation === "horizontal" ? timelineRect.left : timelineRect.top;
+        const timelineTopAbsolute =
+          orientation === "horizontal" ? timelineRect.left : timelineRect.top;
 
         const newElementPosition = Math.min(
           elementEarliest,
@@ -336,13 +355,17 @@ function useDraggableElement({
               0,
               (clientYPosition -
                 timelineTopAbsolute -
-                ((orientation === "horizontal" ? timelineRect.width : timelineRect.height) -
+                ((orientation === "horizontal"
+                  ? timelineRect.width
+                  : timelineRect.height) -
                   scrollEdgeSize)) /
                 scrollEdgeSize,
             );
             const newScrollTop = Math.min(
               fullTimelineHeight - segmentHeight,
-              orientation === "horizontal" ? timelineRef.current.scrollLeft + segmentHeight * intensity : timelineRef.current.scrollTop + segmentHeight * intensity,
+              orientation === "horizontal"
+                ? timelineRef.current.scrollLeft + segmentHeight * intensity
+                : timelineRef.current.scrollTop + segmentHeight * intensity,
             );
             if (orientation === "horizontal") {
               timelineRef.current.scrollLeft = newScrollTop;
@@ -518,12 +541,19 @@ function useDraggableElement({
 
   useEffect(() => {
     if (timelineRef.current && segments && segmentsRef.current) {
-      const size = orientation === "horizontal" ? timelineRef.current.clientWidth : timelineRef.current.clientHeight;
+      const size =
+        orientation === "horizontal"
+          ? timelineRef.current.clientWidth
+          : timelineRef.current.clientHeight;
       setScrollEdgeSize(size * 0.03);
       setFullTimelineHeight(
         Math.min(
-          orientation === "horizontal" ? timelineRef.current.scrollWidth : timelineRef.current.scrollHeight,
-          orientation === "horizontal" ? segmentsRef.current.scrollWidth : segmentsRef.current.scrollHeight,
+          orientation === "horizontal"
+            ? timelineRef.current.scrollWidth
+            : timelineRef.current.scrollHeight,
+          orientation === "horizontal"
+            ? segmentsRef.current.scrollWidth
+            : segmentsRef.current.scrollHeight,
         ),
       );
     }

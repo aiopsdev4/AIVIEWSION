@@ -143,33 +143,34 @@ export function EventSegment({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showMinimap, isFirstSegmentInMinimap, events, segmentDuration]);
 
-  const segmentClasses = orientation === "horizontal"
-    ? `w-[8px] h-full relative ${
-        showMinimap
-          ? isInMinimapRange
-            ? "bg-secondary-highlight"
-            : isLastSegmentInMinimap
-              ? ""
-              : "opacity-70"
-          : ""
-      } ${
-        isFirstSegmentInMinimap || isLastSegmentInMinimap
-          ? "relative w-[8px] border-r-2 border-neutral_variant"
-          : ""
-      }`
-    : `h-[8px] relative w-full ${
-        showMinimap
-          ? isInMinimapRange
-            ? "bg-secondary-highlight"
-            : isLastSegmentInMinimap
-              ? ""
-              : "opacity-70"
-          : ""
-      } ${
-        isFirstSegmentInMinimap || isLastSegmentInMinimap
-          ? "relative h-[8px] border-b-2 border-neutral_variant"
-          : ""
-      }`;
+  const segmentClasses =
+    orientation === "horizontal"
+      ? `w-[8px] h-full relative ${
+          showMinimap
+            ? isInMinimapRange
+              ? "bg-secondary-highlight"
+              : isLastSegmentInMinimap
+                ? ""
+                : "opacity-70"
+            : ""
+        } ${
+          isFirstSegmentInMinimap || isLastSegmentInMinimap
+            ? "relative w-[8px] border-r-2 border-neutral_variant"
+            : ""
+        }`
+      : `h-[8px] relative w-full ${
+          showMinimap
+            ? isInMinimapRange
+              ? "bg-secondary-highlight"
+              : isLastSegmentInMinimap
+                ? ""
+                : "opacity-70"
+            : ""
+        } ${
+          isFirstSegmentInMinimap || isLastSegmentInMinimap
+            ? "relative h-[8px] border-b-2 border-neutral_variant"
+            : ""
+        }`;
 
   const severityColors: { [key: number]: string } = {
     1: reviewed
@@ -230,7 +231,11 @@ export function EventSegment({
         />
       )}
 
-      <Tick timestamp={timestamp} timestampSpread={timestampSpread} orientation={orientation} />
+      <Tick
+        timestamp={timestamp}
+        timestampSpread={timestampSpread}
+        orientation={orientation}
+      />
 
       <Timestamp
         isFirstSegmentInMinimap={isFirstSegmentInMinimap}
@@ -246,24 +251,36 @@ export function EventSegment({
           {severityValue === displaySeverityType && (
             <HoverCard openDelay={200} closeDelay={100}>
               <HoverCardTrigger asChild>
-                <div className={orientation === "horizontal"
-                  ? "absolute top-1/2 z-10 w-[8px] h-[20px] -translate-y-1/2 transform cursor-pointer md:h-[40px]"
-                  : "absolute left-1/2 z-10 h-[8px] w-[20px] -translate-x-1/2 transform cursor-pointer md:w-[40px]"}>
-                  <div className={orientation === "horizontal"
-                    ? "flex h-[20px] flex-col justify-center md:h-[40px]"
-                    : "flex w-[20px] flex-row justify-center md:w-[40px]"}>
+                <div
+                  className={
+                    orientation === "horizontal"
+                      ? "absolute top-1/2 z-10 h-[20px] w-[8px] -translate-y-1/2 transform cursor-pointer md:h-[40px]"
+                      : "absolute left-1/2 z-10 h-[8px] w-[20px] -translate-x-1/2 transform cursor-pointer md:w-[40px]"
+                  }
+                >
+                  <div
+                    className={
+                      orientation === "horizontal"
+                        ? "flex h-[20px] flex-col justify-center md:h-[40px]"
+                        : "flex w-[20px] flex-row justify-center md:w-[40px]"
+                    }
+                  >
                     <div className="flex justify-center">
                       <div
-                        className={orientation === "horizontal"
-                          ? "absolute top-1/2 z-10 mt-[2px] w-[8px] h-[8px] -translate-y-1/2 transform cursor-pointer md:mt-0"
-                          : "absolute left-1/2 z-10 ml-[2px] h-[8px] w-[8px] -translate-x-1/2 transform cursor-pointer md:ml-0"}
+                        className={
+                          orientation === "horizontal"
+                            ? "absolute top-1/2 z-10 mt-[2px] h-[8px] w-[8px] -translate-y-1/2 transform cursor-pointer md:mt-0"
+                            : "absolute left-1/2 z-10 ml-[2px] h-[8px] w-[8px] -translate-x-1/2 transform cursor-pointer md:ml-0"
+                        }
                         data-severity={severityValue}
                       >
                         <div
                           key={`${segmentKey}_${index}_primary_data`}
-                          className={orientation === "horizontal"
-                            ? `w-[8px] h-full bg-gradient-to-b ${roundBottomPrimary ? "rounded-bl-full rounded-br-full" : ""} ${roundTopPrimary ? "rounded-tl-full rounded-tr-full" : ""} ${severityColors[severityValue]}`
-                            : `h-[8px] w-full bg-gradient-to-r ${roundBottomPrimary ? "rounded-bl-full rounded-br-full" : ""} ${roundTopPrimary ? "rounded-tl-full rounded-tr-full" : ""} ${severityColors[severityValue]}`}
+                          className={
+                            orientation === "horizontal"
+                              ? `h-full w-[8px] bg-gradient-to-b ${roundBottomPrimary ? "rounded-bl-full rounded-br-full" : ""} ${roundTopPrimary ? "rounded-tl-full rounded-tr-full" : ""} ${severityColors[severityValue]}`
+                              : `h-[8px] w-full bg-gradient-to-r ${roundBottomPrimary ? "rounded-bl-full rounded-br-full" : ""} ${roundTopPrimary ? "rounded-tl-full rounded-tr-full" : ""} ${severityColors[severityValue]}`
+                          }
                         ></div>
                       </div>
                     </div>

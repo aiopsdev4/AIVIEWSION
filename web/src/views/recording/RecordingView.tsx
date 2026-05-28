@@ -1067,7 +1067,7 @@ function Timeline({
       className={cn(
         "relative overflow-hidden",
         timelineType == "timeline"
-          ? "h-[100px] w-full px-4 flex-shrink-0"
+          ? "h-[100px] w-full flex-shrink-0 px-4"
           : isDesktop
             ? cn(
                 timelineType == "detail"

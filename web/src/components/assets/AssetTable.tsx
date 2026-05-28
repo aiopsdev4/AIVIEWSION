@@ -4,7 +4,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,11 @@ interface AssetTableProps {
   onDelete: (id: string) => Promise<void>;
 }
 
-export default function AssetTable({ assets, isDeleting, onDelete }: AssetTableProps) {
+export default function AssetTable({
+  assets,
+  isDeleting,
+  onDelete,
+}: AssetTableProps) {
   return (
     <ScrollArea className="flex-1">
       <Table>
@@ -43,7 +47,10 @@ export default function AssetTable({ assets, isDeleting, onDelete }: AssetTableP
         <TableBody>
           {assets.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+              <TableCell
+                colSpan={5}
+                className="h-32 text-center text-muted-foreground"
+              >
                 No devices found matching your criteria.
               </TableCell>
             </TableRow>
@@ -53,7 +60,11 @@ export default function AssetTable({ assets, isDeleting, onDelete }: AssetTableP
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      {asset.category === 'NVR' ? <Video className="h-4 w-4"/> : <Cctv className="h-4 w-4" />}
+                      {asset.category === "NVR" ? (
+                        <Video className="h-4 w-4" />
+                      ) : (
+                        <Cctv className="h-4 w-4" />
+                      )}
                     </div>
                     {asset.name}
                   </div>
@@ -63,14 +74,16 @@ export default function AssetTable({ assets, isDeleting, onDelete }: AssetTableP
                     {asset.category}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-mono text-sm">{asset.ip_address}</TableCell>
+                <TableCell className="font-mono text-sm">
+                  {asset.ip_address}
+                </TableCell>
                 <TableCell>
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className={
-                      asset.status === 'Active' || asset.status === 'Online' 
-                      ? "bg-success/20 text-success border-success/30 rounded-full" 
-                      : "bg-danger/20 text-danger border-danger/30 rounded-full"
+                      asset.status === "Active" || asset.status === "Online"
+                        ? "rounded-full border-success/30 bg-success/20 text-success"
+                        : "rounded-full border-danger/30 bg-danger/20 text-danger"
                     }
                   >
                     {asset.status}
@@ -78,15 +91,25 @@ export default function AssetTable({ assets, isDeleting, onDelete }: AssetTableP
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="sm" className="h-8 text-primary">Manage</Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/20"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-primary"
+                    >
+                      Manage
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-danger hover:bg-danger/20 hover:text-danger"
                       onClick={() => onDelete(asset.id)}
                       disabled={isDeleting === asset.id}
                     >
-                      {isDeleting === asset.id ? <ActivityIndicator className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+                      {isDeleting === asset.id ? (
+                        <ActivityIndicator className="h-4 w-4" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </TableCell>

@@ -2,7 +2,13 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { MdSearch, MdDownload, MdRefresh } from "react-icons/md";
 import useSWR from "swr";
@@ -19,13 +25,13 @@ export default function AssetsDashboard() {
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  
+
   const { data: config } = useSWR<FrigateConfig>("config");
   const { data: rawConfig } = useSWR<string>("config/raw");
 
   const assets: Asset[] = useMemo(() => {
     if (!config?.cameras) return [];
-    
+
     return Object.entries(config.cameras).map(([camName, camConfig]) => {
       let ip = "Unknown IP";
       const path = camConfig.ffmpeg?.inputs?.[0]?.path;
@@ -39,16 +45,19 @@ export default function AssetsDashboard() {
         device_type: "cctv",
         category: "CAMERA",
         ip_address: ip,
-        status: camConfig.enabled !== false ? "Active" : "Inactive"
+        status: camConfig.enabled !== false ? "Active" : "Inactive",
       };
     });
   }, [config]);
 
   const filteredAssets = useMemo(() => {
-    return assets.filter(item => {
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
-                          item.ip_address.includes(search);
-      const matchFilter = filter === "all" || item.category.toLowerCase() === filter.toLowerCase();
+    return assets.filter((item) => {
+      const matchSearch =
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.ip_address.includes(search);
+      const matchFilter =
+        filter === "all" ||
+        item.category.toLowerCase() === filter.toLowerCase();
       return matchSearch && matchFilter;
     });
   }, [search, filter, assets]);
@@ -71,8 +80,13 @@ export default function AssetsDashboard() {
       toast.error("System configuration not loaded yet.");
       return;
     }
-    
-    if (!window.confirm(`Are you sure you want to permanently delete the device '${camId}'?`)) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete the device '${camId}'?`,
+      )
+    )
+      return;
 
     setIsDeleting(camId);
     try {
@@ -92,30 +106,40 @@ export default function AssetsDashboard() {
       return;
     }
 
-    const camId = newAsset.name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
-    
+    const camId = newAsset.name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+
     if (Object.keys(config?.cameras || {}).includes(camId)) {
-      toast.error(`Device ID '${camId}' is already registered! Use a unique name.`);
+      toast.error(
+        `Device ID '${camId}' is already registered! Use a unique name.`,
+      );
       return;
     }
 
     try {
       const updatedYaml = addCameraToYaml(rawConfig, camId, newAsset.rtsp_url);
       await saveAndRestartConfig(updatedYaml);
-      toast.success("Asset saved! The video engine is now rebooting, please wait...");
+      toast.success(
+        "Asset saved! The video engine is now rebooting, please wait...",
+      );
       setIsAdding(false);
       setTimeout(pollServer, 5000);
     } catch (e: any) {
-      toast.error(e.message || "Failed to commit settings to main system configuration.");
+      toast.error(
+        e.message || "Failed to commit settings to main system configuration.",
+      );
     }
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-background p-4 md:p-8 overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background p-4 md:p-8">
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Device Registry</h1>
-          <p className="mt-2 text-muted-foreground">Manage and register camera assets across the network.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">
+            Device Registry
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Manage and register camera assets across the network.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="flex items-center gap-2">
@@ -126,16 +150,16 @@ export default function AssetsDashboard() {
             <MdDownload className="h-4 w-4" />
             Export
           </Button>
-          <AddDeviceDialog 
-            isOpen={isAdding} 
-            setIsOpen={setIsAdding} 
-            onSave={handleSave} 
+          <AddDeviceDialog
+            isOpen={isAdding}
+            setIsOpen={setIsAdding}
+            onSave={handleSave}
           />
         </div>
       </div>
 
-      <Card className="flex-1 overflow-hidden flex flex-col border border-secondary-highlight bg-background_alt shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-secondary-highlight p-4 md:flex-row md:items-center md:justify-between bg-card">
+      <Card className="flex flex-1 flex-col overflow-hidden border border-secondary-highlight bg-background_alt shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-secondary-highlight bg-card p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-4">
             <div className="relative w-full max-w-sm">
               <MdSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -143,30 +167,30 @@ export default function AssetsDashboard() {
                 placeholder="Search assets..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-background"
+                className="bg-background pl-9"
               />
             </div>
           </div>
           <div className="flex items-center gap-3">
-             <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[180px] bg-background">
-                  <SelectValue placeholder="Filter Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Devices</SelectItem>
-                  <SelectItem value="cctv">CCTV Only</SelectItem>
-                  <SelectItem value="nvr">NVR Systems</SelectItem>
-                  <SelectItem value="ptz">PTZ Cameras</SelectItem>
-                  <SelectItem value="bodycam">BodyCams</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-[180px] bg-background">
+                <SelectValue placeholder="Filter Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Devices</SelectItem>
+                <SelectItem value="cctv">CCTV Only</SelectItem>
+                <SelectItem value="nvr">NVR Systems</SelectItem>
+                <SelectItem value="ptz">PTZ Cameras</SelectItem>
+                <SelectItem value="bodycam">BodyCams</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        <AssetTable 
-          assets={filteredAssets} 
-          isDeleting={isDeleting} 
-          onDelete={handleDelete} 
+        <AssetTable
+          assets={filteredAssets}
+          isDeleting={isDeleting}
+          onDelete={handleDelete}
         />
       </Card>
     </div>

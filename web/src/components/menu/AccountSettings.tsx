@@ -79,14 +79,14 @@ export default function AccountSettings({ className }: AccountSettingsProps) {
       <Trigger asChild>
         <div
           className={cn(
-            "flex items-center gap-2.5 cursor-pointer rounded-lg hover:bg-white/5 p-1 px-2.5 transition-colors",
+            "flex cursor-pointer items-center gap-2.5 rounded-lg p-1 px-2.5 transition-colors hover:bg-white/5",
             className,
           )}
         >
-          <div className="flex items-center justify-center size-8 rounded-full bg-blue-500 text-white shadow-sm">
+          <div className="flex size-8 items-center justify-center rounded-full bg-blue-500 text-white shadow-sm">
             <VscAccount className="size-5" />
           </div>
-          <span className="text-sm font-medium text-slate-200 select-none">
+          <span className="select-none text-sm font-medium text-slate-200">
             {profile?.username || "admin"}
           </span>
         </div>

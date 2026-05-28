@@ -187,7 +187,7 @@ export default function HlsVideoPlayer({
     hlsRef.current = new Hls(hlsConfig);
     hlsRef.current.attachMedia(videoRef.current);
     hlsRef.current.loadSource(currentSource.playlist);
-    
+
     // C3 Stall Recovery
     hlsRef.current.on(Hls.Events.ERROR, (_event, data) => {
       if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {

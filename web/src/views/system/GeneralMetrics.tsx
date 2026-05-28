@@ -1001,7 +1001,7 @@ export default function GeneralMetrics({
             <Skeleton className="aspect-tall w-full" />
           )}
         </div>
-        
+
         <Statusbar isStatic />
       </div>
     </>

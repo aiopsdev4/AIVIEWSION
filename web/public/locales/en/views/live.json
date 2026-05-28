@@ -1,6 +1,8 @@
 {
   "documentTitle": "AIViewsion",
   "documentTitle.withCamera": "{{camera}} - AIViewsion",
+  "aiviewsion": "AIViewsion",
+  "aiviewsionAnalysis": "AIViewsion Analysis",
   "lowBandwidthMode": "Low-bandwidth Mode",
   "twoWayTalk": {
     "enable": "Enable Two Way Talk",

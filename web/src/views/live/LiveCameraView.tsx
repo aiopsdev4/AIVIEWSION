@@ -503,15 +503,15 @@ export default function LiveCameraView({
                 )}
               </Button>
               <Button
-                className="flex items-center gap-2.5 rounded-lg bg-[rgba(188,19,254,0.15)] border border-[rgba(188,19,254,0.45)] hover:bg-[rgba(188,19,254,0.3)] text-[var(--hud-purple)] shadow-[0_0_10px_rgba(188,19,254,0.15)] hover:text-white"
-                aria-label="AIViewsion Analysis"
+                className="flex items-center gap-2.5 rounded-lg border border-[rgba(188,19,254,0.45)] bg-[rgba(188,19,254,0.15)] text-[var(--hud-purple)] shadow-[0_0_10px_rgba(188,19,254,0.15)] hover:bg-[rgba(188,19,254,0.3)] hover:text-white"
+                aria-label={t("aiviewsionAnalysis")}
                 size="sm"
                 onClick={() => setShowAIViewsion(true)}
               >
                 <Brain className="size-5" />
                 {isDesktop && (
-                  <div className="text-[var(--hud-purple)] hover:text-white font-bold font-mono uppercase tracking-wider">
-                    AIViewsion
+                  <div className="font-mono font-bold uppercase tracking-wider text-[var(--hud-purple)] hover:text-white">
+                    {t("aiviewsion")}
                   </div>
                 )}
               </Button>

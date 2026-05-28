@@ -6,10 +6,10 @@ export default function Header() {
   if (!isDesktop) return null;
 
   return (
-    <header className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between px-4 border-b border-secondary-highlight bg-background_alt z-20">
+    <header className="absolute left-0 right-0 top-0 z-20 flex h-14 items-center justify-between border-b border-secondary-highlight bg-background_alt px-4">
       <div className="flex items-center gap-3">
         <Logo className="h-7 w-7" />
-        <span className="font-semibold text-lg tracking-wider text-slate-100 select-none uppercase">
+        <span className="select-none text-lg font-semibold uppercase tracking-wider text-slate-100">
           AIVIEWSION
         </span>
       </div>
