@@ -19,11 +19,14 @@ import { saveAndRestartConfig } from "@/services/configService";
 
 import AssetTable, { Asset } from "@/components/assets/AssetTable";
 import AddDeviceDialog, { NewAsset } from "@/components/assets/AddDeviceDialog";
+import AutoDiscoverDialog from "@/components/assets/AutoDiscoverDialog";
+
 
 export default function AssetsDashboard() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
+  const [isDiscovering, setIsDiscovering] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const { data: config } = useSWR<FrigateConfig>("config");
@@ -152,6 +155,11 @@ export default function AssetsDashboard() {
             <MdDownload className="h-4 w-4" />
             Export
           </Button>
+          <AutoDiscoverDialog
+            isOpen={isDiscovering}
+            setIsOpen={setIsDiscovering}
+            onSave={handleSave}
+          />
           <AddDeviceDialog
             isOpen={isAdding}
             setIsOpen={setIsAdding}
