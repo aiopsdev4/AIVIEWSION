@@ -289,6 +289,8 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
                 "audio": False,
                 "port": 37777 if is_dahua else 554,
                 "rtsp_url": rtsp_url,
+                "username": "admin",
+                "password": "password1" if is_dahua else "admin",
                 "resolution": f"{w}x{h}",
                 "fps": fps,
                 "codec": codec

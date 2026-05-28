@@ -256,8 +256,8 @@ export default function AssetsDashboard() {
             ...dev,
             selected: dev.status === "Online",
             customName: `${dev.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${dev.ip.split(".").pop()}${suffix}`,
-            username: bulkUsername,
-            password: bulkPassword,
+            username: bulkUsername || dev.username || "",
+            password: bulkPassword || dev.password || "",
           };
         }),
       );
