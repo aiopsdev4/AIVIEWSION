@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MdSettingsEthernet, MdVolumeUp, MdOpenWith } from "react-icons/md";
+import { MdSettingsEthernet } from "react-icons/md";
 import { LuRotateCw } from "react-icons/lu";
 import ActivityIndicator from "@/components/indicators/activity-indicator";
 import { NewAsset } from "./AddDeviceDialog";
@@ -306,10 +306,7 @@ export default function AutoDiscoverDialog({
                         IP Address
                       </th>
                       <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
-                        Details & Type
-                      </th>
-                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
-                        Device Name
+                        Open Ports
                       </th>
                       <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
                         Status
@@ -340,54 +337,11 @@ export default function AutoDiscoverDialog({
                             className="h-4 w-4 rounded border-border/40 bg-background text-primary focus:ring-primary"
                           />
                         </td>
-                        <td className="p-3.5 font-mono">
-                          <div className="text-sm font-semibold text-foreground">
-                            {dev.ip}
-                          </div>
-                          <div className="mt-0.5 text-[10px] text-muted-foreground">
-                            {dev.manufacturer} {dev.model && `(${dev.model})`}
-                          </div>
+                        <td className="p-3.5 font-mono text-sm font-semibold text-foreground">
+                          {dev.ip}
                         </td>
-                        <td className="p-3.5">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                dev.device_type === "nvr"
-                                  ? "border border-purple-800 bg-purple-900/40 text-purple-300"
-                                  : "border border-blue-800 bg-blue-900/40 text-blue-300"
-                              }`}
-                            >
-                              {dev.device_type}
-                            </span>
-                            <span className="font-mono text-[10px] text-muted-foreground">
-                              Port: {dev.port}
-                            </span>
-                            {dev.audio && (
-                              <MdVolumeUp
-                                className="h-3.5 w-3.5 text-green-400"
-                                title="Audio Supported"
-                              />
-                            )}
-                            {dev.ptz && (
-                              <MdOpenWith
-                                className="h-3.5 w-3.5 text-green-400"
-                                title="PTZ Supported"
-                              />
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3.5">
-                          <Input
-                            placeholder="camera_name"
-                            value={dev.customName || ""}
-                            disabled={!dev.selected}
-                            onChange={(e) => {
-                              const updated = [...devices];
-                              updated[idx].customName = e.target.value;
-                              setDevices(updated);
-                            }}
-                            className="h-8 max-w-[140px] rounded-md border-border/40 bg-background/50 text-xs"
-                          />
+                        <td className="p-3.5 font-mono text-[10px] text-muted-foreground">
+                          {dev.port}
                         </td>
                         <td className="p-3.5">
                           <span
