@@ -4,22 +4,13 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  MdSettingsEthernet,
-  MdCheck,
-  MdClose,
-  MdVolumeUp,
-  MdVolumeOff,
-  MdOpenWith,
-  MdSearch,
-} from "react-icons/md";
+import { MdSettingsEthernet, MdVolumeUp, MdOpenWith } from "react-icons/md";
+import { LuRotateCw } from "react-icons/lu";
 import ActivityIndicator from "@/components/indicators/activity-indicator";
 import { NewAsset } from "./AddDeviceDialog";
 
@@ -52,10 +43,32 @@ export default function AutoDiscoverDialog({
   setIsOpen,
 }: AutoDiscoverDialogProps) {
   const [subnet, setSubnet] = useState("172.16.0");
+  const [bulkUsername, setBulkUsername] = useState("admin");
+  const [bulkPassword, setBulkPassword] = useState("password1");
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [devices, setDevices] = useState<DiscoveredDevice[]>([]);
   const [testingRows, setTestingRows] = useState<Record<number, boolean>>({});
+
+  const handleBulkUsernameChange = (val: string) => {
+    setBulkUsername(val);
+    setDevices((prev) =>
+      prev.map((d) => ({
+        ...d,
+        username: d.username === bulkUsername ? val : d.username,
+      })),
+    );
+  };
+
+  const handleBulkPasswordChange = (val: string) => {
+    setBulkPassword(val);
+    setDevices((prev) =>
+      prev.map((d) => ({
+        ...d,
+        password: d.password === bulkPassword ? val : d.password,
+      })),
+    );
+  };
 
   const handleScan = async () => {
     setScanning(true);
@@ -75,8 +88,8 @@ export default function AutoDiscoverDialog({
             ...dev,
             selected: dev.status === "Online",
             customName: `${dev.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${dev.ip.split(".").pop()}${suffix}`,
-            username: dev.username || "admin",
-            password: dev.password || "password1",
+            username: dev.username || bulkUsername,
+            password: dev.password || bulkPassword,
           };
         }),
       );
@@ -183,56 +196,69 @@ export default function AutoDiscoverDialog({
           Auto-Discover
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border border-secondary-highlight bg-background shadow-xl sm:max-w-[950px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary">
-            Network CCTV Auto-Scanner
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background p-6 shadow-2xl sm:max-w-[1000px]">
+        <DialogHeader className="mb-4 border-b border-border/40 pb-4">
+          <DialogTitle className="flex items-center gap-2.5 text-lg font-bold text-foreground">
+            <LuRotateCw className="animate-spin-slow h-5 w-5 text-primary" />
+            <span>Scan Connected CCTV Network</span>
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Scan local network range and dynamically manage individual device
-            credentials.
-          </DialogDescription>
         </DialogHeader>
 
-        {/* Scanner Configurations */}
-        <div className="mt-4 flex max-w-sm items-end gap-4 rounded-lg border border-secondary-highlight bg-card p-4">
-          <div className="flex-grow space-y-2">
-            <Label
-              htmlFor="subnet"
-              className="text-xs font-semibold text-foreground"
-            >
-              Target Subnet Range
-            </Label>
-            <Input
-              id="subnet"
-              placeholder="e.g. 172.16.0"
-              value={subnet}
-              onChange={(e) => setSubnet(e.target.value)}
-              className="h-9 bg-background"
-            />
+        {/* Bulk Credentials box styled exactly like photo */}
+        <div className="mb-4 flex flex-col justify-between gap-4 rounded-xl border border-border/40 bg-card/30 p-4 md:flex-row md:items-center">
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-foreground">
+              Bulk Credentials
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Use these default credentials to authenticate discovered devices
+              during batch import.
+            </p>
           </div>
-          <Button
-            onClick={handleScan}
-            disabled={scanning || !subnet}
-            className="flex h-9 items-center justify-center gap-2"
-          >
-            {scanning ? (
-              <ActivityIndicator className="h-4 w-4" />
-            ) : (
-              <MdSearch className="h-5 w-5" />
-            )}
-            {scanning ? "Scanning..." : "Scan Subnet"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                Subnet:
+              </span>
+              <Input
+                value={subnet}
+                onChange={(e) => setSubnet(e.target.value)}
+                className="h-8 w-28 animate-none rounded-md border-border/40 bg-background text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                Username:
+              </span>
+              <Input
+                value={bulkUsername}
+                onChange={(e) => handleBulkUsernameChange(e.target.value)}
+                className="h-8 w-28 animate-none rounded-md border-border/40 bg-background text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                Password:
+              </span>
+              <Input
+                type="password"
+                placeholder="Device password"
+                value={bulkPassword}
+                onChange={(e) => handleBulkPasswordChange(e.target.value)}
+                className="h-8 w-36 animate-none rounded-md border-border/40 bg-background text-xs"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Scan Status / Results Table */}
-        <div className="mt-6">
+        {/* Results Area */}
+        <div className="mt-2 min-h-[300px]">
           {scanning && (
-            <div className="flex flex-col items-center justify-center space-y-4 py-16">
-              <div className="relative flex h-24 w-24 items-center justify-center">
+            <div className="flex flex-col items-center justify-center space-y-4 py-20">
+              <div className="relative flex h-20 w-20 items-center justify-center">
                 <div className="absolute h-full w-full animate-ping rounded-full border-4 border-primary/20" />
-                <div className="absolute h-16 w-16 animate-pulse rounded-full border-4 border-primary/40" />
-                <MdSettingsEthernet className="h-10 w-10 animate-spin text-primary" />
+                <div className="absolute h-12 w-12 animate-pulse rounded-full border-4 border-primary/40" />
+                <LuRotateCw className="h-8 w-8 animate-spin text-primary" />
               </div>
               <p className="animate-pulse text-sm font-medium text-primary">
                 Probing active IPs and ONVIF profiles...
@@ -241,44 +267,67 @@ export default function AutoDiscoverDialog({
           )}
 
           {!scanning && devices.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-secondary-highlight py-12">
-              <MdSettingsEthernet className="mb-2 h-12 w-12 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/40 bg-card/10 py-20">
+              <MdSettingsEthernet className="mb-3 h-10 w-10 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                No search results. Enter a subnet above and click scan.
+                No active devices discovered. Adjust the subnet and click
+                "Rescan Subnet".
               </p>
             </div>
           )}
 
           {!scanning && devices.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                Discovered Camera Assets ({devices.length})
-              </h3>
-              <div className="overflow-hidden rounded-md border border-secondary-highlight bg-card">
+              <div className="overflow-hidden rounded-xl border border-border/40 bg-card/20 shadow-lg">
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>
-                    <tr className="border-b border-secondary-highlight bg-background font-semibold text-muted-foreground">
-                      <th className="w-8 p-3"></th>
-                      <th className="p-3">Brand & Model</th>
-                      <th className="p-3">IP Address</th>
-                      <th className="p-3">Type</th>
-                      <th className="p-3">Audio</th>
-                      <th className="p-3">PTZ</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Device Credentials</th>
-                      <th className="w-16 p-3">Verify</th>
-                      <th className="p-3">Name Device</th>
+                    <tr className="border-b border-border/40 bg-background/50 font-semibold text-muted-foreground">
+                      <th className="w-10 p-3.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={
+                            devices.length > 0 &&
+                            devices.every((d) => d.selected)
+                          }
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setDevices((prev) =>
+                              prev.map((d) => ({
+                                ...d,
+                                selected:
+                                  d.status === "Online" ? checked : false,
+                              })),
+                            );
+                          }}
+                          className="h-4 w-4 rounded border-border/40 bg-background text-primary focus:ring-primary"
+                        />
+                      </th>
+                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
+                        IP Address
+                      </th>
+                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
+                        Details & Type
+                      </th>
+                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
+                        Device Name
+                      </th>
+                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="p-3.5 text-[10px] font-semibold uppercase tracking-wider">
+                        Credentials Override
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {devices.map((dev, idx) => (
                       <tr
                         key={idx}
-                        className={`border-b border-secondary-highlight transition hover:bg-background_alt ${
+                        className={`border-b border-border/40 transition hover:bg-background/40 ${
                           dev.selected ? "bg-primary/5" : ""
                         }`}
                       >
-                        <td className="p-3">
+                        <td className="p-3.5 text-center">
                           <input
                             type="checkbox"
                             checked={!!dev.selected}
@@ -288,99 +337,46 @@ export default function AutoDiscoverDialog({
                               updated[idx].selected = e.target.checked;
                               setDevices(updated);
                             }}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            className="h-4 w-4 rounded border-border/40 bg-background text-primary focus:ring-primary"
                           />
                         </td>
-                        <td className="p-3 font-medium">
-                          <div className="font-semibold text-foreground">
-                            {dev.manufacturer}
+                        <td className="p-3.5 font-mono">
+                          <div className="text-sm font-semibold text-foreground">
+                            {dev.ip}
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            {dev.model}
+                          <div className="mt-0.5 text-[10px] text-muted-foreground">
+                            {dev.manufacturer} {dev.model && `(${dev.model})`}
                           </div>
                         </td>
-                        <td className="p-3 font-mono text-foreground">
-                          {dev.ip}
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
-                              dev.device_type === "nvr"
-                                ? "border border-purple-800 bg-purple-900/40 text-purple-300"
-                                : "border border-blue-800 bg-blue-900/40 text-blue-300"
-                            }`}
-                          >
-                            {dev.device_type}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          {dev.audio ? (
-                            <MdVolumeUp className="h-4 w-4 text-green-400" />
-                          ) : (
-                            <MdVolumeOff className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </td>
-                        <td className="p-3">
-                          {dev.ptz ? (
-                            <MdOpenWith className="h-4 w-4 text-green-400" />
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground">
-                              -
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                dev.device_type === "nvr"
+                                  ? "border border-purple-800 bg-purple-900/40 text-purple-300"
+                                  : "border border-blue-800 bg-blue-900/40 text-blue-300"
+                              }`}
+                            >
+                              {dev.device_type}
                             </span>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                              dev.status === "Online"
-                                ? "border border-green-900 bg-green-950 text-green-400"
-                                : "border border-red-900 bg-red-950 text-red-400"
-                            }`}
-                          >
-                            {dev.status}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex max-w-[120px] flex-col gap-1">
-                            <Input
-                              placeholder="Username"
-                              value={dev.username || ""}
-                              onChange={(e) => {
-                                const updated = [...devices];
-                                updated[idx].username = e.target.value;
-                                setDevices(updated);
-                              }}
-                              className="h-6 bg-background px-1.5 py-0.5 text-[10px]"
-                            />
-                            <Input
-                              placeholder="Password"
-                              type="password"
-                              value={dev.password || ""}
-                              onChange={(e) => {
-                                const updated = [...devices];
-                                updated[idx].password = e.target.value;
-                                setDevices(updated);
-                              }}
-                              className="h-6 bg-background px-1.5 py-0.5 text-[10px]"
-                            />
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              Port: {dev.port}
+                            </span>
+                            {dev.audio && (
+                              <MdVolumeUp
+                                className="h-3.5 w-3.5 text-green-400"
+                                title="Audio Supported"
+                              />
+                            )}
+                            {dev.ptz && (
+                              <MdOpenWith
+                                className="h-3.5 w-3.5 text-green-400"
+                                title="PTZ Supported"
+                              />
+                            )}
                           </div>
                         </td>
-                        <td className="p-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleTestRow(idx)}
-                            disabled={testingRows[idx]}
-                            className="h-7 px-2 text-[10px] font-medium"
-                          >
-                            {testingRows[idx] ? (
-                              <ActivityIndicator className="h-3 w-3" />
-                            ) : (
-                              "Test"
-                            )}
-                          </Button>
-                        </td>
-                        <td className="p-3">
+                        <td className="p-3.5">
                           <Input
                             placeholder="camera_name"
                             value={dev.customName || ""}
@@ -390,45 +386,104 @@ export default function AutoDiscoverDialog({
                               updated[idx].customName = e.target.value;
                               setDevices(updated);
                             }}
-                            className="h-7 max-w-[130px] bg-background text-xs"
+                            className="h-8 max-w-[140px] rounded-md border-border/40 bg-background/50 text-xs"
                           />
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={`rounded border px-2.5 py-0.5 text-[10px] font-medium tracking-wide ${
+                              dev.status === "Online"
+                                ? "border-green-950 bg-green-950 text-green-400"
+                                : "border-red-950 bg-red-950 text-red-400"
+                            }`}
+                          >
+                            {dev.status === "Online"
+                              ? "Ready to Import"
+                              : dev.status}
+                          </span>
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex max-w-[320px] items-center gap-2">
+                            <Input
+                              placeholder="admin"
+                              value={dev.username || ""}
+                              onChange={(e) => {
+                                const updated = [...devices];
+                                updated[idx].username = e.target.value;
+                                setDevices(updated);
+                              }}
+                              className="h-8 w-20 rounded-md border-border/40 bg-background/50 text-xs"
+                            />
+                            <Input
+                              placeholder="Pass"
+                              type="password"
+                              value={dev.password || ""}
+                              onChange={(e) => {
+                                const updated = [...devices];
+                                updated[idx].password = e.target.value;
+                                setDevices(updated);
+                              }}
+                              className="h-8 w-28 rounded-md border-border/40 bg-background/50 text-xs"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleTestRow(idx)}
+                              disabled={testingRows[idx]}
+                              className="h-8 border-border/40 px-2 text-[10px] font-semibold hover:bg-muted"
+                            >
+                              {testingRows[idx] ? (
+                                <ActivityIndicator className="h-3 w-3" />
+                              ) : (
+                                "Test"
+                              )}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsOpen(false)}
-                  disabled={saving}
-                  className="flex items-center gap-2"
-                >
-                  <MdClose className="h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleOnboard}
-                  disabled={
-                    saving || devices.filter((d) => d.selected).length === 0
-                  }
-                  className="flex items-center gap-2"
-                >
-                  {saving ? (
-                    <ActivityIndicator className="h-4 w-4" />
-                  ) : (
-                    <MdCheck className="h-4 w-4" />
-                  )}
-                  {saving
-                    ? "Registering Assets..."
-                    : "Register Selected Devices"}
-                </Button>
-              </div>
             </div>
           )}
+        </div>
+
+        {/* Footer Actions matching exactly the photo */}
+        <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={saving}
+            className="h-9 border-border/40 px-4 text-xs font-semibold uppercase tracking-wider hover:bg-muted"
+          >
+            Close
+          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handleScan}
+              disabled={scanning || !subnet}
+              className="flex h-9 items-center gap-2 border-border/40 px-4 text-xs font-semibold uppercase tracking-wider hover:bg-muted"
+            >
+              {scanning ? (
+                <ActivityIndicator className="h-4 w-4" />
+              ) : (
+                <LuRotateCw className="h-4 w-4" />
+              )}
+              {scanning ? "Scanning..." : "Rescan Subnet"}
+            </Button>
+            <Button
+              onClick={handleOnboard}
+              disabled={
+                saving || devices.filter((d) => d.selected).length === 0
+              }
+              className="flex h-9 items-center gap-2 bg-primary px-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:bg-primary/95"
+            >
+              {saving && <ActivityIndicator className="h-4 w-4" />}
+              IMPORT SELECTED ({devices.filter((d) => d.selected).length})
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
