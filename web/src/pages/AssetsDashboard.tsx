@@ -202,20 +202,34 @@ export default function AssetsDashboard() {
   const handleBulkUsernameChange = (val: string) => {
     setBulkUsername(val);
     setDevices((prev) =>
-      prev.map((d) => ({
-        ...d,
-        username: d.username === bulkUsername ? val : d.username,
-      })),
+      prev.map((d) => {
+        if (d.username === bulkUsername) {
+          return {
+            ...d,
+            username: val,
+            status: "Unverified",
+            selected: false,
+          };
+        }
+        return d;
+      }),
     );
   };
 
   const handleBulkPasswordChange = (val: string) => {
     setBulkPassword(val);
     setDevices((prev) =>
-      prev.map((d) => ({
-        ...d,
-        password: d.password === bulkPassword ? val : d.password,
-      })),
+      prev.map((d) => {
+        if (d.password === bulkPassword) {
+          return {
+            ...d,
+            password: val,
+            status: "Unverified",
+            selected: false,
+          };
+        }
+        return d;
+      }),
     );
   };
 
@@ -301,6 +315,14 @@ export default function AssetsDashboard() {
     const selectedDevices = devices.filter((d) => d.selected);
     if (selectedDevices.length === 0) {
       toast.error("No devices selected for onboarding");
+      return;
+    }
+
+    const invalidDevices = selectedDevices.filter((d) => d.status !== "Online");
+    if (invalidDevices.length > 0) {
+      toast.error(
+        `Cannot add devices that are not online/verified: ${invalidDevices.map((d) => d.ip).join(", ")}. Please test connection first.`,
+      );
       return;
     }
 
@@ -514,7 +536,9 @@ export default function AssetsDashboard() {
                           className={`rounded border px-2.5 py-0.5 text-[10px] font-medium tracking-wide ${
                             dev.status === "Online"
                               ? "border-green-950 bg-green-950 text-green-400"
-                              : "border-red-950 bg-red-950 text-red-400"
+                              : dev.status === "Unverified"
+                                ? "border-amber-950 bg-amber-950 text-amber-400"
+                                : "border-red-950 bg-red-950 text-red-400"
                           }`}
                         >
                           {dev.status === "Online"
@@ -530,6 +554,8 @@ export default function AssetsDashboard() {
                             onChange={(e) => {
                               const updated = [...devices];
                               updated[idx].username = e.target.value;
+                              updated[idx].status = "Unverified";
+                              updated[idx].selected = false;
                               setDevices(updated);
                             }}
                             className="h-8 w-20 rounded-md border-border/40 bg-background/50 text-xs"
@@ -541,6 +567,8 @@ export default function AssetsDashboard() {
                             onChange={(e) => {
                               const updated = [...devices];
                               updated[idx].password = e.target.value;
+                              updated[idx].status = "Unverified";
+                              updated[idx].selected = false;
                               setDevices(updated);
                             }}
                             className="h-8 w-28 rounded-md border-border/40 bg-background/50 text-xs"
