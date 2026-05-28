@@ -254,3 +254,10 @@ html {
   position: relative;
   padding: 12px;
 }
+
+/* Fix Radix ScrollArea horizontal layout expansion issue on Explore page */
+.explore-scroll-area [data-radix-scroll-area-viewport] > div {
+  display: block !important;
+  width: 100% !important;
+}
+
