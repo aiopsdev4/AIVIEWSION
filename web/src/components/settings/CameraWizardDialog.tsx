@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useCallback, useState, useEffect, useReducer } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
+import { useSWRConfig } from "swr";
 import axios from "axios";
 import Step1NameCamera from "@/components/settings/wizard/Step1NameCamera";
 import Step2ProbeOrSnapshot from "@/components/settings/wizard/Step2ProbeOrSnapshot";
@@ -78,7 +78,12 @@ export default function CameraWizardDialog({
   onClose,
 }: CameraWizardDialogProps) {
   const { t } = useTranslation(["views/settings"]);
-  const { mutate: updateConfig } = useSWR("config");
+  const { mutate } = useSWRConfig();
+  const updateConfig = useCallback(() => {
+    mutate("config");
+    mutate("config/raw");
+    mutate("stats");
+  }, [mutate]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [state, dispatch] = useReducer(wizardReducer, {

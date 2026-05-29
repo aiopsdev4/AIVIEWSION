@@ -41,6 +41,7 @@ export default function JSMpegPlayer({
   const bytesReceivedRef = useRef(0);
   const lastTimestampRef = useRef(Date.now());
   const statsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [reconnectKey, setReconnectKey] = useState(0);
 
   const selectedContainerRef = useMemo(
     () => (containerRef.current ? containerRef : internalContainerRef),
@@ -120,6 +121,8 @@ export default function JSMpegPlayer({
     let videoElement: JSMpeg.VideoElement | null = null;
     let socket: WebSocket | null = null;
     let socketMessageHandler: ((event: MessageEvent) => void) | null = null;
+    let socketCloseHandler: (() => void) | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
 
     let frameCount = 0;
 
@@ -161,7 +164,17 @@ export default function JSMpegPlayer({
             }
           };
 
+          socketCloseHandler = () => {
+            if (!reconnectTimeout) {
+              reconnectTimeout = setTimeout(() => {
+                setReconnectKey((prev) => prev + 1);
+              }, 3000);
+            }
+          };
+
           socket.addEventListener("message", socketMessageHandler);
+          socket.addEventListener("close", socketCloseHandler);
+          socket.addEventListener("error", socketCloseHandler);
         }
 
         // Update stats every second
@@ -195,6 +208,9 @@ export default function JSMpegPlayer({
 
       return () => {
         clearTimeout(initPlayer);
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+        }
         if (statsIntervalRef.current) {
           clearInterval(statsIntervalRef.current);
           statsIntervalRef.current = null;
@@ -215,15 +231,20 @@ export default function JSMpegPlayer({
           if (socketMessageHandler) {
             socket.removeEventListener("message", socketMessageHandler);
           }
+          if (socketCloseHandler) {
+            socket.removeEventListener("close", socketCloseHandler);
+            socket.removeEventListener("error", socketCloseHandler);
+          }
 
           socket = null;
           socketMessageHandler = null;
+          socketCloseHandler = null;
         }
       };
     }
     // we know that these deps are correct
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playbackEnabled, url]);
+  }, [playbackEnabled, url, reconnectKey]);
 
   useEffect(() => {
     setShowCanvas(hasData && dimensionsReady);

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import socket
 import urllib.request
+import ssl
 import hashlib
 import base64
 import os
@@ -13,7 +14,7 @@ from typing import List, Dict, Any, Tuple
 
 logger = logging.getLogger(__name__)
 
-PORTS_TO_SCAN = [80, 554, 8000, 8899, 37777]
+PORTS_TO_SCAN = [80, 554, 8554, 8000, 8899, 37777]
 
 DEFAULT_CREDENTIALS = [
     ("admin", "password1"),
@@ -71,7 +72,7 @@ async def check_ip_ports(ip: str, sem: asyncio.Semaphore) -> Tuple[str, List[int
             try:
                 reader, writer = await asyncio.wait_for(
                     asyncio.open_connection(ip, port),
-                    timeout=0.5
+                    timeout=2.0
                 )
                 open_ports.append(port)
                 writer.close()
@@ -81,6 +82,54 @@ async def check_ip_ports(ip: str, sem: asyncio.Semaphore) -> Tuple[str, List[int
 
         await asyncio.gather(*(check_single_port(p) for p in PORTS_TO_SCAN))
         return ip, sorted(open_ports)
+
+def get_mac_from_arp(ip: str) -> str:
+    """Read the system ARP table to resolve the MAC address of a local IP."""
+    try:
+        if os.path.exists("/proc/net/arp"):
+            with open("/proc/net/arp", "r") as f:
+                # Skip header
+                next(f)
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 4 and parts[0] == ip:
+                        mac = parts[3].strip().lower()
+                        # Verify it's a valid MAC format (not 00:00:00:00:00:00)
+                        if mac and mac != "00:00:00:00:00:00" and len(mac) == 17:
+                            return mac
+    except Exception as e:
+        logger.debug("Failed to read MAC from ARP for %s: %s", ip, e)
+    return ""
+
+def probe_nvr_channels_onvif(ip: str, port: int, username: str, password: str) -> int:
+    """Query the ONVIF Media Service GetVideoSources to dynamically determine the NVR channel count."""
+    res_cap = send_soap_request(ip, port, "<tds:GetCapabilities/>", username, password)
+    media_url = f"http://{ip}:{port}/onvif/media_service"
+    if "<tt:Media>" in res_cap:
+        try:
+            media_url = res_cap.split("<tt:Media>")[1].split("<tt:XAddr>")[1].split("</tt:XAddr>")[0].strip()
+        except Exception:
+            pass
+            
+    body_content = "<trt:GetVideoSources xmlns:trt=\"http://www.onvif.org/ver10/media/wsdl\"/>"
+    auth_header = get_auth_header(username, password) if username else ""
+    payload = SOAP_BODY_TEMPLATE.format(auth_header=auth_header, body_content=body_content)
+    
+    req = urllib.request.Request(
+        media_url,
+        data=payload.encode("utf-8"),
+        headers={"Content-Type": "application/soap+xml; charset=utf-8"},
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=2.0) as response:
+            res = response.read().decode("utf-8", errors="ignore")
+            count = res.count("<trt:VideoSources>") or res.count("<trt:VideoSource>") or res.count("<tt:VideoSource>")
+            if count > 0:
+                return count
+    except Exception as e:
+        logger.debug("Failed to query GetVideoSources on NVR %s: %s", ip, e)
+    return 0
 
 def send_soap_request(ip: str, port: int, body_content: str, username: str = "", password: str = "") -> str:
     """Send SOAP XML request to a device ONVIF service endpoint."""
@@ -95,7 +144,8 @@ def send_soap_request(ip: str, port: int, body_content: str, username: str = "",
         method="POST"
     )
     try:
-        with urllib.request.urlopen(req, timeout=1.5) as response:
+        context = ssl._create_unverified_context()
+        with urllib.request.urlopen(req, timeout=1.5, context=context) as response:
             return response.read().decode("utf-8", errors="ignore")
     except Exception as e:
         return str(e)
@@ -104,7 +154,7 @@ def probe_onvif_details(ip: str, port: int, username: str = "", password: str = 
     """Query ONVIF endpoints to extract device capabilities, details, and MAC address."""
     # 1. Device Info
     res_info = send_soap_request(ip, port, "<tds:GetDeviceInformation/>", username, password)
-    if "HTTP Error 401" in res_info or "Unauthorized" in res_info:
+    if any(err in res_info for err in ["HTTP Error 401", "Unauthorized", "HTTP Error 400", "HTTP Error 403", "sender", "Sender"]):
         raise PermissionError("Unauthorized")
         
     if "GetDeviceInformationResponse" not in res_info:
@@ -134,10 +184,23 @@ def probe_onvif_details(ip: str, port: int, username: str = "", password: str = 
             mac_address = res_net.split("<tt:HwAddress>")[1].split("</tt:HwAddress>")[0].strip().lower()
     except Exception as e:
         logger.debug("Failed to parse ONVIF Network Interfaces XML: %s", e)
-
+        
+    if not mac_address or mac_address == "00:00:00:00:00:00":
+        mac_address = get_mac_from_arp(ip)
+ 
     # 3. Capabilities
     res_cap = send_soap_request(ip, port, "<tds:GetCapabilities/>", username, password)
-    has_ptz = "<tt:PTZ>" in res_cap or "/PTZ" in res_cap
+    has_ptz = False
+    if "<tt:PTZ>" in res_cap:
+        try:
+            ptz_section = res_cap.split("<tt:PTZ>")[1].split("</tt:PTZ>")[0]
+            if "<tt:XAddr>" in ptz_section:
+                has_ptz = True
+        except Exception:
+            has_ptz = True
+    elif "/PTZ" in res_cap:
+        has_ptz = True
+
     has_audio = False
     is_nvr = False
     
@@ -151,18 +214,26 @@ def probe_onvif_details(ip: str, port: int, username: str = "", password: str = 
                 audio_str = res_cap.split("<tt:AudioSources>")[1].split("</tt:AudioSources>")[0]
                 if int(audio_str) > 0:
                     has_audio = True
+            elif "<tt:AudioOutputs>" in res_cap:
+                audio_str = res_cap.split("<tt:AudioOutputs>")[1].split("</tt:AudioOutputs>")[0]
+                if int(audio_str) > 0:
+                    has_audio = True
     except Exception as e:
         logger.debug("Failed to parse ONVIF Capabilities XML: %s", e)
         
     model_upper = model.upper()
+    man_upper = manufacturer.upper()
     if "NVR" in model_upper or "XVR" in model_upper or "HCVR" in model_upper:
         is_nvr = True
+        
+    is_bwc = "BWC" in model_upper or "BWC" in man_upper or "BODY" in model_upper or "BODYWORN" in model_upper
         
     return {
         "manufacturer": manufacturer,
         "model": model,
         "mac": mac_address,
         "is_nvr": is_nvr,
+        "is_bwc": is_bwc,
         "ptz": has_ptz,
         "audio": has_audio,
         "username": username,
@@ -179,13 +250,24 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
         "-of", "default=noprint_wrappers=1:nokey=0",
         rtsp_url
     ]
+    proc = None
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=3.0)
+        try:
+            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=4.0)
+        except asyncio.TimeoutError:
+            if proc.returncode is None:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except Exception:
+                    pass
+            raise
+
         if proc.returncode == 0:
             out = stdout.decode().strip()
             info = {}
@@ -206,17 +288,26 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
             return True, codec, width, height, fps
     except Exception as e:
         logger.debug("ffprobe validation failed: %s", e)
+        if proc and proc.returncode is None:
+            try:
+                proc.kill()
+                await proc.wait()
+            except Exception:
+                pass
     return False, "h264", 1280, 720, 25
+
 
 async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", custom_pwd: str = "") -> Tuple[bool, Dict[str, Any]]:
     """Probe a discovered IP, return (is_camera, device_info)."""
     onvif_ports = [p for p in open_ports if p in [80, 8000, 8899]]
+    rtsp_port = 8554 if 8554 in open_ports else 554
     
     # Setup credentials list
     creds = []
     if custom_user:
         creds.append((custom_user, custom_pwd))
-    creds.extend(DEFAULT_CREDENTIALS)
+    else:
+        creds.append(("", ""))
     
     # Try ONVIF endpoints
     if onvif_ports:
@@ -228,16 +319,22 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
                 details = await asyncio.to_thread(probe_onvif_details, ip, port, user, pwd)
                 
                 # Active stream validation
-                rtsp_url = f"rtsp://{user}:{pwd}@{ip}:554/cam/realmonitor?channel=1&subtype=0" if "dahua" in details["manufacturer"].lower() else f"rtsp://{user}:{pwd}@{ip}:554/h264/ch1/main/av_stream"
+                rtsp_url = f"rtsp://{user}:{pwd}@{ip}:{rtsp_port}/cam/realmonitor?channel=1&subtype=0" if "dahua" in details["manufacturer"].lower() else f"rtsp://{user}:{pwd}@{ip}:{rtsp_port}/h264/ch1/main/av_stream"
                 playable, codec, w, h, fps = await validate_rtsp_stream(rtsp_url)
                 
+                device_type = "cctv"
+                if details["is_nvr"]:
+                    device_type = "nvr"
+                elif details.get("is_bwc"):
+                    device_type = "bwc"
+
                 return True, {
                     "ip": ip,
                     "mac": details["mac"],
-                    "status": "Online" if playable else "Invalid Stream",
+                    "status": "Online",
                     "manufacturer": details["manufacturer"],
                     "model": details["model"],
-                    "device_type": "nvr" if details["is_nvr"] else "cctv",
+                    "device_type": device_type,
                     "ptz": details["ptz"],
                     "audio": details["audio"],
                     "port": port,
@@ -247,7 +344,8 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
                     "password": pwd,
                     "resolution": f"{w}x{h}",
                     "fps": fps,
-                    "codec": codec
+                    "codec": codec,
+                    "playable": playable
                 }
             except PermissionError:
                 unauthorized = True
@@ -258,8 +356,8 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
             # We identified it's an ONVIF device but couldn't unlock it
             return True, {
                 "ip": ip,
-                "mac": "",
-                "status": "Access Denied",
+                "mac": get_mac_from_arp(ip),
+                "status": "Online",
                 "manufacturer": "Unknown (Credentials Required)",
                 "model": "Locked Device",
                 "device_type": "cctv",
@@ -267,33 +365,43 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
                 "audio": False,
                 "port": port,
                 "onvif_url": f"http://{ip}:{port}/onvif/device_service",
-                "rtsp_url": f"rtsp://admin:admin@{ip}:554/h264/ch1/main/av_stream"
+                "rtsp_url": f"rtsp://{custom_user}:{custom_pwd}@{ip}:{rtsp_port}/h264/ch1/main/av_stream",
+                "username": custom_user,
+                "password": custom_pwd,
+                "playable": False
             }
             
     # Non-ONVIF endpoints (Fallback to media-specific port check)
-    if 37777 in open_ports or 554 in open_ports:
+    if 37777 in open_ports or 554 in open_ports or 8554 in open_ports:
         is_dahua = 37777 in open_ports
-        rtsp_url = f"rtsp://admin:password1@{ip}:554/cam/realmonitor?channel=1&subtype=0" if is_dahua else f"rtsp://admin:admin@{ip}:554/h264/ch1/main/av_stream"
+        rtsp_url = f"rtsp://{custom_user}:{custom_pwd}@{ip}:{rtsp_port}/cam/realmonitor?channel=1&subtype=0" if is_dahua else f"rtsp://{custom_user}:{custom_pwd}@{ip}:{rtsp_port}/h264/ch1/main/av_stream"
         
         # Verify the RTSP stream is active and readable
         playable, codec, w, h, fps = await validate_rtsp_stream(rtsp_url)
-        if playable:
+        if playable or is_dahua:
+            manufacturer = "Dahua (Private SDK)" if is_dahua else "Generic RTSP"
+            model = "Dahua Device" if is_dahua else "Generic Streamer"
+            if not playable and is_dahua:
+                manufacturer = "Dahua (Credentials Required)"
+                model = "Locked NVR" if 80 in open_ports else "Locked Dahua Device"
+            
             return True, {
                 "ip": ip,
-                "mac": "",
+                "mac": get_mac_from_arp(ip),
                 "status": "Online",
-                "manufacturer": "Dahua (Private SDK)" if is_dahua else "Generic RTSP",
-                "model": "Dahua Device" if is_dahua else "Generic Streamer",
+                "manufacturer": manufacturer,
+                "model": model,
                 "device_type": "nvr" if is_dahua and 80 in open_ports else "cctv",
                 "ptz": False,
                 "audio": False,
-                "port": 37777 if is_dahua else 554,
+                "port": 37777 if is_dahua else rtsp_port,
                 "rtsp_url": rtsp_url,
-                "username": "admin",
-                "password": "password1" if is_dahua else "admin",
-                "resolution": f"{w}x{h}",
-                "fps": fps,
-                "codec": codec
+                "username": custom_user,
+                "password": custom_pwd,
+                "resolution": f"{w}x{h}" if playable else "1280x720",
+                "fps": fps if playable else 25,
+                "codec": codec if playable else "h264",
+                "playable": playable
             }
 
     # Reject/Discard if it does not match ONVIF, RTSP (554), or Dahua SDK (37777)
@@ -307,28 +415,43 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
         
     ip = dev["ip"]
     manufacturer = dev.get("manufacturer", "Generic")
-    username = dev.get("username", "admin")
-    password = dev.get("password", "password1")
+    username = dev.get("username") or ""
+    password = dev.get("password") or ""
     port = dev.get("port", 554)
     mac = dev.get("mac", "")
     
+    rtsp_port = 554
+    orig_rtsp = dev.get("rtsp_url")
+    if orig_rtsp and ":" in orig_rtsp.split("@")[-1]:
+        try:
+            rtsp_port = int(orig_rtsp.split("@")[-1].split("/")[0].split(":")[1])
+        except Exception:
+            pass
+            
     brand_lower = manufacturer.lower()
     is_dahua = "dahua" in brand_lower
     is_hik = "hikvision" in brand_lower
     
     active_channels = []
     
+    # Query exact number of channels dynamically
+    num_channels = 16
+    if username and password:
+        onvif_count = probe_nvr_channels_onvif(ip, port, username, password)
+        if onvif_count > 0:
+            num_channels = onvif_count
+            
     # If a specific channel is requested, only probe that one
-    ch_range = [channel] if channel is not None else list(range(1, 17))
+    ch_range = [channel] if channel is not None else list(range(1, num_channels + 1))
     
     sem = asyncio.Semaphore(8)
     
     async def probe_ch(ch_idx: int) -> Dict[str, Any] | None:
         async with sem:
             # Dahua URL
-            dahua_url = f"rtsp://{username}:{password}@{ip}:554/cam/realmonitor?channel={ch_idx}&subtype=0"
+            dahua_url = f"rtsp://{username}:{password}@{ip}:{rtsp_port}/cam/realmonitor?channel={ch_idx}&subtype=0"
             # Hikvision URL
-            hik_url = f"rtsp://{username}:{password}@{ip}:554/Streaming/Channels/{ch_idx}01"
+            hik_url = f"rtsp://{username}:{password}@{ip}:{rtsp_port}/Streaming/Channels/{ch_idx}01"
             
             urls = []
             if is_dahua:
@@ -358,7 +481,8 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
                             "resolution": f"{w}x{h}",
                             "fps": fps,
                             "codec": codec,
-                            "channel_index": ch_idx
+                            "channel_index": ch_idx,
+                            "playable": True
                         }
                 except Exception:
                     pass
@@ -373,7 +497,7 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
         # Fallback: if no active channels are found, return the NVR device itself
         if channel is not None:
             # If specifically testing a channel that failed, return it as offline
-            url = f"rtsp://{username}:{password}@{ip}:554/cam/realmonitor?channel={channel}&subtype=0" if is_dahua else f"rtsp://{username}:{password}@{ip}:554/Streaming/Channels/{channel}01"
+            url = f"rtsp://{username}:{password}@{ip}:{rtsp_port}/cam/realmonitor?channel={channel}&subtype=0" if is_dahua else f"rtsp://{username}:{password}@{ip}:{rtsp_port}/Streaming/Channels/{channel}01"
             return [{
                 "ip": ip,
                 "mac": mac,
@@ -387,7 +511,8 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
                 "rtsp_url": url,
                 "username": username,
                 "password": password,
-                "channel_index": channel
+                "channel_index": channel,
+                "playable": False
             }]
         return [dev]
         
@@ -429,10 +554,6 @@ async def scan_network(subnet_prefix: str, custom_user: str = "", custom_pwd: st
     devices = [dev for is_cam, dev in probe_results if is_cam]
     
     # 3. Expand NVRs into separate channels
-    final_devices = []
-    expand_tasks = [expand_nvr_device(dev, channel) for dev in devices]
-    expand_results = await asyncio.gather(*expand_tasks)
-    for res_list in expand_results:
-        final_devices.extend(res_list)
-        
-    return final_devices
+    # During a full subnet scan, we DO NOT expand NVRs synchronously.
+    # We return the root NVR devices as-is, and the frontend will retrieve their channels in the background.
+    return devices

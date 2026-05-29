@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ActivityIndicator from "@/components/indicators/activity-indicator";
-import { Cctv, Video, Trash2 } from "lucide-react";
+import { Cctv, Video, Trash2, Camera } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface Asset {
@@ -19,6 +19,7 @@ export interface Asset {
   category: string;
   ip_address: string;
   status: string;
+  channel_index?: number;
 }
 
 interface AssetTableProps {
@@ -38,7 +39,8 @@ export default function AssetTable({
         <TableHeader className="bg-muted/50">
           <TableRow>
             <TableHead>Asset Name</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Device Category</TableHead>
+            <TableHead>Device Type</TableHead>
             <TableHead>IP Address</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -48,7 +50,7 @@ export default function AssetTable({
           {assets.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="h-32 text-center text-muted-foreground"
               >
                 No devices found matching your criteria.
@@ -62,6 +64,8 @@ export default function AssetTable({
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                       {asset.category === "NVR" ? (
                         <Video className="h-4 w-4" />
+                      ) : asset.category === "BWC" ? (
+                        <Camera className="h-4 w-4" />
                       ) : (
                         <Cctv className="h-4 w-4" />
                       )}
@@ -69,19 +73,20 @@ export default function AssetTable({
                     {asset.name}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-background">
-                    {asset.category}
-                  </Badge>
+                <TableCell className="text-xs text-muted-foreground font-semibold">
+                  {asset.category}
                 </TableCell>
-                <TableCell className="font-mono text-sm">
+                <TableCell className="text-xs text-foreground font-semibold">
+                  {asset.device_type}
+                </TableCell>
+                <TableCell className="font-mono text-sm text-muted-foreground">
                   {asset.ip_address}
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
                     className={
-                      asset.status === "Active" || asset.status === "Online"
+                      asset.status === "Online"
                         ? "rounded-full border-success/30 bg-success/20 text-success"
                         : "rounded-full border-danger/30 bg-danger/20 text-danger"
                     }
