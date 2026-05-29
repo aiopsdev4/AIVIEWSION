@@ -12,6 +12,7 @@ import httpx
 import requests
 from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from filelock import FileLock, Timeout
 from onvif import ONVIFCamera, ONVIFError
 from ruamel.yaml import YAML
@@ -1154,4 +1155,146 @@ async def delete_camera(
             "cleanup": counts,
         },
         status_code=200,
+    )
+
+
+class CameraAddPayload(BaseModel):
+    name: str
+    rtsp_url: str
+
+
+@router.post(
+    "/cameras",
+    dependencies=[Depends(require_role(["admin"]))],
+)
+async def add_camera(
+    request: Request,
+    payload: CameraAddPayload,
+):
+    camera_name = re.sub(r"[^a-zA-Z0-9_]", "_", payload.name).lower()
+
+    frigate_config: FrigateConfig = request.app.frigate_config
+
+    if camera_name in frigate_config.cameras:
+        return JSONResponse(
+            content={
+                "success": False,
+                "message": f"Camera '{camera_name}' already exists",
+            },
+            status_code=400,
+        )
+
+    config_file = find_config_file()
+    lock = FileLock(f"{config_file}.lock", timeout=5)
+
+    try:
+        with lock:
+            with open(config_file, "r") as f:
+                old_raw_config = f.read()
+
+            try:
+                yaml = YAML()
+                yaml.indent(mapping=2, sequence=4, offset=2)
+
+                with open(config_file, "r") as f:
+                    data = yaml.load(f)
+
+                if "cameras" not in data or data["cameras"] is None:
+                    data["cameras"] = {}
+
+                data["cameras"][camera_name] = {
+                    "ffmpeg": {
+                        "inputs": [
+                            {
+                                "path": payload.rtsp_url,
+                                "roles": ["record", "detect"],
+                            }
+                        ]
+                    },
+                    "detect": {
+                        "enabled": True,
+                        "width": 1280,
+                        "height": 720,
+                        "fps": 2,
+                    },
+                }
+
+                with open(config_file, "w") as f:
+                    yaml.dump(data, f)
+
+                with open(config_file, "r") as f:
+                    new_raw_config = f.read()
+
+                try:
+                    config = FrigateConfig.parse(new_raw_config)
+                except Exception:
+                    with open(config_file, "w") as f:
+                        f.write(old_raw_config)
+                    logger.exception(
+                        "Config error after adding camera %s",
+                        camera_name,
+                    )
+                    return JSONResponse(
+                        content={
+                            "success": False,
+                            "message": "Error parsing config after camera addition",
+                        },
+                        status_code=400,
+                    )
+            except Exception as e:
+                logger.error(
+                    "Error updating config to add camera %s: %s", camera_name, e
+                )
+                return JSONResponse(
+                    content={
+                        "success": False,
+                        "message": "Error updating config",
+                    },
+                    status_code=500,
+                )
+
+            # Update runtime config
+            request.app.frigate_config = config
+            request.app.genai_manager.update_config(config)
+
+            # Publish addition to start ffmpeg processes and set up runtime state
+            new_camera_config = config.cameras[camera_name]
+            request.app.config_publisher.publish_update(
+                CameraConfigUpdateTopic(CameraConfigUpdateEnum.add, camera_name),
+                new_camera_config,
+            )
+
+    except Timeout:
+        return JSONResponse(
+            content={
+                "success": False,
+                "message": "Another process is currently updating the config",
+            },
+            status_code=409,
+        )
+
+    # Best-effort go2rtc stream addition
+    try:
+        requests.put(
+            "http://127.0.0.1:1984/api/streams",
+            params={"name": camera_name, "src": payload.rtsp_url},
+            timeout=5,
+        )
+    except Exception:
+        logger.debug("Failed to add go2rtc stream for %s", camera_name)
+
+    return JSONResponse(
+        content={
+            "success": True,
+            "message": f"Camera {camera_name} has been added",
+            "camera": {
+                "id": camera_name,
+                "name": payload.name,
+                "device_type": "cctv",
+                "category": "CAMERA",
+                "ip_address": payload.rtsp_url.split("@")[-1].split(":")[0].split("/")[0] if "@" in payload.rtsp_url else "Unknown IP",
+                "status": "Active",
+            },
+        },
+        status_code=201,
     )

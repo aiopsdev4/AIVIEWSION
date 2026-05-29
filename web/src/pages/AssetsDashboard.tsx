@@ -14,12 +14,10 @@ import { MdSearch, MdRefresh, MdAdd, MdSettingsEthernet } from "react-icons/md";
 import { LuRotateCw } from "react-icons/lu";
 import { Cctv, ShieldAlert, WifiOff } from "lucide-react";
 import useSWR, { useSWRConfig } from "swr";
-import axios from "axios";
 
 import { FrigateConfig } from "@/types/frigateConfig";
 import { FrigateStats } from "@/types/stats";
-import { addCameraToYaml } from "@/helpers/configHelpers";
-import { saveAndRestartConfig } from "@/services/configService";
+import { registerCamera, deleteCamera } from "@/services/configService";
 
 import AssetTable, { Asset } from "@/components/assets/AssetTable";
 import CameraWizardDialog from "@/components/settings/CameraWizardDialog";
@@ -284,32 +282,6 @@ export default function AssetsDashboard() {
     });
   }, [search, filter, assets]);
 
-  const pollServer = async (expectedCamIds?: string[]) => {
-    try {
-      const res = await fetch("/api/config?t=" + Date.now());
-      if (res.ok) {
-        const configData = await res.json();
-        if (expectedCamIds && expectedCamIds.length > 0) {
-          const cameras = configData?.cameras || {};
-          const allExist = expectedCamIds.every((id) => id in cameras);
-          if (!allExist) {
-            setTimeout(() => pollServer(expectedCamIds), 2000);
-            return;
-          }
-        }
-        await Promise.all([
-          mutate("config"),
-          mutate("config/raw"),
-          mutate("stats"),
-        ]);
-      } else {
-        setTimeout(() => pollServer(expectedCamIds), 2000);
-      }
-    } catch (e) {
-      setTimeout(() => pollServer(expectedCamIds), 2000);
-    }
-  };
-
   const handleDelete = async (camId: string) => {
     if (!rawConfig) {
       toast.error("System configuration not loaded yet.");
@@ -324,37 +296,28 @@ export default function AssetsDashboard() {
     setCameraToDelete(null);
     setIsDeleting(camId);
     try {
-      await axios.delete(`cameras/${camId}`);
+      await deleteCamera(camId);
       toast.success("Device deleted successfully! Database and files cleaned.");
       await Promise.all([
         mutate("config"),
         mutate("config/raw"),
         mutate("stats"),
       ]);
-      setIsDeleting(null);
     } catch (e) {
-      const err = e as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
+      const err = e as { response?: { data?: { message?: string } }; message?: string };
       const errMsg =
         err.response?.data?.message ||
         err.message ||
         "Failed to delete device configuration.";
       toast.error(errMsg);
+    } finally {
       setIsDeleting(null);
     }
   };
-
   const handleSaveMultiple = async (newAssets: NewAsset[]) => {
-    if (!rawConfig) {
-      toast.error("System configuration not loaded yet.");
-      return;
-    }
-
-    let updatedYaml = rawConfig;
     const registeredIds = Object.keys(config?.cameras || {});
     const newlyAddedIds: string[] = [];
+    const failedIds: { name: string; error: string }[] = [];
 
     for (const asset of newAssets) {
       const camId = asset.name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
@@ -362,26 +325,31 @@ export default function AssetsDashboard() {
         toast.warning(`Device ID '${camId}' is already registered! Skipping.`);
         continue;
       }
-      updatedYaml = addCameraToYaml(updatedYaml, camId, asset.rtsp_url);
-      newlyAddedIds.push(camId);
+      try {
+        await registerCamera(asset.name, asset.rtsp_url);
+        newlyAddedIds.push(camId);
+      } catch (e) {
+        const err = e as { response?: { data?: { message?: string } }; message?: string };
+        const errMsg = err.response?.data?.message || err.message || "Failed to register";
+        failedIds.push({ name: asset.name, error: errMsg });
+      }
     }
 
-    try {
-      await saveAndRestartConfig(updatedYaml);
+    if (newlyAddedIds.length > 0) {
       toast.success(
-        "Assets saved! The video engine is now rebooting, please wait...",
+        `Successfully registered ${newlyAddedIds.length} device(s)!`
       );
-      setTimeout(() => pollServer(newlyAddedIds), 5000);
-    } catch (e) {
-      const err = e as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      const errMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to commit settings to main system configuration.";
-      toast.error(errMsg);
+      await Promise.all([
+        mutate("config"),
+        mutate("config/raw"),
+        mutate("stats"),
+      ]);
+    }
+
+    if (failedIds.length > 0) {
+      toast.error(
+        `Failed to register: ${failedIds.map((f) => `${f.name} (${f.error})`).join(", ")}`
+      );
     }
   };
 

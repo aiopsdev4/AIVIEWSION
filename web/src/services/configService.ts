@@ -11,3 +11,28 @@ export const saveAndRestartConfig = async (
     headers: { "Content-Type": "text/plain" },
   });
 };
+
+/**
+ * Saves a new camera asset to the configuration backend.
+ * @param name The descriptive name of the camera.
+ * @param rtspUrl The RTSP streaming URL.
+ */
+export const registerCamera = async (
+  name: string,
+  rtspUrl: string,
+): Promise<unknown> => {
+  const response = await axios.post("cameras", {
+    name,
+    rtsp_url: rtspUrl,
+  });
+  return response.data;
+};
+
+/**
+ * Deletes a camera asset from the configuration backend.
+ * @param cameraName The unique identifier name of the camera.
+ */
+export const deleteCamera = async (cameraName: string): Promise<unknown> => {
+  const response = await axios.delete(`cameras/${cameraName}`);
+  return response.data;
+};
