@@ -459,7 +459,7 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
     
     sem = asyncio.Semaphore(8)
     
-    async def probe_ch(ch_idx: int) -> Dict[str, Any] | None:
+    async def probe_ch(ch_idx: int) -> Dict[str, Any]:
         async with sem:
             # Dahua URL
             dahua_url = f"rtsp://{username}:{password}@{ip}:{rtsp_port}/cam/realmonitor?channel={ch_idx}&subtype=0"
@@ -499,7 +499,27 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
                         }
                 except Exception:
                     pass
-            return None
+
+            default_url = urls[0] if urls else dahua_url
+            return {
+                "ip": ip,
+                "mac": mac,
+                "status": "Offline",
+                "manufacturer": manufacturer,
+                "model": f"{dev.get('model', 'NVR')} (Channel {ch_idx})",
+                "device_type": "cctv",
+                "ptz": dev.get("ptz", False),
+                "audio": dev.get("audio", False),
+                "port": port,
+                "rtsp_url": default_url,
+                "username": username,
+                "password": password,
+                "resolution": "",
+                "fps": 0,
+                "codec": "",
+                "channel_index": ch_idx,
+                "playable": False
+            }
 
     tasks = [probe_ch(ch) for ch in ch_range]
     results = await asyncio.gather(*tasks)
@@ -507,26 +527,6 @@ async def expand_nvr_device(dev: Dict[str, Any], channel: int = None) -> List[Di
     expanded = [r for r in results if r is not None]
     
     if not expanded:
-        # Fallback: if no active channels are found, return the NVR device itself
-        if channel is not None:
-            # If specifically testing a channel that failed, return it as offline
-            url = f"rtsp://{username}:{password}@{ip}:{rtsp_port}/cam/realmonitor?channel={channel}&subtype=0" if is_dahua else f"rtsp://{username}:{password}@{ip}:{rtsp_port}/Streaming/Channels/{channel}01"
-            return [{
-                "ip": ip,
-                "mac": mac,
-                "status": "Offline",
-                "manufacturer": manufacturer,
-                "model": f"{dev.get('model', 'NVR')} (Channel {channel})",
-                "device_type": "cctv",
-                "ptz": False,
-                "audio": False,
-                "port": port,
-                "rtsp_url": url,
-                "username": username,
-                "password": password,
-                "channel_index": channel,
-                "playable": False
-            }]
         return [dev]
         
     return expanded

@@ -80,7 +80,9 @@ export default function AssetsDashboard() {
 
   const { data: config } = useSWR<FrigateConfig>("config");
   const { data: rawConfig } = useSWR<string>("config/raw");
-  const { data: stats } = useSWR<FrigateStats>("stats", { refreshInterval: 5000 });
+  const { data: stats } = useSWR<FrigateStats>("stats", {
+    refreshInterval: 5000,
+  });
 
   // Discovery states
   const [subnet, setSubnet] = useState(() => {
@@ -120,48 +122,56 @@ export default function AssetsDashboard() {
     localStorage.setItem("aiviewsion_devices", JSON.stringify(devices));
   }, [devices]);
 
-  const expandNvrChannelsInBackground = useCallback(async (ip: string, user: string, pass: string) => {
-    setTestingRows((prev) => {
-      if (prev[ip]) return prev;
+  const expandNvrChannelsInBackground = useCallback(
+    async (ip: string, user: string, pass: string) => {
+      setTestingRows((prev) => {
+        if (prev[ip]) return prev;
 
-      (async () => {
-        try {
-          const url = `/api/network/discover/scan?subnet_prefix=${ip}&username=${user || ""}&password=${pass || ""}`;
-          const res = await fetch(url);
-          if (res.ok) {
-            const data = (await res.json()) as DiscoveredDevice[];
-            if (data && data.length > 0) {
-              if (data.length > 1 || (data.length === 1 && data[0].channel_index !== undefined)) {
-                setDevices((currentDevices) => {
-                  const index = currentDevices.findIndex((d) => d.ip === ip);
-                  if (index === -1) return currentDevices;
-                  const updated = [...currentDevices];
-                  const expandedRows = data.map((tested: DiscoveredDevice) => {
-                    const suffix = `_ch${tested.channel_index}`;
-                    return {
-                      ...tested,
-                      selected: tested.playable === true,
-                      customName: `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
-                      username: user,
-                      password: pass,
-                    };
+        (async () => {
+          try {
+            const url = `/api/network/discover/scan?subnet_prefix=${ip}&username=${user || ""}&password=${pass || ""}`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const data = (await res.json()) as DiscoveredDevice[];
+              if (data && data.length > 0) {
+                if (
+                  data.length > 1 ||
+                  (data.length === 1 && data[0].channel_index !== undefined)
+                ) {
+                  setDevices((currentDevices) => {
+                    const index = currentDevices.findIndex((d) => d.ip === ip);
+                    if (index === -1) return currentDevices;
+                    const updated = [...currentDevices];
+                    const expandedRows = data.map(
+                      (tested: DiscoveredDevice) => {
+                        const suffix = `_ch${tested.channel_index}`;
+                        return {
+                          ...tested,
+                          selected: tested.playable === true,
+                          customName: `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
+                          username: user,
+                          password: pass,
+                        };
+                      },
+                    );
+                    updated.splice(index, 1, ...expandedRows);
+                    return updated;
                   });
-                  updated.splice(index, 1, ...expandedRows);
-                  return updated;
-                });
+                }
               }
             }
+          } catch (e) {
+            // Silent catch to prevent console warning
+          } finally {
+            setTestingRows((latest) => ({ ...latest, [ip]: false }));
           }
-        } catch (e) {
-          // Silent catch to prevent console warning
-        } finally {
-          setTestingRows((latest) => ({ ...latest, [ip]: false }));
-        }
-      })();
+        })();
 
-      return { ...prev, [ip]: true };
-    });
-  }, []);
+        return { ...prev, [ip]: true };
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("aiviewsion_devices");
@@ -170,7 +180,11 @@ export default function AssetsDashboard() {
         const parsed = JSON.parse(saved) as DiscoveredDevice[];
         parsed.forEach((dev) => {
           if (dev.device_type === "nvr" && (dev.username || bulkUsername)) {
-            expandNvrChannelsInBackground(dev.ip, dev.username || bulkUsername, dev.password || bulkPassword);
+            expandNvrChannelsInBackground(
+              dev.ip,
+              dev.username || bulkUsername,
+              dev.password || bulkPassword,
+            );
           }
         });
       } catch (e) {
@@ -204,13 +218,21 @@ export default function AssetsDashboard() {
       const chIdx = extractChannelIndex(path);
 
       // Try to find matching scanned device details
-      const matched = devices.find((d) => d.ip === ip && (chIdx === undefined || d.channel_index === chIdx));
-      
+      const matched = devices.find(
+        (d) =>
+          d.ip === ip && (chIdx === undefined || d.channel_index === chIdx),
+      );
+
       let category = "IPC";
       if (matched) {
-        category = matched.device_type === "nvr" ? "NVR" : matched.device_type === "bwc" ? "BWC" : "IPC";
+        category =
+          matched.device_type === "nvr"
+            ? "NVR"
+            : matched.device_type === "bwc"
+              ? "BWC"
+              : "IPC";
       } else if (
-        camName.toLowerCase().includes("nvr") || 
+        camName.toLowerCase().includes("nvr") ||
         path.includes("channel=")
       ) {
         category = "NVR";
@@ -255,15 +277,15 @@ export default function AssetsDashboard() {
     return devices.filter((d) => {
       const isRegistered = assets.some((a) => {
         if (a.ip_address !== d.ip) return false;
-        
+
         if (d.channel_index !== undefined) {
           return a.channel_index === d.channel_index;
         }
-        
+
         if (a.channel_index !== undefined) {
           return false;
         }
-        
+
         return true;
       });
       return !isRegistered;
@@ -304,7 +326,10 @@ export default function AssetsDashboard() {
         mutate("stats"),
       ]);
     } catch (e) {
-      const err = e as { response?: { data?: { message?: string } }; message?: string };
+      const err = e as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const errMsg =
         err.response?.data?.message ||
         err.message ||
@@ -329,15 +354,19 @@ export default function AssetsDashboard() {
         await registerCamera(asset.name, asset.rtsp_url);
         newlyAddedIds.push(camId);
       } catch (e) {
-        const err = e as { response?: { data?: { message?: string } }; message?: string };
-        const errMsg = err.response?.data?.message || err.message || "Failed to register";
+        const err = e as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        const errMsg =
+          err.response?.data?.message || err.message || "Failed to register";
         failedIds.push({ name: asset.name, error: errMsg });
       }
     }
 
     if (newlyAddedIds.length > 0) {
       toast.success(
-        `Successfully registered ${newlyAddedIds.length} device(s)!`
+        `Successfully registered ${newlyAddedIds.length} device(s)!`,
       );
       await Promise.all([
         mutate("config"),
@@ -348,7 +377,7 @@ export default function AssetsDashboard() {
 
     if (failedIds.length > 0) {
       toast.error(
-        `Failed to register: ${failedIds.map((f) => `${f.name} (${f.error})`).join(", ")}`
+        `Failed to register: ${failedIds.map((f) => `${f.name} (${f.error})`).join(", ")}`,
       );
     }
   };
@@ -416,7 +445,11 @@ export default function AssetsDashboard() {
       // Trigger connected channel expansion in the background for any NVRs
       mapped.forEach((dev: DiscoveredDevice) => {
         if (dev.device_type === "nvr") {
-          expandNvrChannelsInBackground(dev.ip, dev.username || "", dev.password || "");
+          expandNvrChannelsInBackground(
+            dev.ip,
+            dev.username || "",
+            dev.password || "",
+          );
         }
       });
     } catch (e) {
@@ -440,7 +473,10 @@ export default function AssetsDashboard() {
       }
       const data = await res.json();
       if (data && data.length > 0) {
-        if (data.length > 1 || (data.length === 1 && data[0].channel_index !== undefined)) {
+        if (
+          data.length > 1 ||
+          (data.length === 1 && data[0].channel_index !== undefined)
+        ) {
           // Expanded NVR: replace the single row with all its expanded channels
           setDevices((prev) => {
             const index = prev.findIndex((d) => d.ip === ip);
@@ -459,7 +495,9 @@ export default function AssetsDashboard() {
             updated.splice(index, 1, ...expandedRows);
             return updated;
           });
-          toast.success(`Successfully verified connection and unpacked NVR channels for ${dev.ip}!`);
+          toast.success(
+            `Successfully verified connection and unpacked NVR channels for ${dev.ip}!`,
+          );
         } else {
           // Single camera update
           const tested = data[0];
@@ -536,14 +574,10 @@ export default function AssetsDashboard() {
       const failedDevices: string[] = [];
 
       for (const dev of selectedDevices) {
-        if (dev.playable) {
-          verifiedDevices.push(dev);
-        } else {
-          // Auto-test connection for this device
+        // If it's a root NVR device, we must always query the scan API to discover/expand all its channels
+        if (dev.device_type === "nvr" && dev.channel_index === undefined) {
           try {
-            const channelParam =
-              dev.channel_index !== undefined ? `&channel=${dev.channel_index}` : "";
-            const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${dev.username || ""}&password=${dev.password || ""}${channelParam}`;
+            const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${encodeURIComponent(dev.username || "")}&password=${encodeURIComponent(dev.password || "")}`;
             const res = await fetch(url);
             if (!res.ok) {
               failedDevices.push(dev.ip);
@@ -551,20 +585,81 @@ export default function AssetsDashboard() {
             }
             const data = await res.json();
             if (data && data.length > 0) {
-              const tested = data[0];
-              if (tested.playable) {
-                const updatedDev = {
+              for (const tested of data) {
+                const suffix = `_ch${tested.channel_index}`;
+                verifiedDevices.push({
                   ...dev,
                   ...tested,
-                  playable: true,
-                };
-                verifiedDevices.push(updatedDev);
-                // Sync row in the UI devices list
-                setDevices((prev) =>
-                  prev.map((d) => (d.ip === dev.ip ? updatedDev : d)),
+                  playable: tested.playable,
+                  selected: true,
+                  customName: `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
+                  username: dev.username,
+                  password: dev.password,
+                });
+              }
+            } else {
+              failedDevices.push(dev.ip);
+            }
+          } catch (e) {
+            failedDevices.push(dev.ip);
+          }
+        } else if (dev.playable || dev.channel_index !== undefined) {
+          verifiedDevices.push(dev);
+        } else {
+          // Auto-test connection for this device
+          try {
+            const channelParam =
+              dev.channel_index !== undefined
+                ? `&channel=${dev.channel_index}`
+                : "";
+            const url = `/api/network/discover/scan?subnet_prefix=${dev.ip}&username=${encodeURIComponent(dev.username || "")}&password=${encodeURIComponent(dev.password || "")}${channelParam}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+              failedDevices.push(dev.ip);
+              continue;
+            }
+            const data = await res.json();
+            if (data && data.length > 0) {
+              if (
+                data.length > 1 ||
+                (data.length === 1 && data[0].channel_index !== undefined)
+              ) {
+                // If it returns multiple elements (NVR channels) despite dev not being marked as NVR in dev.device_type, handle it just in case
+                const playableChannels = data.filter(
+                  (tested: DiscoveredDevice) => tested.playable,
                 );
+                if (playableChannels.length > 0) {
+                  for (const tested of playableChannels) {
+                    const suffix = `_ch${tested.channel_index}`;
+                    verifiedDevices.push({
+                      ...dev,
+                      ...tested,
+                      playable: true,
+                      selected: true,
+                      customName: `${tested.manufacturer.replace(/[^a-zA-Z0-9]/g, "")}_${tested.ip.split(".").pop()}${suffix}`,
+                      username: dev.username,
+                      password: dev.password,
+                    });
+                  }
+                } else {
+                  failedDevices.push(dev.ip);
+                }
               } else {
-                failedDevices.push(dev.ip);
+                const tested = data[0];
+                if (tested.playable) {
+                  const updatedDev = {
+                    ...dev,
+                    ...tested,
+                    playable: true,
+                  };
+                  verifiedDevices.push(updatedDev);
+                  // Sync row in the UI devices list
+                  setDevices((prev) =>
+                    prev.map((d) => (d.ip === dev.ip ? updatedDev : d)),
+                  );
+                } else {
+                  failedDevices.push(dev.ip);
+                }
               }
             } else {
               failedDevices.push(dev.ip);
@@ -587,12 +682,20 @@ export default function AssetsDashboard() {
       for (const dev of verifiedDevices) {
         const name = dev.customName || `cam_${dev.ip.replace(/\./g, "_")}`;
 
-        const updatedRtsp = dev.rtsp_url
-          ? dev.rtsp_url.replace(
-              /rtsp:\/\/[^@]+@/,
+        let updatedRtsp = dev.rtsp_url;
+        if (updatedRtsp) {
+          const lastAtIdx = updatedRtsp.lastIndexOf("@");
+          if (lastAtIdx !== -1) {
+            updatedRtsp = `rtsp://${dev.username}:${dev.password}${updatedRtsp.substring(lastAtIdx)}`;
+          } else {
+            updatedRtsp = updatedRtsp.replace(
+              "rtsp://",
               `rtsp://${dev.username}:${dev.password}@`,
-            )
-          : `rtsp://${dev.username}:${dev.password}@${dev.ip}:554/h264/ch1/main/av_stream`;
+            );
+          }
+        } else {
+          updatedRtsp = `rtsp://${dev.username}:${dev.password}@${dev.ip}:554/h264/ch1/main/av_stream`;
+        }
 
         assetsToSave.push({
           name,
@@ -736,8 +839,11 @@ export default function AssetsDashboard() {
                         type="checkbox"
                         checked={
                           discoveredDevices.length > 0 &&
-                          discoveredDevices.filter((d) => d.playable).length > 0 &&
-                          discoveredDevices.filter((d) => d.playable).every((d) => d.selected)
+                          discoveredDevices.filter((d) => d.playable).length >
+                            0 &&
+                          discoveredDevices
+                            .filter((d) => d.playable)
+                            .every((d) => d.selected)
                         }
                         onChange={(e) => {
                           const checked = e.target.checked;
@@ -792,7 +898,7 @@ export default function AssetsDashboard() {
                         <input
                           type="checkbox"
                           checked={!!dev.selected}
-                          disabled={dev.status !== "Online"}
+                          disabled={dev.status !== "Online" && dev.channel_index === undefined}
                           onChange={(e) => {
                             const checked = e.target.checked;
                             setDevices((prev) =>
@@ -812,10 +918,14 @@ export default function AssetsDashboard() {
                       <td className="p-3.5 font-mono text-sm text-muted-foreground">
                         {dev.port}
                       </td>
-                      <td className="p-3.5 text-xs text-muted-foreground font-semibold">
-                        {dev.device_type === "nvr" ? "NVR" : dev.device_type === "bwc" ? "BWC" : "IPC"}
+                      <td className="p-3.5 text-xs font-semibold text-muted-foreground">
+                        {dev.device_type === "nvr"
+                          ? "NVR"
+                          : dev.device_type === "bwc"
+                            ? "BWC"
+                            : "IPC"}
                       </td>
-                      <td className="p-3.5 text-xs text-foreground font-semibold">
+                      <td className="p-3.5 text-xs font-semibold text-foreground">
                         {dev.model}
                       </td>
                       <td className="p-3.5">
@@ -828,7 +938,11 @@ export default function AssetsDashboard() {
                                 : "border-red-950 bg-red-950 text-red-400"
                           }`}
                         >
-                          {dev.playable ? "Online" : dev.status === "Online" ? "Locked" : "Offline"}
+                          {dev.playable
+                            ? "Online"
+                            : dev.status === "Online"
+                              ? "Locked"
+                              : "Offline"}
                         </span>
                       </td>
                       <td className="p-3.5">
@@ -995,8 +1109,8 @@ export default function AssetsDashboard() {
         open={!!testFailureDetail}
         onOpenChange={(open) => !open && setTestFailureDetail(null)}
       >
-        <AlertDialogContent className="border-red-500/40 bg-background max-w-md rounded-2xl p-6 shadow-2xl backdrop-blur-md">
-          <AlertDialogHeader className="flex flex-col items-center text-center space-y-4">
+        <AlertDialogContent className="max-w-md rounded-2xl border-red-500/40 bg-background p-6 shadow-2xl backdrop-blur-md">
+          <AlertDialogHeader className="flex flex-col items-center space-y-4 text-center">
             <div className="rounded-full bg-red-500/10 p-3 text-red-500">
               {testFailureDetail?.type === "unauthorized" ? (
                 <ShieldAlert className="h-10 w-10 animate-bounce" />
@@ -1009,31 +1123,37 @@ export default function AssetsDashboard() {
                 ? "Authentication Failed"
                 : "Connection Error"}
             </AlertDialogTitle>
-            <div className="w-full text-left bg-secondary/20 rounded-xl p-4 border border-border/50 space-y-2 mt-2">
-              <div className="flex justify-between text-xs text-muted-foreground border-b border-border/40 pb-1.5">
+            <div className="mt-2 w-full space-y-2 rounded-xl border border-border/50 bg-secondary/20 p-4 text-left">
+              <div className="flex justify-between border-b border-border/40 pb-1.5 text-xs text-muted-foreground">
                 <span>Target Host:</span>
-                <span className="font-mono font-semibold text-foreground">{testFailureDetail?.ip}</span>
+                <span className="font-mono font-semibold text-foreground">
+                  {testFailureDetail?.ip}
+                </span>
               </div>
               {testFailureDetail?.manufacturer && (
-                <div className="flex justify-between text-xs text-muted-foreground border-b border-border/40 pb-1.5">
+                <div className="flex justify-between border-b border-border/40 pb-1.5 text-xs text-muted-foreground">
                   <span>Device Manufacturer:</span>
-                  <span className="font-semibold text-foreground">{testFailureDetail.manufacturer}</span>
+                  <span className="font-semibold text-foreground">
+                    {testFailureDetail.manufacturer}
+                  </span>
                 </div>
               )}
               {testFailureDetail?.model && (
-                <div className="flex justify-between text-xs text-muted-foreground border-b border-border/40 pb-1.5">
+                <div className="flex justify-between border-b border-border/40 pb-1.5 text-xs text-muted-foreground">
                   <span>Device Model:</span>
-                  <span className="font-semibold text-foreground">{testFailureDetail.model}</span>
+                  <span className="font-semibold text-foreground">
+                    {testFailureDetail.model}
+                  </span>
                 </div>
               )}
-              <div className="pt-2 text-sm text-foreground leading-relaxed whitespace-pre-line">
+              <div className="whitespace-pre-line pt-2 text-sm leading-relaxed text-foreground">
                 {testFailureDetail?.message}
               </div>
             </div>
           </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center mt-6">
+          <AlertDialogFooter className="mt-6 sm:justify-center">
             <AlertDialogAction
-              className="w-full sm:w-auto px-8 bg-red-600 hover:bg-red-500 text-white rounded-xl shadow-lg shadow-red-600/20 transition-all font-semibold"
+              className="w-full rounded-xl bg-red-600 px-8 font-semibold text-white shadow-lg shadow-red-600/20 transition-all hover:bg-red-500 sm:w-auto"
               onClick={() => setTestFailureDetail(null)}
             >
               Acknowledge
