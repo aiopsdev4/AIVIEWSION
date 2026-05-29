@@ -11,11 +11,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { MdSearch, MdDownload, MdRefresh } from "react-icons/md";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 import { FrigateConfig } from "@/types/frigateConfig";
-import { removeCameraFromYaml, addCameraToYaml } from "@/helpers/configHelpers";
-import { saveAndRestartConfig } from "@/services/configService";
+import { registerCamera, deleteCamera } from "@/services/configService";
 
 import AssetTable, { Asset } from "@/components/assets/AssetTable";
 import AddDeviceDialog, { NewAsset } from "@/components/assets/AddDeviceDialog";
@@ -62,25 +61,7 @@ export default function AssetsDashboard() {
     });
   }, [search, filter, assets]);
 
-  const pollServer = async () => {
-    try {
-      const res = await fetch(window.location.pathname + "?t=" + Date.now());
-      if (res.ok) {
-        window.location.reload();
-      } else {
-        setTimeout(pollServer, 2000);
-      }
-    } catch (e) {
-      setTimeout(pollServer, 2000);
-    }
-  };
-
   const handleDelete = async (camId: string) => {
-    if (!rawConfig) {
-      toast.error("System configuration not loaded yet.");
-      return;
-    }
-
     if (
       !window.confirm(
         `Are you sure you want to permanently delete the device '${camId}'?`,
@@ -90,44 +71,30 @@ export default function AssetsDashboard() {
 
     setIsDeleting(camId);
     try {
-      const updatedYaml = removeCameraFromYaml(rawConfig, camId);
-      await saveAndRestartConfig(updatedYaml);
-      toast.success("Device deleted! The video engine is rebooting...");
-      setTimeout(pollServer, 5000);
+      await deleteCamera(camId);
+      toast.success("Device deleted successfully!");
+      await mutate("config");
+      await mutate("config/raw");
     } catch (e) {
       toast.error("Failed to delete device configuration.");
+    } finally {
       setIsDeleting(null);
     }
   };
 
   const handleSave = async (newAsset: NewAsset) => {
-    if (!rawConfig) {
-      toast.error("System configuration not loaded yet.");
-      return;
-    }
-
-    const camId = newAsset.name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
-
-    if (Object.keys(config?.cameras || {}).includes(camId)) {
-      toast.error(
-        `Device ID '${camId}' is already registered! Use a unique name.`,
-      );
-      return;
-    }
-
     try {
-      const updatedYaml = addCameraToYaml(rawConfig, camId, newAsset.rtsp_url);
-      await saveAndRestartConfig(updatedYaml);
-      toast.success(
-        "Asset saved! The video engine is now rebooting, please wait...",
-      );
+      await registerCamera(newAsset.name, newAsset.rtsp_url);
+      toast.success("Asset registered successfully!");
       setIsAdding(false);
-      setTimeout(pollServer, 5000);
+      await mutate("config");
+      await mutate("config/raw");
     } catch (e) {
-      const err = e as Error;
+      const err = e as any;
       toast.error(
-        err.message ||
-          "Failed to commit settings to main system configuration.",
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to register asset.",
       );
     }
   };
