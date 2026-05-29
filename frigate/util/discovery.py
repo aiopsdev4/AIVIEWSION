@@ -258,7 +258,7 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
             stderr=asyncio.subprocess.PIPE
         )
         try:
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=4.0)
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=4.0)
         except asyncio.TimeoutError:
             if proc.returncode is None:
                 try:
@@ -286,6 +286,12 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
                 if int(den) > 0:
                     fps = int(round(float(num) / float(den)))
             return True, codec, width, height, fps
+        else:
+            err_out = stderr.decode(errors="ignore")
+            if "401" in err_out or "Unauthorized" in err_out or "authorization failed" in err_out:
+                raise PermissionError("RTSP Unauthorized")
+    except PermissionError:
+        raise
     except Exception as e:
         logger.debug("ffprobe validation failed: %s", e)
         if proc and proc.returncode is None:
@@ -295,6 +301,7 @@ async def validate_rtsp_stream(rtsp_url: str) -> Tuple[bool, str, int, int, int]
             except Exception:
                 pass
     return False, "h264", 1280, 720, 25
+
 
 
 async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", custom_pwd: str = "") -> Tuple[bool, Dict[str, Any]]:
@@ -377,11 +384,17 @@ async def probe_device(ip: str, open_ports: List[int], custom_user: str = "", cu
         rtsp_url = f"rtsp://{custom_user}:{custom_pwd}@{ip}:{rtsp_port}/cam/realmonitor?channel=1&subtype=0" if is_dahua else f"rtsp://{custom_user}:{custom_pwd}@{ip}:{rtsp_port}/h264/ch1/main/av_stream"
         
         # Verify the RTSP stream is active and readable
-        playable, codec, w, h, fps = await validate_rtsp_stream(rtsp_url)
+        unauthorized = False
+        try:
+            playable, codec, w, h, fps = await validate_rtsp_stream(rtsp_url)
+        except PermissionError:
+            playable = False
+            unauthorized = True
+
         if playable or is_dahua:
             manufacturer = "Dahua (Private SDK)" if is_dahua else "Generic RTSP"
             model = "Dahua Device" if is_dahua else "Generic Streamer"
-            if not playable and is_dahua:
+            if unauthorized and is_dahua:
                 manufacturer = "Dahua (Credentials Required)"
                 model = "Locked NVR" if 80 in open_ports else "Locked Dahua Device"
             
